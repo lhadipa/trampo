@@ -1,29 +1,29 @@
-import { UserPlus, Search, HandshakeIcon, Banknote } from "lucide-react";
+import { Search, UserCheck, Star, RefreshCw } from "lucide-react";
 
 const steps = [
   {
-    icon: UserPlus,
-    step: "01",
-    title: "Crie seu perfil",
-    description: "Cadastre-se em 2 minutos com suas habilidades e disponibilidade.",
-  },
-  {
     icon: Search,
+    step: "01",
+    title: "Encontre trabalhadores confiáveis",
+    description: "Veja profissionais disponíveis perto de você, com avaliações e histórico de trabalhos.",
+  },
+  {
+    icon: UserCheck,
     step: "02",
-    title: "Encontre oportunidades",
-    description: "Veja vagas perto de você em tempo real, filtradas por categoria.",
+    title: "Contrate rapidamente",
+    description: "Convide trabalhadores para o serviço e organize sua equipe direto pelo aplicativo.",
   },
   {
-    icon: HandshakeIcon,
+    icon: Star,
     step: "03",
-    title: "Conecte-se",
-    description: "Match instantâneo. Sem burocracia, sem enrolação.",
+    title: "Salve seus favoritos",
+    description: "Guarde os melhores profissionais na sua lista para contratar novamente quando precisar.",
   },
   {
-    icon: Banknote,
+    icon: RefreshCw,
     step: "04",
-    title: "Receba rápido",
-    description: "Pagamento direto e seguro ao final do trabalho.",
+    title: "Convide novamente quando quiser",
+    description: "Envie convites para sua equipe favorita com apenas um clique.",
   },
 ];
 
@@ -36,7 +36,7 @@ const HowItWorks = () => {
             Como funciona
           </span>
           <h2 className="text-3xl sm:text-4xl font-bold mt-3 text-foreground">
-            Simples, rápido e sem burocracia
+            Como funciona contratar pelo app
           </h2>
         </div>
 
