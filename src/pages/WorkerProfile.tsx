@@ -2,9 +2,22 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { MapPin, Star, Briefcase, Camera, ArrowLeft, Heart, Share2 } from "lucide-react";
+import {
+  MapPin,
+  Star,
+  Briefcase,
+  Camera,
+  ArrowLeft,
+  Heart,
+  Share2,
+  Lock,
+  MessageSquare,
+  Send,
+  Phone,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { useState } from "react";
 
 const worker = {
   name: "João Silva",
@@ -20,15 +33,44 @@ const worker = {
     "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=300&h=300&fit=crop",
     "https://images.unsplash.com/photo-1555244162-803834f70033?w=300&h=300&fit=crop",
   ],
+  availability: "Disponível",
+  lastActive: "Hoje",
 };
 
 const WorkerProfile = () => {
   const navigate = useNavigate();
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [contactUnlocked, setContactUnlocked] = useState(false);
 
-  const handleHire = () => {
-    toast.success("Convite enviado ao trabalhador!", {
-      description: "Você será notificado quando ele aceitar.",
+  const handleUnlockContact = () => {
+    toast.success("Contato liberado!", {
+      description: "O telefone do trabalhador está disponível agora.",
     });
+    setContactUnlocked(true);
+  };
+
+  const handleSendInvite = () => {
+    toast.success("Convite enviado!", {
+      description: `${worker.name} receberá seu convite no app.`,
+    });
+  };
+
+  const handleChat = () => {
+    toast.info("Chat aberto", {
+      description: `Converse com ${worker.name} antes de contratar.`,
+    });
+  };
+
+  const handleFavorite = () => {
+    setIsFavorite(!isFavorite);
+    toast.success(
+      isFavorite ? "Removido dos favoritos" : "Adicionado à sua equipe favorita!",
+      {
+        description: isFavorite
+          ? undefined
+          : "Você pode convidá-lo novamente quando precisar.",
+      }
+    );
   };
 
   return (
@@ -47,8 +89,15 @@ const WorkerProfile = () => {
             <button className="p-2 rounded-lg hover:bg-secondary-foreground/10 text-secondary-foreground/70 transition-colors">
               <Share2 className="h-4 w-4" />
             </button>
-            <button className="p-2 rounded-lg hover:bg-secondary-foreground/10 text-secondary-foreground/70 transition-colors">
-              <Heart className="h-4 w-4" />
+            <button
+              onClick={handleFavorite}
+              className={`p-2 rounded-lg transition-colors ${
+                isFavorite
+                  ? "bg-primary/20 text-primary"
+                  : "hover:bg-secondary-foreground/10 text-secondary-foreground/70"
+              }`}
+            >
+              <Heart className={`h-4 w-4 ${isFavorite ? "fill-primary" : ""}`} />
             </button>
           </div>
         </div>
@@ -65,7 +114,7 @@ const WorkerProfile = () => {
                   {worker.name.split(" ").map((n) => n[0]).join("")}
                 </AvatarFallback>
               </Avatar>
-              <div className="space-y-1">
+              <div className="space-y-1.5">
                 <h1 className="text-xl font-bold text-foreground">{worker.name}</h1>
                 <p className="flex items-center gap-1 text-sm text-muted-foreground">
                   <MapPin className="h-3.5 w-3.5" />
@@ -82,8 +131,48 @@ const WorkerProfile = () => {
                     {worker.jobsDone} trabalhos
                   </span>
                 </div>
+                <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20 text-xs">
+                  {worker.availability}
+                </Badge>
               </div>
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Contact - locked/unlocked */}
+        <Card className={`border-border ${!contactUnlocked ? "border-primary/20 bg-primary/5" : ""}`}>
+          <CardContent className="pt-6">
+            {contactUnlocked ? (
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center">
+                    <Phone className="h-5 w-5 text-emerald-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-foreground">Telefone liberado</p>
+                    <p className="text-lg font-bold text-foreground">(32) 99999-1234</p>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                    <Lock className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-foreground">Contato bloqueado</p>
+                    <p className="text-xs text-muted-foreground">
+                      Libere o contato por R$ 5–10
+                    </p>
+                  </div>
+                </div>
+                <Button variant="hero" size="sm" onClick={handleUnlockContact}>
+                  <Lock className="mr-1 h-3 w-3" />
+                  Liberar R$ 5
+                </Button>
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -140,16 +229,33 @@ const WorkerProfile = () => {
           </CardContent>
         </Card>
 
-        {/* Hire button */}
-        <div className="sticky bottom-6">
-          <Button
-            variant="hero"
-            size="lg"
-            className="w-full text-base py-6 shadow-warm"
-            onClick={handleHire}
-          >
-            Contratar João
-          </Button>
+        {/* Action buttons - sticky */}
+        <div className="sticky bottom-4 space-y-2">
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="lg"
+              className="flex-1 py-6"
+              onClick={handleChat}
+            >
+              <MessageSquare className="mr-2 h-5 w-5" />
+              Chat
+            </Button>
+            <Button
+              variant="hero"
+              size="lg"
+              className="flex-1 py-6 shadow-warm"
+              onClick={handleSendInvite}
+            >
+              <Send className="mr-2 h-5 w-5" />
+              Convidar • R$ 3
+            </Button>
+          </div>
+          {isFavorite && (
+            <p className="text-center text-xs text-muted-foreground">
+              ♥ Na sua equipe favorita — convide novamente a qualquer momento
+            </p>
+          )}
         </div>
       </main>
     </div>
