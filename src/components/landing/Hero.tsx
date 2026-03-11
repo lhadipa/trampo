@@ -27,7 +27,7 @@ const Hero = () => {
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight text-secondary-foreground animate-fade-up">
             Conecte-se ao{" "}
             <span className="text-gradient">trabalho certo</span>{" "}
-            em São João del Rei
+            perto de você
           </h1>
 
           <p className="text-lg sm:text-xl text-secondary-foreground/80 max-w-lg animate-fade-up" style={{ animationDelay: "0.15s" }}>
