@@ -21,7 +21,7 @@ const Hero = () => {
         <div className="max-w-2xl space-y-8">
           <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-2 text-sm font-medium text-primary animate-fade-in">
             <Zap className="h-4 w-4" />
-            Plataforma #1 de trabalho rápido na região
+            Plataforma #1 de trabalho rápido na sua região
           </div>
 
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight text-secondary-foreground animate-fade-up">
