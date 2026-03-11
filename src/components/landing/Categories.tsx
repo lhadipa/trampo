@@ -45,7 +45,7 @@ const Categories = () => {
             Trabalho pra todo tipo de habilidade
           </h2>
           <p className="text-muted-foreground mt-4 text-lg">
-            De restaurantes a reformas, encontre oportunidades que combinam com você.
+            De restaurantes a salões de beleza, encontre oportunidades na sua região.
           </p>
         </div>
 
