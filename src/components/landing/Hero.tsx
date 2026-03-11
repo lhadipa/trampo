@@ -31,8 +31,8 @@ const Hero = () => {
           </h1>
 
           <p className="text-lg sm:text-xl text-secondary-foreground/80 max-w-lg animate-fade-up" style={{ animationDelay: "0.15s" }}>
-            Restaurantes, eventos, comércio e serviços precisam de gente rápido.
-            Trabalhadores precisam de renda rápida. A gente conecta os dois.
+            Restaurantes, eventos, comércio e serviços da região precisam de gente rápido.
+            Trabalhadores precisam de renda. A gente conecta os dois — na sua cidade e nas cidades vizinhas.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 animate-fade-up" style={{ animationDelay: "0.3s" }}>
