@@ -207,7 +207,7 @@ const Pricing = () => {
           <Card className="border-primary/20 bg-secondary text-secondary-foreground">
             <CardContent className="py-8 px-6 sm:px-10">
               <h3 className="text-center text-lg font-bold mb-6 text-secondary-foreground">
-                Como o TrampoJá ganha ⚡
+                Como o Trampô ganha ⚡
               </h3>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 {revenueItems.map((item) => (
