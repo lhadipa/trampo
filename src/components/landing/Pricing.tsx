@@ -1,57 +1,54 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
-import { ArrowRight, Check, Zap, Building2, Crown, TrendingUp, Rocket, BadgeCheck, Wallet } from "lucide-react";
+import { ArrowRight, Check, Zap, Building2, Crown, Eye, Rocket, Star } from "lucide-react";
 
 const plans = [
   {
-    name: "Básico",
-    icon: Zap,
-    price: "R$ 39",
-    period: "/mês",
-    description: "Pra quem contrata de vez em quando.",
+    name: "Avulso",
+    icon: Eye,
+    price: "R$ 5–10",
+    period: "/contato",
+    description: "Pague só quando precisar ver um contato.",
     features: [
-      "Até 5 vagas por mês",
-      "Acesso a candidatos da região",
+      "Libere contatos sob demanda",
+      "Sem mensalidade",
       "Perfil da empresa",
-      "Suporte por e-mail",
+      "Ideal pra quem contrata pouco",
     ],
-    taxLabel: "10% por trabalho fechado",
     highlight: false,
-    cta: "Começar agora",
+    cta: "Começar grátis",
   },
   {
     name: "Profissional",
     icon: Building2,
-    price: "R$ 89",
+    price: "R$ 39",
     period: "/mês",
-    description: "Pra empresas que contratam com frequência.",
+    description: "Pra quem contrata com frequência.",
     features: [
+      "Contatos inclusos no plano",
       "Vagas ilimitadas",
       "Destaque no app",
-      "Acesso aos melhores trabalhadores",
       "Selo de empresa verificada",
       "Painel de gestão",
       "Suporte prioritário",
     ],
-    taxLabel: "10% por trabalho fechado",
     highlight: true,
     cta: "Assinar agora",
   },
   {
     name: "Premium",
     icon: Crown,
-    price: "R$ 149",
+    price: "R$ 89",
     period: "/mês",
-    description: "Pra operações que precisam de escala e prioridade.",
+    description: "Pra operações com alto volume de contratação.",
     features: [
       "Tudo do Profissional",
+      "Contatos ilimitados",
       "Prioridade nas respostas",
       "Perfil verificado premium",
-      "Suporte rápido dedicado",
+      "Suporte dedicado",
       "Relatórios avançados",
-      "Contratação em lote",
     ],
-    taxLabel: "10% por trabalho fechado",
     highlight: false,
     cta: "Falar com vendas",
   },
@@ -59,32 +56,25 @@ const plans = [
 
 const revenueStreams = [
   {
-    icon: TrendingUp,
-    title: "Taxa por Serviço",
-    subtitle: "10% por trabalho fechado",
-    example: "Empresa paga R$120 → App ganha R$12",
-    detail: "1.200 trabalhos/mês × R$120 = R$14.400/mês",
+    icon: Eye,
+    title: "Contato Pago",
+    subtitle: "R$ 5 a R$ 10 por contato",
+    description: "Empresa paga para ver o contato do trabalhador. Gera receita imediata, sem depender do trabalho acontecer.",
+    tag: "Principal",
+  },
+  {
+    icon: Zap,
+    title: "Assinatura Mensal",
+    subtitle: "A partir de R$ 39/mês",
+    description: "Plano recorrente com contatos inclusos, vagas ilimitadas e destaque. Receita previsível todo mês.",
+    tag: "Recorrência",
   },
   {
     icon: Rocket,
-    title: "Boost de Vagas",
-    subtitle: "Destaque pago no feed",
-    example: "Destaque: R$10 · Topo do feed: R$20",
-    detail: "Quanto mais vagas, mais boosts vendidos",
-  },
-  {
-    icon: BadgeCheck,
-    title: "Verificação Premium",
-    subtitle: "Selo verificado pro trabalhador",
-    example: "R$9,90/mês por perfil verificado",
-    detail: "Aumenta confiança e taxa de contratação",
-  },
-  {
-    icon: Wallet,
-    title: "Taxa de Saque",
-    subtitle: "Saque imediato pelo app",
-    example: "R$3 a R$5 por saque instantâneo",
-    detail: "Modelo usado por Uber, iFood e 99",
+    title: "Destaque de Vagas",
+    subtitle: "R$ 8 por destaque",
+    description: "Empresa paga para a vaga aparecer primeiro no feed. Receita complementar que escala com o volume.",
+    tag: "Extra",
   },
 ];
 
@@ -98,11 +88,11 @@ const Pricing = () => {
             Planos & Preços
           </span>
           <h2 className="text-3xl sm:text-4xl font-bold text-foreground">
-            Escolha o plano ideal pro seu{" "}
-            <span className="text-gradient">negócio</span>
+            Modelo simples, feito pra{" "}
+            <span className="text-gradient">escalar</span>
           </h2>
           <p className="text-muted-foreground text-lg">
-            Assinatura mensal + taxa só quando o trabalho é feito. Sem surpresas.
+            Pague por contato ou assine um plano mensal. Sem surpresas, sem taxa escondida.
           </p>
         </div>
 
@@ -147,10 +137,6 @@ const Pricing = () => {
                   <span className="text-muted-foreground text-sm">{plan.period}</span>
                 </div>
 
-                <div className="rounded-lg bg-accent/10 border border-accent/20 px-3 py-2 text-sm text-accent font-medium">
-                  + {plan.taxLabel}
-                </div>
-
                 <ul className="space-y-3">
                   {plan.features.map((feature) => (
                     <li key={feature} className="flex items-start gap-2 text-sm text-muted-foreground">
@@ -175,31 +161,35 @@ const Pricing = () => {
         </div>
 
         {/* Revenue Streams */}
-        <div className="max-w-5xl mx-auto">
+        <div className="max-w-4xl mx-auto">
           <div className="text-center mb-10 space-y-2">
             <h3 className="text-2xl font-bold text-foreground">
               Como o TrampoJá ganha ⚡
             </h3>
             <p className="text-muted-foreground">
-              4 fontes de receita que escalam junto com a plataforma.
+              3 fontes de receita com pouca fricção, feitas pra funcionar até em cidades menores.
             </p>
           </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid sm:grid-cols-3 gap-5">
             {revenueStreams.map((stream) => (
               <Card
                 key={stream.title}
                 className="border-border hover:border-primary/30 transition-colors group"
               >
                 <CardContent className="pt-6 space-y-3">
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                    <stream.icon className="h-5 w-5 text-primary" />
+                  <div className="flex items-center justify-between">
+                    <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                      <stream.icon className="h-5 w-5 text-primary" />
+                    </div>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-primary bg-primary/10 px-2 py-1 rounded-full">
+                      {stream.tag}
+                    </span>
                   </div>
                   <div>
                     <span className="font-bold text-foreground text-sm block">{stream.title}</span>
                     <span className="text-primary text-xs font-semibold">{stream.subtitle}</span>
                   </div>
-                  <p className="text-xs text-muted-foreground">{stream.example}</p>
-                  <p className="text-xs text-muted-foreground/70 italic">{stream.detail}</p>
+                  <p className="text-xs text-muted-foreground leading-relaxed">{stream.description}</p>
                 </CardContent>
               </Card>
             ))}
@@ -212,19 +202,19 @@ const Pricing = () => {
             <CardContent className="py-8 px-6 sm:px-10">
               <div className="grid sm:grid-cols-3 gap-6 text-center">
                 <div>
-                  <p className="text-3xl font-bold text-primary">R$ 14.400</p>
-                  <p className="text-sm text-secondary-foreground/60 mt-1">Taxa por serviço/mês</p>
-                  <p className="text-xs text-secondary-foreground/40">1.200 trabalhos × R$120</p>
+                  <p className="text-3xl font-bold text-primary">R$ 6.000+</p>
+                  <p className="text-sm text-secondary-foreground/60 mt-1">Contatos pagos/mês</p>
+                  <p className="text-xs text-secondary-foreground/40">800 contatos × R$7,50</p>
                 </div>
                 <div>
-                  <p className="text-3xl font-bold text-primary">R$ 8.900</p>
+                  <p className="text-3xl font-bold text-primary">R$ 3.900+</p>
                   <p className="text-sm text-secondary-foreground/60 mt-1">Assinaturas/mês</p>
-                  <p className="text-xs text-secondary-foreground/40">100 empresas × R$89</p>
+                  <p className="text-xs text-secondary-foreground/40">100 empresas × R$39</p>
                 </div>
                 <div>
-                  <p className="text-3xl font-bold text-primary">R$ 23.300+</p>
+                  <p className="text-3xl font-bold text-primary">R$ 10.000+</p>
                   <p className="text-sm text-secondary-foreground/60 mt-1">Receita total estimada</p>
-                  <p className="text-xs text-secondary-foreground/40">Sem contar boosts e saques</p>
+                  <p className="text-xs text-secondary-foreground/40">Sem contar destaques de vagas</p>
                 </div>
               </div>
             </CardContent>
