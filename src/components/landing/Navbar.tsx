@@ -40,7 +40,7 @@ const Navbar = () => {
         <div className="md:hidden bg-secondary border-t border-secondary-foreground/5 p-4 space-y-3 animate-fade-in">
           <a href="#categorias" className="block text-secondary-foreground/70 hover:text-primary py-2">Categorias</a>
           <a href="#como-funciona" className="block text-secondary-foreground/70 hover:text-primary py-2">Como funciona</a>
-          <a href="#" className="block text-secondary-foreground/70 hover:text-primary py-2">Para empresas</a>
+          <a href="#precos" className="block text-secondary-foreground/70 hover:text-primary py-2">Preços</a>
           <div className="pt-2 space-y-2">
             <Button variant="heroOutline" className="w-full text-secondary-foreground border-secondary-foreground/30">Entrar</Button>
             <Button variant="hero" className="w-full">Cadastre-se</Button>
