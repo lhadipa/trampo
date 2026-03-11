@@ -1,82 +1,90 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
-import { ArrowRight, Check, Zap, Building2, Crown } from "lucide-react";
+import { ArrowRight, Check, Zap, Building2, Crown, TrendingUp, Rocket, BadgeCheck, Wallet } from "lucide-react";
 
 const plans = [
   {
-    name: "Grátis",
+    name: "Básico",
     icon: Zap,
-    price: "R$ 0",
-    period: "",
-    description: "Pra quem tá começando e quer testar a plataforma.",
+    price: "R$ 39",
+    period: "/mês",
+    description: "Pra quem contrata de vez em quando.",
     features: [
-      "Publicar até 2 vagas por mês",
-      "Acesso a candidatos básicos",
-      "Perfil simples da empresa",
+      "Até 5 vagas por mês",
+      "Acesso a candidatos da região",
+      "Perfil da empresa",
       "Suporte por e-mail",
     ],
-    taxPerJob: "10% por trabalho concluído",
+    taxLabel: "10% por trabalho fechado",
     highlight: false,
-    cta: "Começar grátis",
+    cta: "Começar agora",
   },
   {
     name: "Profissional",
     icon: Building2,
-    price: "R$ 79",
+    price: "R$ 89",
     period: "/mês",
     description: "Pra empresas que contratam com frequência.",
     features: [
       "Vagas ilimitadas",
-      "Candidatos destacados e verificados",
-      "Perfil premium da empresa",
+      "Destaque no app",
+      "Acesso aos melhores trabalhadores",
       "Selo de empresa verificada",
+      "Painel de gestão",
       "Suporte prioritário",
-      "Painel de gestão de equipe",
     ],
-    taxPerJob: "5% por trabalho concluído",
+    taxLabel: "10% por trabalho fechado",
     highlight: true,
     cta: "Assinar agora",
   },
   {
-    name: "Empresarial",
+    name: "Premium",
     icon: Crown,
-    price: "R$ 199",
+    price: "R$ 149",
     period: "/mês",
-    description: "Pra operações que precisam de escala.",
+    description: "Pra operações que precisam de escala e prioridade.",
     features: [
       "Tudo do Profissional",
-      "API de integração",
-      "Múltiplos usuários admin",
+      "Prioridade nas respostas",
+      "Perfil verificado premium",
+      "Suporte rápido dedicado",
       "Relatórios avançados",
-      "Gerente de conta dedicado",
       "Contratação em lote",
     ],
-    taxPerJob: "3% por trabalho concluído",
+    taxLabel: "10% por trabalho fechado",
     highlight: false,
     cta: "Falar com vendas",
   },
 ];
 
-const extras = [
+const revenueStreams = [
   {
-    title: "Destaque de Vaga",
-    price: "R$ 15",
-    description: "Sua vaga aparece no topo por 7 dias.",
+    icon: TrendingUp,
+    title: "Taxa por Serviço",
+    subtitle: "10% por trabalho fechado",
+    example: "Empresa paga R$120 → App ganha R$12",
+    detail: "1.200 trabalhos/mês × R$120 = R$14.400/mês",
   },
   {
-    title: "Urgente 🔥",
-    price: "R$ 25",
-    description: "Notificação push para todos os trabalhadores da categoria.",
+    icon: Rocket,
+    title: "Boost de Vagas",
+    subtitle: "Destaque pago no feed",
+    example: "Destaque: R$10 · Topo do feed: R$20",
+    detail: "Quanto mais vagas, mais boosts vendidos",
   },
   {
-    title: "Recrutamento Express",
-    price: "R$ 49",
-    description: "A gente faz a triagem e te manda os 3 melhores candidatos em 2h.",
-  },
-  {
+    icon: BadgeCheck,
     title: "Verificação Premium",
-    price: "R$ 9,90",
-    description: "Selo de verificado no perfil do trabalhador (mensal).",
+    subtitle: "Selo verificado pro trabalhador",
+    example: "R$9,90/mês por perfil verificado",
+    detail: "Aumenta confiança e taxa de contratação",
+  },
+  {
+    icon: Wallet,
+    title: "Taxa de Saque",
+    subtitle: "Saque imediato pelo app",
+    example: "R$3 a R$5 por saque instantâneo",
+    detail: "Modelo usado por Uber, iFood e 99",
   },
 ];
 
@@ -84,6 +92,7 @@ const Pricing = () => {
   return (
     <section className="py-20 bg-background">
       <div className="container">
+        {/* Header */}
         <div className="text-center max-w-2xl mx-auto mb-16 space-y-4">
           <span className="inline-block text-sm font-semibold text-primary uppercase tracking-wider">
             Planos & Preços
@@ -110,17 +119,23 @@ const Pricing = () => {
             >
               {plan.highlight && (
                 <div className="absolute -top-3.5 left-1/2 -translate-x-1/2">
-                  <span className="gradient-hero text-secondary-foreground text-xs font-bold px-4 py-1.5 rounded-full">
+                  <span className="gradient-hero text-secondary-foreground text-xs font-bold px-4 py-1.5 rounded-full whitespace-nowrap">
                     Mais popular
                   </span>
                 </div>
               )}
               <CardHeader className="pb-2">
                 <div className="flex items-center gap-2 mb-2">
-                  <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${
-                    plan.highlight ? "gradient-hero" : "bg-muted"
-                  }`}>
-                    <plan.icon className={`h-4 w-4 ${plan.highlight ? "text-secondary-foreground" : "text-foreground"}`} />
+                  <div
+                    className={`w-9 h-9 rounded-lg flex items-center justify-center ${
+                      plan.highlight ? "gradient-hero" : "bg-muted"
+                    }`}
+                  >
+                    <plan.icon
+                      className={`h-4 w-4 ${
+                        plan.highlight ? "text-secondary-foreground" : "text-foreground"
+                      }`}
+                    />
                   </div>
                   <CardTitle className="text-lg">{plan.name}</CardTitle>
                 </div>
@@ -129,13 +144,11 @@ const Pricing = () => {
               <CardContent className="flex-1 space-y-6">
                 <div className="flex items-baseline gap-1">
                   <span className="text-4xl font-bold text-foreground">{plan.price}</span>
-                  {plan.period && (
-                    <span className="text-muted-foreground text-sm">{plan.period}</span>
-                  )}
+                  <span className="text-muted-foreground text-sm">{plan.period}</span>
                 </div>
 
                 <div className="rounded-lg bg-accent/10 border border-accent/20 px-3 py-2 text-sm text-accent font-medium">
-                  + {plan.taxPerJob}
+                  + {plan.taxLabel}
                 </div>
 
                 <ul className="space-y-3">
@@ -161,29 +174,61 @@ const Pricing = () => {
           ))}
         </div>
 
-        {/* Extras */}
-        <div className="max-w-4xl mx-auto">
+        {/* Revenue Streams */}
+        <div className="max-w-5xl mx-auto">
           <div className="text-center mb-10 space-y-2">
             <h3 className="text-2xl font-bold text-foreground">
-              Ganhos adicionais ⚡
+              Como o TrampoJá ganha ⚡
             </h3>
             <p className="text-muted-foreground">
-              Serviços avulsos que empresas e trabalhadores podem comprar a qualquer momento.
+              4 fontes de receita que escalam junto com a plataforma.
             </p>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {extras.map((extra) => (
-              <Card key={extra.title} className="border-border hover:border-primary/30 transition-colors">
-                <CardContent className="pt-6 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="font-semibold text-foreground text-sm">{extra.title}</span>
-                    <span className="text-primary font-bold text-sm">{extra.price}</span>
+            {revenueStreams.map((stream) => (
+              <Card
+                key={stream.title}
+                className="border-border hover:border-primary/30 transition-colors group"
+              >
+                <CardContent className="pt-6 space-y-3">
+                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                    <stream.icon className="h-5 w-5 text-primary" />
                   </div>
-                  <p className="text-xs text-muted-foreground">{extra.description}</p>
+                  <div>
+                    <span className="font-bold text-foreground text-sm block">{stream.title}</span>
+                    <span className="text-primary text-xs font-semibold">{stream.subtitle}</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">{stream.example}</p>
+                  <p className="text-xs text-muted-foreground/70 italic">{stream.detail}</p>
                 </CardContent>
               </Card>
             ))}
           </div>
+        </div>
+
+        {/* Projection callout */}
+        <div className="max-w-3xl mx-auto mt-16">
+          <Card className="border-primary/20 bg-secondary text-secondary-foreground">
+            <CardContent className="py-8 px-6 sm:px-10">
+              <div className="grid sm:grid-cols-3 gap-6 text-center">
+                <div>
+                  <p className="text-3xl font-bold text-primary">R$ 14.400</p>
+                  <p className="text-sm text-secondary-foreground/60 mt-1">Taxa por serviço/mês</p>
+                  <p className="text-xs text-secondary-foreground/40">1.200 trabalhos × R$120</p>
+                </div>
+                <div>
+                  <p className="text-3xl font-bold text-primary">R$ 8.900</p>
+                  <p className="text-sm text-secondary-foreground/60 mt-1">Assinaturas/mês</p>
+                  <p className="text-xs text-secondary-foreground/40">100 empresas × R$89</p>
+                </div>
+                <div>
+                  <p className="text-3xl font-bold text-primary">R$ 23.300+</p>
+                  <p className="text-sm text-secondary-foreground/60 mt-1">Receita total estimada</p>
+                  <p className="text-xs text-secondary-foreground/40">Sem contar boosts e saques</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </section>
