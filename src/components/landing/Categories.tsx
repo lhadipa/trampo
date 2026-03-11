@@ -1,4 +1,4 @@
-import { UtensilsCrossed, PartyPopper, ShoppingBag, Wrench } from "lucide-react";
+import { UtensilsCrossed, PartyPopper, ShoppingBag, Wrench, Megaphone, Hotel, Laptop } from "lucide-react";
 
 const categories = [
   {
@@ -24,6 +24,24 @@ const categories = [
     title: "Serviços Gerais",
     description: "Eletricistas, pintores, faxineiros, montadores e profissionais autônomos.",
     jobs: "150+ vagas",
+  },
+  {
+    icon: Megaphone,
+    title: "Marketing & Mídias",
+    description: "Social media, criação de conteúdo, design gráfico e gestão de tráfego — avulso ou mensal.",
+    jobs: "60+ vagas",
+  },
+  {
+    icon: Hotel,
+    title: "Turismo & Hotelaria",
+    description: "Recepcionistas, guias turísticos, camareiras e staff para pousadas e hotéis.",
+    jobs: "70+ vagas",
+  },
+  {
+    icon: Laptop,
+    title: "Tecnologia",
+    description: "Desenvolvedores, suporte técnico, assistência em TI e freelancers digitais.",
+    jobs: "45+ vagas",
   },
 ];
 
