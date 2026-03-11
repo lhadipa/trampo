@@ -16,7 +16,7 @@ const CTA = () => {
             </h2>
             <p className="text-secondary-foreground/70 text-lg">
               Seja você um profissional buscando renda extra ou uma empresa que precisa de
-              reforço, o TrampoJá conecta vocês em minutos.
+              reforço, o Trampô conecta vocês em minutos.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button variant="hero" size="lg" className="text-base px-8 py-6">

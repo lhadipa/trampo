@@ -12,7 +12,7 @@ const Navbar = () => {
           <div className="w-8 h-8 rounded-lg gradient-hero flex items-center justify-center">
             <Zap className="h-4 w-4 text-secondary-foreground" />
           </div>
-          <span className="text-xl font-bold text-secondary-foreground">TrampoJá</span>
+          <span className="text-xl font-bold text-secondary-foreground">Trampô</span>
         </div>
 
         {/* Desktop nav */}

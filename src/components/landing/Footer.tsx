@@ -20,7 +20,7 @@ const Footer = () => {
           </nav>
 
           <p className="text-sm text-secondary-foreground/40">
-            © 2026 TrampoJá · São João del Rei, MG
+            © 2026 Trampô · São João del Rei, MG
           </p>
         </div>
       </div>
