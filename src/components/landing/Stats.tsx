@@ -1,7 +1,7 @@
 const stats = [
-  { value: "2.500+", label: "Trabalhadores cadastrados" },
+  { value: "2.500+", label: "Trabalhadores na região" },
   { value: "450+", label: "Empresas parceiras" },
-  { value: "8.000+", label: "Trabalhos realizados" },
+  { value: "3", label: "Cidades conectadas" },
   { value: "4.8★", label: "Avaliação média" },
 ];
 
