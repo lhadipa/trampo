@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
-import { Zap, Menu, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { useState } from "react";
+import logo from "@/assets/logo.png";
 
 const Navbar = () => {
   const [open, setOpen] = useState(false);
@@ -9,9 +10,7 @@ const Navbar = () => {
     <header className="fixed top-0 left-0 right-0 z-50 bg-secondary/90 backdrop-blur-md border-b border-secondary-foreground/5">
       <div className="container flex items-center justify-between h-16">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg gradient-hero flex items-center justify-center">
-            <Zap className="h-4 w-4 text-secondary-foreground" />
-          </div>
+          <img src={logo} alt="Trampô" className="w-8 h-8" />
           <span className="text-xl font-bold text-secondary-foreground">Trampô</span>
         </div>
 
