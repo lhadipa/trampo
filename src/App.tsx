@@ -7,6 +7,8 @@ import Index from "./pages/Index.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import WorkerProfile from "./pages/WorkerProfile.tsx";
 import CompanyProfile from "./pages/CompanyProfile.tsx";
+import Availability from "./pages/Availability.tsx";
+import CreateJob from "./pages/CreateJob.tsx";
 
 const queryClient = new QueryClient();
 
@@ -20,6 +22,8 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/trabalhador/:id" element={<WorkerProfile />} />
           <Route path="/empresa/:id" element={<CompanyProfile />} />
+          <Route path="/disponibilidade" element={<Availability />} />
+          <Route path="/criar-vaga" element={<CreateJob />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
