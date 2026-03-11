@@ -1,47 +1,35 @@
-import { UtensilsCrossed, PartyPopper, ShoppingBag, Wrench, Megaphone, Hotel, Laptop } from "lucide-react";
+import { UtensilsCrossed, PartyPopper, SprayCan, Scissors, Wrench } from "lucide-react";
 
 const categories = [
   {
     icon: UtensilsCrossed,
     title: "Restaurantes & Bares",
-    description: "Garçons, cozinheiros, auxiliares, baristas e mais para o dia a dia ou eventos especiais.",
+    description: "Garçons, cozinheiros, auxiliares, baristas e atendentes para o dia a dia ou eventos especiais.",
     jobs: "120+ vagas",
   },
   {
     icon: PartyPopper,
-    title: "Eventos & Festas",
-    description: "Staff para casamentos, formaturas, shows e festivais da região.",
+    title: "Eventos & Casamentos",
+    description: "Staff completo para casamentos, formaturas, festas e festivais da região.",
     jobs: "85+ vagas",
   },
   {
-    icon: ShoppingBag,
-    title: "Comércio",
-    description: "Vendedores, repositores, caixas e promotores para lojas e feiras.",
-    jobs: "95+ vagas",
-  },
-  {
-    icon: Wrench,
-    title: "Serviços Gerais",
-    description: "Eletricistas, pintores, faxineiros, montadores e profissionais autônomos.",
+    icon: SprayCan,
+    title: "Limpeza & Diaristas",
+    description: "Faxineiras, diaristas, limpeza pós-obra e serviços de higienização.",
     jobs: "150+ vagas",
   },
   {
-    icon: Megaphone,
-    title: "Marketing & Mídias",
-    description: "Social media, criação de conteúdo, design gráfico e gestão de tráfego — avulso ou mensal.",
-    jobs: "60+ vagas",
-  },
-  {
-    icon: Hotel,
-    title: "Turismo & Hotelaria",
-    description: "Recepcionistas, guias turísticos, camareiras e staff para pousadas e hotéis.",
+    icon: Scissors,
+    title: "Beleza",
+    description: "Cabeleireiros, manicures, maquiadores e profissionais de estética.",
     jobs: "70+ vagas",
   },
   {
-    icon: Laptop,
-    title: "Tecnologia",
-    description: "Desenvolvedores, suporte técnico, assistência em TI e freelancers digitais.",
-    jobs: "45+ vagas",
+    icon: Wrench,
+    title: "Manutenção & Reparos",
+    description: "Eletricistas, encanadores, pintores, montadores e pequenos reparos em geral.",
+    jobs: "95+ vagas",
   },
 ];
 
