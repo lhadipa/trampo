@@ -14,7 +14,219 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      applications: {
+        Row: {
+          created_at: string
+          freelancer_id: string
+          id: string
+          job_id: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          freelancer_id: string
+          id?: string
+          job_id: string
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          freelancer_id?: string
+          id?: string
+          job_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "applications_freelancer_id_fkey"
+            columns: ["freelancer_id"]
+            isOneToOne: false
+            referencedRelation: "freelancers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "applications_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      companies: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "companies_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      freelancers: {
+        Row: {
+          category: string
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "freelancers_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      jobs: {
+        Row: {
+          boost: boolean
+          company_id: string
+          created_at: string
+          date: string
+          description: string | null
+          id: string
+          price: number | null
+          status: string
+          title: string
+          urgent: boolean
+        }
+        Insert: {
+          boost?: boolean
+          company_id: string
+          created_at?: string
+          date: string
+          description?: string | null
+          id?: string
+          price?: number | null
+          status?: string
+          title?: string
+          urgent?: boolean
+        }
+        Update: {
+          boost?: boolean
+          company_id?: string
+          created_at?: string
+          date?: string
+          description?: string | null
+          id?: string
+          price?: number | null
+          status?: string
+          title?: string
+          urgent?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "jobs_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reviews: {
+        Row: {
+          comment: string | null
+          created_at: string
+          from_user: string
+          id: string
+          rating: number
+          to_user: string
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          from_user: string
+          id?: string
+          rating: number
+          to_user: string
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          from_user?: string
+          id?: string
+          rating?: number
+          to_user?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_from_user_fkey"
+            columns: ["from_user"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_to_user_fkey"
+            columns: ["to_user"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      users: {
+        Row: {
+          auth_id: string | null
+          created_at: string
+          email: string
+          id: string
+          name: string
+          type: string
+        }
+        Insert: {
+          auth_id?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          name: string
+          type: string
+        }
+        Update: {
+          auth_id?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string
+          type?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
