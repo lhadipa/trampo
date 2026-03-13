@@ -34,6 +34,8 @@ const App = () => (
             <Route path="/disponibilidade" element={<Availability />} />
             <Route path="/criar-vaga" element={<CreateJob />} />
             <Route path="/urgente" element={<UrgentRequest />} />
+            <Route path="/conversas" element={<Conversations />} />
+            <Route path="/chat/:conversationId" element={<Chat />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
