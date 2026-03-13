@@ -13,6 +13,8 @@ import CreateJob from "./pages/CreateJob.tsx";
 import UrgentRequest from "./pages/UrgentRequest.tsx";
 import Auth from "./pages/Auth.tsx";
 import Dashboard from "./pages/Dashboard.tsx";
+import Chat from "./pages/Chat.tsx";
+import Conversations from "./pages/Conversations.tsx";
 
 const queryClient = new QueryClient();
 
