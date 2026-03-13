@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Briefcase, History, Wallet, CheckCircle, LogOut } from "lucide-react";
+import { Briefcase, History, Wallet, CheckCircle, LogOut, MessageSquare } from "lucide-react";
 import { toast } from "sonner";
 import logo from "@/assets/logo.png";
 
@@ -95,9 +95,14 @@ const DashboardFreelancer = () => {
       <main className="container py-6 max-w-4xl mx-auto">
         <div className="mb-6 flex items-center justify-between">
           <h1 className="text-xl font-bold text-foreground">Olá, {profile?.name} 👋</h1>
-          <div className="flex items-center gap-2">
-            <Wallet className="h-4 w-4 text-success" />
-            <span className="font-bold text-foreground">R$ {profile?.balance?.toFixed(2) ?? "0.00"}</span>
+          <div className="flex items-center gap-3">
+            <Button variant="outline" size="sm" onClick={() => navigate("/conversas")}>
+              <MessageSquare className="h-4 w-4 mr-1" /> Chat
+            </Button>
+            <div className="flex items-center gap-2">
+              <Wallet className="h-4 w-4 text-success" />
+              <span className="font-bold text-foreground">R$ {profile?.balance?.toFixed(2) ?? "0.00"}</span>
+            </div>
           </div>
         </div>
 

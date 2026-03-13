@@ -13,6 +13,8 @@ import CreateJob from "./pages/CreateJob.tsx";
 import UrgentRequest from "./pages/UrgentRequest.tsx";
 import Auth from "./pages/Auth.tsx";
 import Dashboard from "./pages/Dashboard.tsx";
+import Chat from "./pages/Chat.tsx";
+import Conversations from "./pages/Conversations.tsx";
 
 const queryClient = new QueryClient();
 
@@ -32,6 +34,8 @@ const App = () => (
             <Route path="/disponibilidade" element={<Availability />} />
             <Route path="/criar-vaga" element={<CreateJob />} />
             <Route path="/urgente" element={<UrgentRequest />} />
+            <Route path="/conversas" element={<Conversations />} />
+            <Route path="/chat/:conversationId" element={<Chat />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

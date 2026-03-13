@@ -82,6 +82,48 @@ export type Database = {
           },
         ]
       }
+      conversations: {
+        Row: {
+          company_user_id: string
+          created_at: string
+          freelancer_user_id: string
+          id: string
+          unlock_price: number
+          unlocked: boolean
+        }
+        Insert: {
+          company_user_id: string
+          created_at?: string
+          freelancer_user_id: string
+          id?: string
+          unlock_price?: number
+          unlocked?: boolean
+        }
+        Update: {
+          company_user_id?: string
+          created_at?: string
+          freelancer_user_id?: string
+          id?: string
+          unlock_price?: number
+          unlocked?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversations_company_user_id_fkey"
+            columns: ["company_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversations_freelancer_user_id_fkey"
+            columns: ["freelancer_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       freelancers: {
         Row: {
           category: string
@@ -154,6 +196,45 @@ export type Database = {
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      messages: {
+        Row: {
+          content: string
+          conversation_id: string
+          created_at: string
+          id: string
+          sender_id: string
+        }
+        Insert: {
+          content: string
+          conversation_id: string
+          created_at?: string
+          id?: string
+          sender_id: string
+        }
+        Update: {
+          content?: string
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "users"
             referencedColumns: ["id"]
           },
         ]

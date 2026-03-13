@@ -22,8 +22,8 @@ const plans = [
     period: "grátis pra começar",
     description: "Pague só quando usar. Sem mensalidade.",
     features: [
-      "Ver contato: R$ 5–10",
-      "Convidar favorito: R$ 3",
+      "Abrir chat: R$ 10",
+      "Destacar vaga: R$ 8",
       "Perfil da empresa",
       "Ideal pra quem contrata pouco",
     ],
@@ -37,8 +37,8 @@ const plans = [
     period: "/mês",
     description: "Pra quem contrata com frequência.",
     features: [
-      "20 convites inclusos/mês",
-      "Ver contatos inclusos",
+      "20 chats inclusos/mês",
+      "Destaque em vagas",
       "Equipe favorita",
       "Selo de empresa verificada",
       "Histórico e avaliações",
@@ -54,9 +54,8 @@ const plans = [
     period: "/mês",
     description: "Pra operações com alto volume.",
     features: [
-      "Convites ilimitados",
-      "Contatos ilimitados",
-      "Destaque nas vagas",
+      "Chats ilimitados",
+      "Destaque em todas as vagas",
       "Equipe favorita ilimitada",
       "Relatórios e painel",
       "Suporte prioritário",
@@ -90,10 +89,10 @@ const retentionFeatures = [
 ];
 
 const revenueItems = [
-  { label: "Liberar contato", value: "R$ 5–10", detail: "por contato" },
-  { label: "Convite para favorito", value: "R$ 2–3", detail: "por convite" },
+  { label: "Abrir chat", value: "R$ 10", detail: "por conversa" },
   { label: "Destaque de vaga", value: "R$ 8", detail: "por vaga" },
-  { label: "Plano empresarial", value: "R$ 39–79", detail: "por mês" },
+  { label: "Plano Básico", value: "R$ 39", detail: "por mês" },
+  { label: "Plano Pro", value: "R$ 79", detail: "por mês" },
 ];
 
 const Pricing = () => {
