@@ -158,25 +158,10 @@ const DashboardCompany = () => {
                     <Button variant="outline" size="sm" onClick={startChat}>
                       <MessageSquare className="h-4 w-4 mr-1" /> Chat
                     </Button>
-                </CardContent>
-              </Card>
-            ))}
-          </TabsContent>
-
-          <TabsContent value="freelancers" className="space-y-3 mt-4">
-            {freelancers.length === 0 ? (
-              <Card><CardContent className="py-8 text-center text-muted-foreground">Nenhum freelancer encontrado.</CardContent></Card>
-            ) : freelancers.map((f: any) => (
-              <Card key={f.id} className="border-border">
-                <CardContent className="pt-4 pb-4 flex items-center justify-between">
-                  <div>
-                    <p className="font-medium text-foreground">{f.users?.name || "Sem nome"}</p>
-                    <p className="text-xs text-muted-foreground">{f.category}</p>
-                  </div>
-                  <Badge variant="outline">{f.users?.email}</Badge>
-                </CardContent>
-              </Card>
-            ))}
+                  </CardContent>
+                </Card>
+              );
+            })}
           </TabsContent>
 
           <TabsContent value="pagamentos" className="space-y-3 mt-4">
