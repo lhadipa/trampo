@@ -22,8 +22,8 @@ const plans = [
     period: "grátis pra começar",
     description: "Pague só quando usar. Sem mensalidade.",
     features: [
-      "Ver contato: R$ 5–10",
-      "Convidar favorito: R$ 3",
+      "Abrir chat: R$ 10",
+      "Destacar vaga: R$ 8",
       "Perfil da empresa",
       "Ideal pra quem contrata pouco",
     ],
@@ -37,8 +37,8 @@ const plans = [
     period: "/mês",
     description: "Pra quem contrata com frequência.",
     features: [
-      "20 convites inclusos/mês",
-      "Ver contatos inclusos",
+      "20 chats inclusos/mês",
+      "Destaque em vagas",
       "Equipe favorita",
       "Selo de empresa verificada",
       "Histórico e avaliações",
@@ -54,9 +54,8 @@ const plans = [
     period: "/mês",
     description: "Pra operações com alto volume.",
     features: [
-      "Convites ilimitados",
-      "Contatos ilimitados",
-      "Destaque nas vagas",
+      "Chats ilimitados",
+      "Destaque em todas as vagas",
       "Equipe favorita ilimitada",
       "Relatórios e painel",
       "Suporte prioritário",
