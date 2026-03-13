@@ -89,10 +89,10 @@ const retentionFeatures = [
 ];
 
 const revenueItems = [
-  { label: "Liberar contato", value: "R$ 5–10", detail: "por contato" },
-  { label: "Convite para favorito", value: "R$ 2–3", detail: "por convite" },
+  { label: "Abrir chat", value: "R$ 10", detail: "por conversa" },
   { label: "Destaque de vaga", value: "R$ 8", detail: "por vaga" },
-  { label: "Plano empresarial", value: "R$ 39–79", detail: "por mês" },
+  { label: "Plano Básico", value: "R$ 39", detail: "por mês" },
+  { label: "Plano Pro", value: "R$ 79", detail: "por mês" },
 ];
 
 const Pricing = () => {

@@ -95,9 +95,14 @@ const DashboardFreelancer = () => {
       <main className="container py-6 max-w-4xl mx-auto">
         <div className="mb-6 flex items-center justify-between">
           <h1 className="text-xl font-bold text-foreground">Olá, {profile?.name} 👋</h1>
-          <div className="flex items-center gap-2">
-            <Wallet className="h-4 w-4 text-success" />
-            <span className="font-bold text-foreground">R$ {profile?.balance?.toFixed(2) ?? "0.00"}</span>
+          <div className="flex items-center gap-3">
+            <Button variant="outline" size="sm" onClick={() => navigate("/conversas")}>
+              <MessageSquare className="h-4 w-4 mr-1" /> Chat
+            </Button>
+            <div className="flex items-center gap-2">
+              <Wallet className="h-4 w-4 text-success" />
+              <span className="font-bold text-foreground">R$ {profile?.balance?.toFixed(2) ?? "0.00"}</span>
+            </div>
           </div>
         </div>
 
