@@ -84,9 +84,14 @@ const DashboardCompany = () => {
       <main className="container py-6 max-w-4xl mx-auto">
         <div className="mb-6 flex items-center justify-between">
           <h1 className="text-xl font-bold text-foreground">Olá, {profile?.name} 👋</h1>
-          <Button variant="hero" size="sm" onClick={() => navigate("/criar-vaga")}>
-            <Plus className="h-4 w-4 mr-1" /> Criar Vaga
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" onClick={() => navigate("/conversas")}>
+              <MessageSquare className="h-4 w-4 mr-1" /> Chat
+            </Button>
+            <Button variant="hero" size="sm" onClick={() => navigate("/criar-vaga")}>
+              <Plus className="h-4 w-4 mr-1" /> Criar Vaga
+            </Button>
+          </div>
         </div>
 
         <Tabs defaultValue="vagas">
