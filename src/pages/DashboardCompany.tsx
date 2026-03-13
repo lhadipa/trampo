@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Briefcase, Users, CreditCard, LogOut } from "lucide-react";
+import { Plus, Briefcase, Users, CreditCard, LogOut, MessageSquare } from "lucide-react";
 import { toast } from "sonner";
 import logo from "@/assets/logo.png";
 
