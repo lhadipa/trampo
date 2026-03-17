@@ -90,8 +90,8 @@ const Chat = () => {
     setUnlocking(true);
 
     // Check balance
-    if ((profile.balance ?? 0) < (conversation.unlock_price ?? 10)) {
-      toast.error(`Saldo insuficiente. Preço: R$ ${conversation.unlock_price ?? 10}`);
+    if ((profile.balance ?? 0) < (conversation.unlock_price ?? 4.90)) {
+      toast.error(`Saldo insuficiente. Preço: R$ ${conversation.unlock_price ?? 4.90}`);
       setUnlocking(false);
       return;
     }
