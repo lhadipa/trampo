@@ -106,10 +106,10 @@ const retentionFeatures = [
 ];
 
 const revenueItems = [
-  { label: "Abrir chat", value: "R$ 10", detail: "por conversa" },
-  { label: "Destaque de vaga", value: "R$ 8", detail: "por vaga" },
-  { label: "Plano Básico", value: "R$ 39", detail: "por mês" },
-  { label: "Plano Pro", value: "R$ 79", detail: "por mês" },
+  { label: "Chat avulso", value: "R$ 4,90", detail: "por conversa" },
+  { label: "Plano Básico", value: "R$ 19", detail: "10 chats/mês" },
+  { label: "Plano Pro", value: "R$ 39", detail: "30 chats/mês" },
+  { label: "Restaurante Ativo", value: "R$ 79", detail: "100 chats/mês" },
 ];
 
 const Pricing = () => {
