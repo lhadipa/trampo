@@ -204,7 +204,7 @@ const Chat = () => {
                 onClick={handleUnlock}
                 disabled={unlocking}
               >
-                {unlocking ? "Processando..." : `Desbloquear por R$ ${conversation.unlock_price ?? 10}`}
+                {unlocking ? "Processando..." : `Desbloquear por R$ ${(conversation.unlock_price ?? 4.90).toFixed(2).replace('.', ',')}`}
               </Button>
               <p className="text-xs text-muted-foreground">Seu saldo: R$ {profile.balance?.toFixed(2) ?? "0.00"}</p>
             </CardContent>
