@@ -131,7 +131,7 @@ const Pricing = () => {
         </div>
 
         {/* Plans */}
-        <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto mb-20">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto mb-20">
           {plans.map((plan) => (
             <Card
               key={plan.name}
