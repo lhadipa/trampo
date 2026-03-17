@@ -123,8 +123,8 @@ const Chat = () => {
     // Record payment
     await supabase.from("payments").insert({
       from_user_id: profile.id,
-      to_user_id: "00000000-0000-0000-0000-000000000000", // platform
-      amount: conversation.unlock_price ?? 10,
+      to_user_id: "00000000-0000-0000-0000-000000000000",
+      amount: conversation.unlock_price ?? 4.90,
       status: "paid",
     });
 
