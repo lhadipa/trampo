@@ -90,14 +90,14 @@ const Chat = () => {
     setUnlocking(true);
 
     // Check balance
-    if ((profile.balance ?? 0) < (conversation.unlock_price ?? 10)) {
-      toast.error(`Saldo insuficiente. Preço: R$ ${conversation.unlock_price ?? 10}`);
+    if ((profile.balance ?? 0) < (conversation.unlock_price ?? 4.90)) {
+      toast.error(`Saldo insuficiente. Preço: R$ ${conversation.unlock_price ?? 4.90}`);
       setUnlocking(false);
       return;
     }
 
     // Deduct balance and unlock
-    const newBalance = (profile.balance ?? 0) - (conversation.unlock_price ?? 10);
+    const newBalance = (profile.balance ?? 0) - (conversation.unlock_price ?? 4.90);
     const { error: balanceErr } = await supabase
       .from("users")
       .update({ balance: newBalance })
@@ -123,8 +123,8 @@ const Chat = () => {
     // Record payment
     await supabase.from("payments").insert({
       from_user_id: profile.id,
-      to_user_id: "00000000-0000-0000-0000-000000000000", // platform
-      amount: conversation.unlock_price ?? 10,
+      to_user_id: "00000000-0000-0000-0000-000000000000",
+      amount: conversation.unlock_price ?? 4.90,
       status: "paid",
     });
 
@@ -196,7 +196,7 @@ const Chat = () => {
               </div>
               <h3 className="font-bold text-foreground text-lg">Chat bloqueado</h3>
               <p className="text-sm text-muted-foreground">
-                Desbloqueie este chat por <span className="font-bold text-foreground">R$ {conversation.unlock_price ?? 10}</span> para conversar com {otherUser?.name}.
+                Desbloqueie este chat por <span className="font-bold text-foreground">R$ {(conversation.unlock_price ?? 4.90).toFixed(2).replace('.', ',')}</span> para conversar com {otherUser?.name}.
               </p>
               <Button
                 variant="hero"
@@ -204,7 +204,7 @@ const Chat = () => {
                 onClick={handleUnlock}
                 disabled={unlocking}
               >
-                {unlocking ? "Processando..." : `Desbloquear por R$ ${conversation.unlock_price ?? 10}`}
+                {unlocking ? "Processando..." : `Desbloquear por R$ ${(conversation.unlock_price ?? 4.90).toFixed(2).replace('.', ',')}`}
               </Button>
               <p className="text-xs text-muted-foreground">Seu saldo: R$ {profile.balance?.toFixed(2) ?? "0.00"}</p>
             </CardContent>

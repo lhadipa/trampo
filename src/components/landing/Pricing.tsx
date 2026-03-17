@@ -18,12 +18,12 @@ const plans = [
   {
     name: "Avulso",
     icon: Eye,
-    price: "R$ 0",
-    period: "grátis pra começar",
+    price: "R$ 4,90",
+    period: "por chat",
     description: "Pague só quando usar. Sem mensalidade.",
     features: [
-      "Abrir chat: R$ 10",
-      "Destacar vaga: R$ 8",
+      "Abrir chat: R$ 4,90",
+      "Sem compromisso mensal",
       "Perfil da empresa",
       "Ideal pra quem contrata pouco",
     ],
@@ -33,32 +33,49 @@ const plans = [
   {
     name: "Básico",
     icon: Building2,
-    price: "R$ 39",
+    price: "R$ 19",
     period: "/mês",
-    description: "Pra quem contrata com frequência.",
+    description: "10 chats inclusos. Pra quem contrata com frequência.",
     features: [
-      "20 chats inclusos/mês",
+      "10 chats inclusos/mês",
       "Destaque em vagas",
       "Equipe favorita",
       "Selo de empresa verificada",
       "Histórico e avaliações",
       "Suporte por e-mail",
     ],
-    highlight: true,
+    highlight: false,
     cta: "Assinar agora",
   },
   {
     name: "Profissional",
     icon: Users,
-    price: "R$ 79",
+    price: "R$ 39",
     period: "/mês",
-    description: "Pra operações com alto volume.",
+    description: "30 chats inclusos. Pra operações com volume.",
     features: [
-      "Chats ilimitados",
+      "30 chats inclusos/mês",
       "Destaque em todas as vagas",
       "Equipe favorita ilimitada",
       "Relatórios e painel",
       "Suporte prioritário",
+    ],
+    highlight: true,
+    cta: "Assinar agora",
+  },
+  {
+    name: "Restaurante Ativo",
+    icon: Shield,
+    price: "R$ 79",
+    period: "/mês",
+    description: "100 chats inclusos. Pra alto volume de contratação.",
+    features: [
+      "100 chats inclusos/mês",
+      "Destaque máximo em vagas",
+      "Equipe favorita ilimitada",
+      "Relatórios avançados",
+      "Suporte VIP dedicado",
+      "Selo premium no perfil",
     ],
     highlight: false,
     cta: "Falar com vendas",
@@ -89,10 +106,10 @@ const retentionFeatures = [
 ];
 
 const revenueItems = [
-  { label: "Abrir chat", value: "R$ 10", detail: "por conversa" },
-  { label: "Destaque de vaga", value: "R$ 8", detail: "por vaga" },
-  { label: "Plano Básico", value: "R$ 39", detail: "por mês" },
-  { label: "Plano Pro", value: "R$ 79", detail: "por mês" },
+  { label: "Chat avulso", value: "R$ 4,90", detail: "por conversa" },
+  { label: "Plano Básico", value: "R$ 19", detail: "10 chats/mês" },
+  { label: "Plano Pro", value: "R$ 39", detail: "30 chats/mês" },
+  { label: "Restaurante Ativo", value: "R$ 79", detail: "100 chats/mês" },
 ];
 
 const Pricing = () => {
@@ -114,7 +131,7 @@ const Pricing = () => {
         </div>
 
         {/* Plans */}
-        <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto mb-20">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto mb-20">
           {plans.map((plan) => (
             <Card
               key={plan.name}
