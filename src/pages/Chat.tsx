@@ -97,7 +97,7 @@ const Chat = () => {
     }
 
     // Deduct balance and unlock
-    const newBalance = (profile.balance ?? 0) - (conversation.unlock_price ?? 10);
+    const newBalance = (profile.balance ?? 0) - (conversation.unlock_price ?? 4.90);
     const { error: balanceErr } = await supabase
       .from("users")
       .update({ balance: newBalance })
