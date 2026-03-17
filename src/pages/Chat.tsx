@@ -196,7 +196,7 @@ const Chat = () => {
               </div>
               <h3 className="font-bold text-foreground text-lg">Chat bloqueado</h3>
               <p className="text-sm text-muted-foreground">
-                Desbloqueie este chat por <span className="font-bold text-foreground">R$ {conversation.unlock_price ?? 10}</span> para conversar com {otherUser?.name}.
+                Desbloqueie este chat por <span className="font-bold text-foreground">R$ {(conversation.unlock_price ?? 4.90).toFixed(2).replace('.', ',')}</span> para conversar com {otherUser?.name}.
               </p>
               <Button
                 variant="hero"
