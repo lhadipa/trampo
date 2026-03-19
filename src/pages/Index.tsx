@@ -2,6 +2,7 @@ import Navbar from "@/components/landing/Navbar";
 import Hero from "@/components/landing/Hero";
 import Categories from "@/components/landing/Categories";
 import ValueProps from "@/components/landing/ValueProps";
+import Escrow from "@/components/landing/Escrow";
 import HowItWorks from "@/components/landing/HowItWorks";
 import Stats from "@/components/landing/Stats";
 import Pricing from "@/components/landing/Pricing";
@@ -18,6 +19,9 @@ const Index = () => {
       </div>
       <div id="vantagens">
         <ValueProps />
+      </div>
+      <div id="escrow">
+        <Escrow />
       </div>
       <Stats />
       <div id="como-funciona">
