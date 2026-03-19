@@ -3,10 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Briefcase, Users, CreditCard, LogOut, MessageSquare } from "lucide-react";
+import { Plus, Briefcase, Users, CreditCard, LogOut, MessageSquare, ShieldCheck, CheckCircle } from "lucide-react";
 import { toast } from "sonner";
 import logo from "@/assets/logo.png";
 
@@ -16,12 +16,12 @@ const DashboardCompany = () => {
   const [jobs, setJobs] = useState<any[]>([]);
   const [freelancers, setFreelancers] = useState<any[]>([]);
   const [payments, setPayments] = useState<any[]>([]);
+  const [escrows, setEscrows] = useState<any[]>([]);
   const [companyId, setCompanyId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!profile) return;
     const load = async () => {
-      // Get or create company
       let { data: company } = await supabase
         .from("companies")
         .select("*")
@@ -57,6 +57,12 @@ const DashboardCompany = () => {
         .select("*")
         .order("created_at", { ascending: false });
       setPayments(pData || []);
+
+      const { data: eData } = await supabase
+        .from("escrow")
+        .select("*, users!escrow_freelancer_user_id_fkey(name)")
+        .order("created_at", { ascending: false });
+      setEscrows(eData || []);
     };
     load();
   }, [profile]);
@@ -65,6 +71,30 @@ const DashboardCompany = () => {
     if (s === "open") return "bg-success/10 text-success";
     if (s === "closed") return "bg-muted text-muted-foreground";
     return "bg-accent/10 text-accent";
+  };
+
+  const escrowStatusLabel = (s: string) => {
+    if (s === "held") return { label: "Retido", class: "bg-accent/10 text-accent" };
+    if (s === "released") return { label: "Liberado", class: "bg-success/10 text-success" };
+    if (s === "refunded") return { label: "Reembolsado", class: "bg-destructive/10 text-destructive" };
+    return { label: s, class: "bg-muted text-muted-foreground" };
+  };
+
+  const handleReleaseEscrow = async (escrowId: string) => {
+    const { error } = await supabase
+      .from("escrow")
+      .update({ status: "released", released_at: new Date().toISOString() })
+      .eq("id", escrowId);
+
+    if (error) {
+      toast.error("Erro ao liberar pagamento");
+      return;
+    }
+
+    toast.success("Pagamento liberado para o freelancer! ✅");
+    setEscrows((prev) =>
+      prev.map((e) => (e.id === escrowId ? { ...e, status: "released", released_at: new Date().toISOString() } : e))
+    );
   };
 
   return (
@@ -95,9 +125,10 @@ const DashboardCompany = () => {
         </div>
 
         <Tabs defaultValue="vagas">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="vagas"><Briefcase className="h-4 w-4 mr-1" /> Vagas</TabsTrigger>
             <TabsTrigger value="freelancers"><Users className="h-4 w-4 mr-1" /> Freelancers</TabsTrigger>
+            <TabsTrigger value="escrow"><ShieldCheck className="h-4 w-4 mr-1" /> Escrow</TabsTrigger>
             <TabsTrigger value="pagamentos"><CreditCard className="h-4 w-4 mr-1" /> Pagar</TabsTrigger>
           </TabsList>
 
@@ -126,7 +157,6 @@ const DashboardCompany = () => {
             ) : freelancers.map((f: any) => {
               const startChat = async () => {
                 if (!companyId || !profile) return;
-                // Check if conversation exists
                 const { data: existing } = await supabase
                   .from("conversations")
                   .select("id")
@@ -158,6 +188,49 @@ const DashboardCompany = () => {
                     <Button variant="outline" size="sm" onClick={startChat}>
                       <MessageSquare className="h-4 w-4 mr-1" /> Chat
                     </Button>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </TabsContent>
+
+          <TabsContent value="escrow" className="space-y-3 mt-4">
+            <div className="flex items-center gap-2 bg-primary/5 border border-primary/20 rounded-lg p-3 mb-2">
+              <ShieldCheck className="h-5 w-5 text-primary shrink-0" />
+              <p className="text-sm text-foreground">
+                <strong>Escrow:</strong> O valor fica retido até você confirmar que o serviço foi concluído.
+              </p>
+            </div>
+            {escrows.length === 0 ? (
+              <Card><CardContent className="py-8 text-center text-muted-foreground">Nenhum escrow ativo.</CardContent></Card>
+            ) : escrows.map((e: any) => {
+              const st = escrowStatusLabel(e.status);
+              return (
+                <Card key={e.id} className="border-border">
+                  <CardContent className="pt-4 pb-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <div>
+                        <p className="font-medium text-foreground">R$ {Number(e.amount).toFixed(2)}</p>
+                        <p className="text-xs text-muted-foreground">
+                          Para: {e.users?.name || "Freelancer"} • {new Date(e.created_at).toLocaleDateString("pt-BR")}
+                        </p>
+                      </div>
+                      <Badge className={st.class}>{st.label}</Badge>
+                    </div>
+                    {e.status === "held" && (
+                      <Button
+                        size="sm"
+                        variant="hero"
+                        onClick={() => handleReleaseEscrow(e.id)}
+                      >
+                        <CheckCircle className="h-4 w-4 mr-1" /> Liberar pagamento
+                      </Button>
+                    )}
+                    {e.released_at && (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Liberado em {new Date(e.released_at).toLocaleDateString("pt-BR")}
+                      </p>
+                    )}
                   </CardContent>
                 </Card>
               );

@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Briefcase, History, Wallet, CheckCircle, LogOut, MessageSquare } from "lucide-react";
+import { Briefcase, History, Wallet, CheckCircle, LogOut, MessageSquare, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import logo from "@/assets/logo.png";
 
@@ -15,12 +15,12 @@ const DashboardFreelancer = () => {
   const navigate = useNavigate();
   const [jobs, setJobs] = useState<any[]>([]);
   const [myApplications, setMyApplications] = useState<any[]>([]);
+  const [escrows, setEscrows] = useState<any[]>([]);
   const [freelancerId, setFreelancerId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!profile) return;
     const load = async () => {
-      // Get or create freelancer
       let { data: freelancer } = await supabase
         .from("freelancers")
         .select("*")
@@ -46,13 +46,19 @@ const DashboardFreelancer = () => {
         setMyApplications(apps || []);
       }
 
-      // Open jobs
       const { data: openJobs } = await supabase
         .from("jobs")
         .select("*, companies(name)")
         .eq("status", "open")
         .order("created_at", { ascending: false });
       setJobs(openJobs || []);
+
+      // Load escrows for this freelancer
+      const { data: eData } = await supabase
+        .from("escrow")
+        .select("*, users!escrow_company_user_id_fkey(name)")
+        .order("created_at", { ascending: false });
+      setEscrows(eData || []);
     };
     load();
   }, [profile]);
@@ -66,7 +72,6 @@ const DashboardFreelancer = () => {
       toast.error("Erro ao se candidatar: " + error.message);
     } else {
       toast.success("Candidatura enviada! ✅");
-      // Refresh
       const { data: apps } = await supabase
         .from("applications")
         .select("*, jobs(*)")
@@ -77,6 +82,13 @@ const DashboardFreelancer = () => {
   };
 
   const appliedJobIds = myApplications.map((a: any) => a.job_id);
+
+  const escrowStatusLabel = (s: string) => {
+    if (s === "held") return { label: "Aguardando liberação", class: "bg-accent/10 text-accent" };
+    if (s === "released") return { label: "Liberado ✅", class: "bg-success/10 text-success" };
+    if (s === "refunded") return { label: "Reembolsado", class: "bg-destructive/10 text-destructive" };
+    return { label: s, class: "bg-muted text-muted-foreground" };
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -107,9 +119,10 @@ const DashboardFreelancer = () => {
         </div>
 
         <Tabs defaultValue="vagas">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="vagas"><Briefcase className="h-4 w-4 mr-1" /> Vagas</TabsTrigger>
             <TabsTrigger value="historico"><History className="h-4 w-4 mr-1" /> Histórico</TabsTrigger>
+            <TabsTrigger value="escrow"><ShieldCheck className="h-4 w-4 mr-1" /> Escrow</TabsTrigger>
             <TabsTrigger value="saldo"><Wallet className="h-4 w-4 mr-1" /> Saldo</TabsTrigger>
           </TabsList>
 
@@ -156,6 +169,33 @@ const DashboardFreelancer = () => {
                 </CardContent>
               </Card>
             ))}
+          </TabsContent>
+
+          <TabsContent value="escrow" className="space-y-3 mt-4">
+            <div className="flex items-center gap-2 bg-primary/5 border border-primary/20 rounded-lg p-3 mb-2">
+              <ShieldCheck className="h-5 w-5 text-primary shrink-0" />
+              <p className="text-sm text-foreground">
+                <strong>Escrow:</strong> O pagamento fica retido até a empresa confirmar o serviço. Depois é liberado para você.
+              </p>
+            </div>
+            {escrows.length === 0 ? (
+              <Card><CardContent className="py-8 text-center text-muted-foreground">Nenhum escrow encontrado.</CardContent></Card>
+            ) : escrows.map((e: any) => {
+              const st = escrowStatusLabel(e.status);
+              return (
+                <Card key={e.id} className="border-border">
+                  <CardContent className="pt-4 pb-4 flex items-center justify-between">
+                    <div>
+                      <p className="font-medium text-foreground">R$ {Number(e.amount).toFixed(2)}</p>
+                      <p className="text-xs text-muted-foreground">
+                        De: {e.users?.name || "Empresa"} • {new Date(e.created_at).toLocaleDateString("pt-BR")}
+                      </p>
+                    </div>
+                    <Badge className={st.class}>{st.label}</Badge>
+                  </CardContent>
+                </Card>
+              );
+            })}
           </TabsContent>
 
           <TabsContent value="saldo" className="mt-4">
