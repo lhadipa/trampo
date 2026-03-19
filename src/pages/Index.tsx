@@ -20,6 +20,9 @@ const Index = () => {
       <div id="vantagens">
         <ValueProps />
       </div>
+      <div id="escrow">
+        <Escrow />
+      </div>
       <Stats />
       <div id="como-funciona">
         <HowItWorks />
