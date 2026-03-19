@@ -124,6 +124,61 @@ export type Database = {
           },
         ]
       }
+      escrow: {
+        Row: {
+          amount: number
+          company_user_id: string
+          created_at: string
+          freelancer_user_id: string
+          id: string
+          job_id: string | null
+          released_at: string | null
+          status: string
+        }
+        Insert: {
+          amount: number
+          company_user_id: string
+          created_at?: string
+          freelancer_user_id: string
+          id?: string
+          job_id?: string | null
+          released_at?: string | null
+          status?: string
+        }
+        Update: {
+          amount?: number
+          company_user_id?: string
+          created_at?: string
+          freelancer_user_id?: string
+          id?: string
+          job_id?: string | null
+          released_at?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "escrow_company_user_id_fkey"
+            columns: ["company_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "escrow_freelancer_user_id_fkey"
+            columns: ["freelancer_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "escrow_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       freelancers: {
         Row: {
           category: string
