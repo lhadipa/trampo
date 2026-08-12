@@ -5,10 +5,16 @@ import type { Database } from './types';
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
+export const isSupabaseConfigured = Boolean(SUPABASE_URL && SUPABASE_PUBLISHABLE_KEY);
+
+// Keep public pages renderable when backend variables are not available yet.
+const clientUrl = SUPABASE_URL || 'https://supabase-not-configured.invalid';
+const clientKey = SUPABASE_PUBLISHABLE_KEY || 'supabase-not-configured';
+
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 
-export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+export const supabase = createClient<Database>(clientUrl, clientKey, {
   auth: {
     storage: localStorage,
     persistSession: true,
