@@ -42,11 +42,11 @@ const Chat = () => {
       // Load other user
       const otherUserId = conv.company_user_id === profile.id ? conv.freelancer_user_id : conv.company_user_id;
       const { data: user } = await supabase
-        .from("users")
-        .select("id, name, type")
-        .eq("id", otherUserId)
+        .from("public_profiles")
+        .select("user_id, name, type")
+        .eq("user_id", otherUserId)
         .single();
-      setOtherUser(user);
+      setOtherUser(user ? { id: user.user_id, name: user.name, type: user.type } : null);
 
       // Load messages
       const { data: msgs } = await supabase
