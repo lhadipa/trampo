@@ -32,9 +32,9 @@ const Conversations = () => {
         data.map(async (conv: any) => {
           const otherUserId = conv.company_user_id === profile.id ? conv.freelancer_user_id : conv.company_user_id;
           const { data: user } = await supabase
-            .from("users")
+            .from("public_profiles")
             .select("name, type")
-            .eq("id", otherUserId)
+            .eq("user_id", otherUserId)
             .single();
 
           // Get last message
