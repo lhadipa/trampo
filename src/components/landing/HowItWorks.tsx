@@ -1,57 +1,58 @@
-import { Search, UserCheck, Star, RefreshCw } from "lucide-react";
+import { MessageCircle, ShieldCheck, UserPlus } from "lucide-react";
 
 const steps = [
   {
-    icon: Search,
-    step: "01",
-    title: "Encontre trabalhadores confiáveis",
-    description: "Veja profissionais disponíveis perto de você, com avaliações e histórico de trabalhos.",
+    icon: UserPlus,
+    title: "Crie sua conta grátis",
+    description:
+      "Seja para trabalhar ou contratar, o cadastro é simples e leva menos de 2 minutos.",
   },
   {
-    icon: UserCheck,
-    step: "02",
-    title: "Contrate rapidamente",
-    description: "Convide trabalhadores para o serviço e organize sua equipe direto pelo aplicativo.",
+    icon: MessageCircle,
+    title: "Combine sem burocracia",
+    description:
+      "Candidata-se ou receba candidaturas, converse e alinhe horário e valor com tranquilidade.",
   },
   {
-    icon: Star,
-    step: "03",
-    title: "Salve seus favoritos",
-    description: "Guarde os melhores profissionais na sua lista para contratar novamente quando precisar.",
-  },
-  {
-    icon: RefreshCw,
-    step: "04",
-    title: "Convide novamente quando quiser",
-    description: "Envie convites para sua equipe favorita com apenas um clique.",
+    icon: ShieldCheck,
+    title: "Trabalho feito, confiança construída",
+    description:
+      "Conclua, avalie e construa uma boa reputação na sua região a cada trampo.",
   },
 ];
 
 const HowItWorks = () => {
   return (
-    <section className="py-20 bg-card">
-      <div className="container">
-        <div className="text-center max-w-2xl mx-auto mb-16">
-          <span className="text-sm font-semibold text-primary uppercase tracking-wider">
+    <section id="como-funciona" className="bg-white/50 py-20 lg:py-28">
+      <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-2xl text-center">
+          <p className="text-sm font-semibold uppercase tracking-widest text-primary">
             Como funciona
-          </span>
-          <h2 className="text-3xl sm:text-4xl font-bold mt-3 text-foreground">
-            Como funciona contratar pelo app
+          </p>
+          <h2 className="mt-3 text-balance text-3xl font-bold tracking-tight sm:text-4xl">
+            Simples do começo ao fim
           </h2>
+          <p className="mt-4 text-muted-foreground">
+            Três passos, sem complicação. Qualquer pessoa consegue.
+          </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          {steps.map((step, i) => (
-            <div key={step.step} className="relative text-center animate-fade-up" style={{ animationDelay: `${i * 0.12}s` }}>
-              {i < steps.length - 1 && (
-                <div className="hidden md:block absolute top-8 left-[60%] w-[80%] h-px border-t-2 border-dashed border-primary/20" />
-              )}
-              <div className="w-16 h-16 mx-auto rounded-full gradient-hero flex items-center justify-center mb-4 shadow-warm">
-                <step.icon className="h-7 w-7 text-secondary-foreground" />
-              </div>
-              <span className="text-xs font-bold text-primary">{step.step}</span>
-              <h3 className="text-lg font-bold text-foreground mt-1 mb-2">{step.title}</h3>
-              <p className="text-muted-foreground text-sm">{step.description}</p>
+        <div className="mt-16 grid gap-8 md:grid-cols-3">
+          {steps.map((step, index) => (
+            <div
+              key={step.title}
+              className="relative flex flex-col items-center rounded-3xl border border-border/70 bg-white p-8 text-center shadow-sm"
+            >
+              <span className="absolute -top-3 rounded-full bg-primary px-2.5 py-0.5 text-xs font-bold text-primary-foreground shadow-sm">
+                Passo {index + 1}
+              </span>
+              <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                <step.icon className="h-7 w-7" aria-hidden="true" />
+              </span>
+              <h3 className="mt-5 text-lg font-semibold">{step.title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                {step.description}
+              </p>
             </div>
           ))}
         </div>

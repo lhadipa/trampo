@@ -1,27 +1,43 @@
-import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+
+import { Button } from "@/components/ui/button";
 
 const CTA = () => {
-  return (
-    <section className="py-20 bg-background">
-      <div className="container">
-        <div className="relative overflow-hidden rounded-2xl bg-secondary p-10 sm:p-16 text-center">
-          {/* Decorative circles */}
-          <div className="absolute -top-20 -right-20 w-64 h-64 rounded-full bg-primary/10 blur-3xl" />
-          <div className="absolute -bottom-20 -left-20 w-64 h-64 rounded-full bg-accent/10 blur-3xl" />
+  const navigate = useNavigate();
 
-          <div className="relative z-10 max-w-2xl mx-auto space-y-6">
-            <h2 className="text-3xl sm:text-4xl font-bold text-secondary-foreground">
-              Pronto pra começar?
+  return (
+    <section className="py-20 lg:pb-32 lg:pt-24">
+      <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="relative overflow-hidden rounded-[2rem] border border-primary/20 bg-primary/5 px-6 py-16 text-center sm:px-12 lg:py-20">
+          <div
+            className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_50%_60%_at_50%_100%,rgba(232,93,4,0.12),transparent_70%)]"
+            aria-hidden="true"
+          />
+          <div className="relative mx-auto max-w-2xl">
+            <h2 className="text-balance text-3xl font-bold tracking-tight sm:text-4xl">
+              Pronto para dar o primeiro passo?
             </h2>
-            <p className="text-secondary-foreground/70 text-lg">
-              Seja você um profissional buscando renda extra ou uma empresa que precisa de
-              reforço, o Trampô conecta vocês em minutos.
+            <p className="mt-4 text-pretty text-muted-foreground">
+              Cadastre-se gratuitamente e comece hoje. Do outro lado, tem
+              alguém esperando por você.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button variant="hero" size="lg" className="text-base px-8 py-6">
-                Criar minha conta grátis
-                <ArrowRight className="ml-2 h-5 w-5" />
+            <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:justify-center">
+              <Button
+                size="lg"
+                className="h-12 rounded-full px-8 text-base"
+                onClick={() => navigate("/auth")}
+              >
+                Criar conta gratuita
+                <ArrowRight className="h-5 w-5" aria-hidden="true" />
+              </Button>
+              <Button
+                size="lg"
+                variant="outline"
+                className="h-12 rounded-full border-border bg-white/70 px-8 text-base shadow-sm backdrop-blur"
+                onClick={() => navigate("/auth")}
+              >
+                Explorar vagas
               </Button>
             </div>
           </div>
