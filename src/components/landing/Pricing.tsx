@@ -1,4 +1,4 @@
-import { ArrowRight, Check, Crown, Sparkles } from "lucide-react";
+import { ArrowRight, Check, Crown, Sparkles, Star } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
@@ -7,6 +7,7 @@ const plans = [
   {
     id: "free",
     name: "Grátis",
+    audience: "Para contratantes e trabalhadores",
     description:
       "Para quem está começando. Publique vagas e candidate-se sem pagar nada.",
     price: "Grátis",
@@ -14,8 +15,8 @@ const plans = [
     featured: false,
     icon: Sparkles,
     features: [
-      "Até 3 vagas abertas ao mesmo tempo",
-      "Até 5 candidaturas ativas",
+      "4 vagas publicadas por mês",
+      "5 candidaturas por semana",
       "Chat com candidatos e contratantes",
       "Avaliações e reputação",
     ],
@@ -24,19 +25,38 @@ const plans = [
   {
     id: "pro",
     name: "Pro",
+    audience: "Para contratantes",
     description:
-      "Para quem precisa de mais volume. Mais vagas abertas e mais candidaturas ativas.",
+      "Publique mais vagas por mês e ganhe destaque na listagem.",
     price: "R$ 19,90",
     period: "/mês",
     featured: true,
     icon: Crown,
     features: [
-      "Até 15 vagas abertas ao mesmo tempo",
-      "Até 20 candidaturas ativas",
+      "20 vagas publicadas por mês",
+      "Vagas em destaque na listagem",
       "Chat com candidatos e contratantes",
       "Avaliações e reputação",
     ],
     cta: "Assinar o Pro",
+  },
+  {
+    id: "premium",
+    name: "Premium",
+    audience: "Para trabalhadores",
+    description:
+      "Candidate-se a mais vagas a cada semana e mostre seu selo Premium.",
+    price: "R$ 9,90",
+    period: "/mês",
+    featured: false,
+    icon: Star,
+    features: [
+      "20 candidaturas por semana",
+      "Selo Premium no perfil",
+      "Chat com candidatos e contratantes",
+      "Avaliações e reputação",
+    ],
+    cta: "Assinar o Premium",
   },
 ];
 
@@ -55,12 +75,12 @@ const Pricing = () => {
             <span className="text-primary">com espaço para crescer</span>
           </h2>
           <p className="mt-4 text-muted-foreground">
-            Comece grátis e assine o Pro quando precisar de mais vagas abertas
-            ou mais candidaturas ativas.
+            Contratantes têm cotas de vagas por mês e trabalhadores de
+            candidaturas por semana.
           </p>
         </div>
 
-        <div className="mx-auto mt-16 grid max-w-4xl gap-8 lg:grid-cols-2">
+        <div className="mx-auto mt-16 grid max-w-6xl gap-8 lg:grid-cols-3">
           {plans.map((plan) => (
             <div
               key={plan.id}
@@ -84,7 +104,12 @@ const Pricing = () => {
                 >
                   <plan.icon className="h-5 w-5" aria-hidden="true" />
                 </span>
-                <h3 className="text-lg font-semibold">{plan.name}</h3>
+                <div>
+                  <h3 className="text-lg font-semibold">{plan.name}</h3>
+                  <p className="text-xs text-muted-foreground">
+                    {plan.audience}
+                  </p>
+                </div>
               </div>
 
               <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
