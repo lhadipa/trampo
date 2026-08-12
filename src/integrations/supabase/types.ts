@@ -77,13 +77,6 @@ export type Database = {
             foreignKeyName: "companies_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: "conversation_partners"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "companies_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
           },
@@ -119,21 +112,7 @@ export type Database = {
             foreignKeyName: "conversations_company_user_id_fkey"
             columns: ["company_user_id"]
             isOneToOne: false
-            referencedRelation: "conversation_partners"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "conversations_company_user_id_fkey"
-            columns: ["company_user_id"]
-            isOneToOne: false
             referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "conversations_freelancer_user_id_fkey"
-            columns: ["freelancer_user_id"]
-            isOneToOne: false
-            referencedRelation: "conversation_partners"
             referencedColumns: ["id"]
           },
           {
@@ -181,21 +160,7 @@ export type Database = {
             foreignKeyName: "escrow_company_user_id_fkey"
             columns: ["company_user_id"]
             isOneToOne: false
-            referencedRelation: "conversation_partners"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "escrow_company_user_id_fkey"
-            columns: ["company_user_id"]
-            isOneToOne: false
             referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "escrow_freelancer_user_id_fkey"
-            columns: ["freelancer_user_id"]
-            isOneToOne: false
-            referencedRelation: "conversation_partners"
             referencedColumns: ["id"]
           },
           {
@@ -234,13 +199,6 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "freelancers_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "conversation_partners"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "freelancers_user_id_fkey"
             columns: ["user_id"]
@@ -331,13 +289,6 @@ export type Database = {
             foreignKeyName: "messages_sender_id_fkey"
             columns: ["sender_id"]
             isOneToOne: false
-            referencedRelation: "conversation_partners"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "messages_sender_id_fkey"
-            columns: ["sender_id"]
-            isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
           },
@@ -376,13 +327,6 @@ export type Database = {
             foreignKeyName: "payments_from_user_id_fkey"
             columns: ["from_user_id"]
             isOneToOne: false
-            referencedRelation: "conversation_partners"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "payments_from_user_id_fkey"
-            columns: ["from_user_id"]
-            isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
           },
@@ -397,13 +341,38 @@ export type Database = {
             foreignKeyName: "payments_to_user_id_fkey"
             columns: ["to_user_id"]
             isOneToOne: false
-            referencedRelation: "conversation_partners"
+            referencedRelation: "users"
             referencedColumns: ["id"]
           },
+        ]
+      }
+      public_profiles: {
+        Row: {
+          created_at: string
+          name: string
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          name: string
+          type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          name?: string
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
           {
-            foreignKeyName: "payments_to_user_id_fkey"
-            columns: ["to_user_id"]
-            isOneToOne: false
+            foreignKeyName: "public_profiles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
             referencedRelation: "users"
             referencedColumns: ["id"]
           },
@@ -439,21 +408,7 @@ export type Database = {
             foreignKeyName: "reviews_from_user_fkey"
             columns: ["from_user"]
             isOneToOne: false
-            referencedRelation: "conversation_partners"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "reviews_from_user_fkey"
-            columns: ["from_user"]
-            isOneToOne: false
             referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "reviews_to_user_fkey"
-            columns: ["to_user"]
-            isOneToOne: false
-            referencedRelation: "conversation_partners"
             referencedColumns: ["id"]
           },
           {
@@ -518,24 +473,7 @@ export type Database = {
       }
     }
     Views: {
-      conversation_partners: {
-        Row: {
-          id: string | null
-          name: string | null
-          type: string | null
-        }
-        Insert: {
-          id?: string | null
-          name?: string | null
-          type?: string | null
-        }
-        Update: {
-          id?: string | null
-          name?: string | null
-          type?: string | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
       get_conversation_partner_ids: {
