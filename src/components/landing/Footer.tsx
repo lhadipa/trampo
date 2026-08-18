@@ -71,8 +71,18 @@ const Footer = () => {
             © {new Date().getFullYear()} Trampô. Todos os direitos reservados.
           </p>
           <div className="flex items-center gap-6">
-            <span>Termos de uso</span>
-            <span>Privacidade</span>
+            <button
+              onClick={() => navigate("/termos")}
+              className="text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Termos de uso & Autonomia
+            </button>
+            <button
+              onClick={() => navigate("/termos")}
+              className="text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Privacidade & Segurança
+            </button>
           </div>
         </div>
       </div>

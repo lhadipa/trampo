@@ -15,6 +15,7 @@ import Auth from "./pages/Auth.tsx";
 import Dashboard from "./pages/Dashboard.tsx";
 import Chat from "./pages/Chat.tsx";
 import Conversations from "./pages/Conversations.tsx";
+import Terms from "./pages/Terms.tsx";
 
 const queryClient = new QueryClient();
 
@@ -28,6 +29,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/termos" element={<Terms />} />
             <Route path="/painel" element={<Dashboard />} />
             <Route path="/trabalhador/:id" element={<WorkerProfile />} />
             <Route path="/empresa/:id" element={<CompanyProfile />} />
