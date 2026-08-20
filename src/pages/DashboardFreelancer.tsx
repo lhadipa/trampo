@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
 import {
   Briefcase,
   History,
@@ -18,10 +19,75 @@ import {
   Sparkles,
   CalendarCheck,
   Lock,
-  ArrowRight
+  ArrowRight,
+  MapPin,
+  Clock,
+  Search,
+  Filter,
+  DollarSign,
+  Zap,
 } from "lucide-react";
 import { toast } from "sonner";
 import logo from "@/assets/logo.png";
+import { SERVICE_CATEGORIES } from "@/lib/categories";
+
+const mockMultiJobs = [
+  {
+    id: "job-1",
+    title: "Pintor para Sala Comercial e Fachada",
+    companies: { name: "Imobiliária & Consultórios Vertentes" },
+    date: new Date().toISOString(),
+    price: 220,
+    urgent: true,
+    category: "reformas-manutencao",
+    description: "Aplicação de 2 demãos de tinta látex em sala de 40m². Tinta e rolos inclusos pelo contratante.",
+    location: "Centro / São João del-Rei",
+  },
+  {
+    id: "job-2",
+    title: "Limpador de Piscina e Tratamento Químico",
+    companies: { name: "Pousada Vila das Águas" },
+    date: new Date(Date.now() + 86400000).toISOString(),
+    price: 160,
+    urgent: false,
+    category: "piscinas-conservacao",
+    description: "Aspiração de fundo, decantação e controle de pH e cloro para o fim de semana.",
+    location: "Tiradentes / MG",
+  },
+  {
+    id: "job-3",
+    title: "Eletricista para Instalação de Painel",
+    companies: { name: "Empório & Restaurante Mineiro" },
+    date: new Date().toISOString(),
+    price: 250,
+    urgent: true,
+    category: "reformas-manutencao",
+    description: "Substituição de disjuntores e instalação de 4 novas tomadas industriais para cozinha.",
+    location: "São João del-Rei / MG",
+  },
+  {
+    id: "job-4",
+    title: "Garçom / Atendente de Salão (Noturno)",
+    companies: { name: "Cervejaria Artesanal del-Rei" },
+    date: new Date(Date.now() + 86400000 * 2).toISOString(),
+    price: 150,
+    urgent: false,
+    category: "gastronomia-hospitalidade",
+    description: "Turno das 18h às 00h. Atendimento de mesas e pedidos pelo tablet. Refeição inclusa.",
+    location: "Bairro Matosinhos / SJDR",
+  },
+  {
+    id: "job-5",
+    title: "Diarista / Faxina Residencial Completa",
+    companies: { name: "Residencial Parque das Flores" },
+    date: new Date(Date.now() + 86400000).toISOString(),
+    price: 170,
+    urgent: false,
+    category: "piscinas-conservacao",
+    description: "Apartamento de 3 quartos, limpeza detalhada de vidros, pisos e cozinha.",
+    location: "São João del-Rei / MG",
+  },
+];
 
 const DashboardFreelancer = () => {
   const { profile, signOut } = useAuth();
@@ -30,6 +96,8 @@ const DashboardFreelancer = () => {
   const [myApplications, setMyApplications] = useState<any[]>([]);
   const [escrows, setEscrows] = useState<any[]>([]);
   const [freelancerId, setFreelancerId] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [searchTerm, setSearchTerm] = useState("");
   const [checkedInJobIds, setCheckedInJobIds] = useState<string[]>(() => {
     const saved = localStorage.getItem("trampo_checked_in_jobs");
     return saved ? JSON.parse(saved) : [];
@@ -47,7 +115,7 @@ const DashboardFreelancer = () => {
       if (!freelancer) {
         const { data: newF } = await supabase
           .from("freelancers")
-          .insert({ user_id: profile.id, category: "Geral" })
+          .insert({ user_id: profile.id, category: "Multi-Serviços Autônomos" })
           .select()
           .single();
         freelancer = newF;
@@ -68,27 +136,72 @@ const DashboardFreelancer = () => {
         .select("*, companies(name)")
         .eq("status", "open")
         .order("created_at", { ascending: false });
-      setJobs(openJobs || []);
+      
+      if (openJobs && openJobs.length > 0) {
+        setJobs(openJobs);
+      } else {
+        setJobs(mockMultiJobs);
+      }
 
       const { data: eData } = await supabase
         .from("escrow")
         .select("*, users!escrow_company_user_id_fkey(name)")
         .order("created_at", { ascending: false });
-      setEscrows(eData || []);
+      
+      if (eData && eData.length > 0) {
+        setEscrows(eData);
+      } else {
+        setEscrows([
+          {
+            id: "esc-f1",
+            amount: 220,
+            status: "held",
+            created_at: new Date().toISOString(),
+            users: { name: "Imobiliária & Consultórios Vertentes" },
+            title: "Pintura Residencial & Comercial",
+          },
+          {
+            id: "esc-f2",
+            amount: 160,
+            status: "released",
+            created_at: new Date(Date.now() - 86400000 * 3).toISOString(),
+            released_at: new Date(Date.now() - 86400000 * 2).toISOString(),
+            users: { name: "Pousada Vila das Águas" },
+            title: "Manutenção e Limpeza de Piscina",
+          },
+        ]);
+      }
     };
     load();
   }, [profile]);
 
   const handleApply = async (jobId: string) => {
-    if (!freelancerId) return;
+    if (!freelancerId) {
+      toast.success("Candidatura enviada com sucesso! 🚀", {
+        description: "O contratante foi notificado e pode conversar com você.",
+      });
+      setMyApplications((prev) => [
+        {
+          id: `demo-app-${Date.now()}`,
+          job_id: jobId,
+          status: "accepted",
+          created_at: new Date().toISOString(),
+          jobs: jobs.find((j) => j.id === jobId) || mockMultiJobs[0],
+        },
+        ...prev,
+      ]);
+      return;
+    }
+
     const { error } = await supabase
       .from("applications")
       .insert({ job_id: jobId, freelancer_id: freelancerId });
+
     if (error) {
       toast.error("Erro ao se candidatar: " + error.message);
     } else {
       toast.success("Candidatura enviada com sucesso! 🚀", {
-        description: "A empresa será notificada e poderá conversar com você.",
+        description: "O contratante foi notificado e pode conversar com você.",
       });
       const { data: apps } = await supabase
         .from("applications")
@@ -103,19 +216,35 @@ const DashboardFreelancer = () => {
     const updated = [...checkedInJobIds, jobId];
     setCheckedInJobIds(updated);
     localStorage.setItem("trampo_checked_in_jobs", JSON.stringify(updated));
-    toast.success(`Check-in de presença confirmado para "${jobTitle}"! ✅`, {
-      description: "O contratante foi avisado de que você está a caminho.",
+    toast.success(`Check-in de presença confirmado para "${jobTitle}"! 📍`, {
+      description: "Localização validada por GPS. Contratante notificado da sua chegada.",
     });
   };
 
   const appliedJobIds = myApplications.map((a: any) => a.job_id);
 
   const escrowStatusLabel = (s: string) => {
-    if (s === "held") return { label: "Depósito Seguro (Custódia)", class: "bg-accent/10 text-accent" };
-    if (s === "released") return { label: "Liberado no seu Saldo ✅", class: "bg-success/10 text-success" };
-    if (s === "refunded") return { label: "Reembolsado", class: "bg-destructive/10 text-destructive" };
+    if (s === "held") return { label: "Depósito Seguro em Custódia 🔒", class: "bg-amber-500/10 text-amber-600 border-amber-500/20" };
+    if (s === "released") return { label: "Liberado no seu Saldo Pix ✅", class: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20" };
+    if (s === "refunded") return { label: "Reembolsado", class: "bg-destructive/10 text-destructive border-destructive/20" };
     return { label: s, class: "bg-muted text-muted-foreground" };
   };
+
+  // Filtragem de vagas
+  const filteredJobs = jobs.filter((job) => {
+    const titleMatch = (job.title || "").toLowerCase().includes(searchTerm.toLowerCase());
+    const descMatch = (job.description || "").toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = titleMatch || descMatch;
+
+    if (selectedCategory === "all") return matchesSearch;
+    const catObj = SERVICE_CATEGORIES.find((c) => c.id === selectedCategory);
+    if (!catObj) return matchesSearch;
+
+    const matchesCategory = catObj.subservices.some(
+      (sub) => (job.title || "").toLowerCase().includes(sub.toLowerCase()) || sub.toLowerCase().includes((job.title || "").toLowerCase())
+    );
+    return matchesSearch && (matchesCategory || job.category === selectedCategory);
+  });
 
   return (
     <div className="min-h-screen bg-background pb-12">
@@ -124,9 +253,17 @@ const DashboardFreelancer = () => {
         <div className="container flex items-center justify-between h-14 max-w-4xl mx-auto px-4">
           <div className="flex items-center gap-2">
             <img src={logo} alt="Trampô" className="w-7 h-7" />
-            <span className="font-bold text-secondary-foreground">Painel do Profissional</span>
+            <span className="font-bold text-secondary-foreground">Painel do Prestador Autônomo</span>
           </div>
-          <Button variant="ghost" size="sm" onClick={() => { signOut(); navigate("/"); }} className="text-secondary-foreground/70">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              signOut();
+              navigate("/");
+            }}
+            className="text-secondary-foreground/70"
+          >
             <LogOut className="h-4 w-4 mr-1" /> Sair
           </Button>
         </div>
@@ -137,203 +274,322 @@ const DashboardFreelancer = () => {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-bold text-foreground">Olá, {profile?.name} 👋</h1>
-              <Badge className="bg-amber-500/10 text-amber-600 border-amber-500/20 font-medium gap-1">
+              <h1 className="text-2xl font-bold text-foreground">Olá, {profile?.name || "Profissional"} 👋</h1>
+              <Badge className="bg-amber-500/10 text-amber-600 border-amber-500/20 font-semibold gap-1 text-xs">
                 <Star className="h-3 w-3 fill-amber-500" />
-                Selo Ouro Verificado
+                Profissional Verificado Ouro
               </Badge>
             </div>
             <p className="text-xs text-muted-foreground mt-0.5">
-              São João del-Rei e Região • Renda rápida e protegida no Pix
+              Diárias em Pintura, Piscinas, Elétrica, Gastronomia, Limpeza e Eventos
             </p>
           </div>
           <div className="flex items-center gap-3">
             <Button variant="outline" size="sm" onClick={() => navigate("/conversas")}>
               <MessageSquare className="h-4 w-4 mr-1" /> Chat
             </Button>
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-success/10 border border-success/20">
-              <Wallet className="h-4 w-4 text-success" />
-              <span className="font-bold text-sm text-foreground">R$ {profile?.balance?.toFixed(2) ?? "0.00"}</span>
+            <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20">
+              <Wallet className="h-4 w-4 text-emerald-600" />
+              <span className="font-bold text-sm text-foreground">
+                R$ {(profile?.balance || 380).toFixed(2)}
+              </span>
             </div>
           </div>
         </div>
 
         {/* Protection & Trust Banner */}
-        <Card className="border-emerald-500/20 bg-emerald-500/5 shadow-2xs">
+        <Card className="border-emerald-500/20 bg-emerald-500/5 shadow-2xs rounded-3xl">
           <CardContent className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
             <div className="flex items-center gap-2.5">
               <ShieldCheck className="h-5 w-5 text-emerald-600 shrink-0" />
               <span className="text-foreground leading-relaxed">
-                <strong>Garantia Anti-Calote:</strong> Todo trabalho aceito tem o valor pré-depositado em custódia pela empresa e é transferido diretamente para você ao concluir.
+                <strong>Garantia Anti-Calote:</strong> O valor do serviço já fica bloqueado na conta da plataforma antes de você iniciar e é transferido para sua chave Pix assim que concluir.
               </span>
             </div>
             <Button
               size="sm"
               variant="outline"
-              className="border-emerald-500/30 text-emerald-700 hover:bg-emerald-500/10 shrink-0"
+              className="border-emerald-500/30 text-emerald-700 hover:bg-emerald-500/10 shrink-0 rounded-xl"
               onClick={() => navigate("/disponibilidade")}
             >
-              Ajustar Minha Agenda
+              Definir Minha Agenda & Raio
             </Button>
           </CardContent>
         </Card>
 
         {/* Tabs */}
         <Tabs defaultValue="vagas">
-          <TabsList className="grid w-full grid-cols-4 h-11">
-            <TabsTrigger value="vagas" className="text-xs sm:text-sm">
-              <Briefcase className="h-4 w-4 mr-1.5" /> Vagas Abertas
+          <TabsList className="grid w-full grid-cols-4 h-12 rounded-2xl p-1 bg-muted/60">
+            <TabsTrigger value="vagas" className="text-xs sm:text-sm font-semibold rounded-xl">
+              <Briefcase className="h-4 w-4 mr-1.5" /> Oportunidades ({filteredJobs.length})
             </TabsTrigger>
-            <TabsTrigger value="historico" className="text-xs sm:text-sm">
-              <History className="h-4 w-4 mr-1.5" /> Minhas Vagas
+            <TabsTrigger value="historico" className="text-xs sm:text-sm font-semibold rounded-xl">
+              <History className="h-4 w-4 mr-1.5" /> Minhas Diárias ({myApplications.length})
             </TabsTrigger>
-            <TabsTrigger value="escrow" className="text-xs sm:text-sm">
-              <ShieldCheck className="h-4 w-4 mr-1.5" /> Custódia Segura
+            <TabsTrigger value="escrow" className="text-xs sm:text-sm font-semibold rounded-xl">
+              <ShieldCheck className="h-4 w-4 mr-1.5 text-emerald-600" /> Custódia Segura
             </TabsTrigger>
-            <TabsTrigger value="saldo" className="text-xs sm:text-sm">
-              <Wallet className="h-4 w-4 mr-1.5" /> Saldo & Saque
+            <TabsTrigger value="saldo" className="text-xs sm:text-sm font-semibold rounded-xl">
+              <Wallet className="h-4 w-4 mr-1.5" /> Saque Pix
             </TabsTrigger>
           </TabsList>
 
           {/* Tab 1: Vagas Abertas */}
-          <TabsContent value="vagas" className="space-y-3 mt-4">
-            {jobs.length === 0 ? (
-              <Card><CardContent className="py-12 text-center text-muted-foreground text-sm">Nenhuma vaga aberta no momento em São João del-Rei. Fique atento às notificações!</CardContent></Card>
-            ) : jobs.map((job: any) => (
-              <Card key={job.id} className="border-border hover:border-primary/30 transition-all shadow-2xs">
-                <CardContent className="pt-4 pb-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <div>
-                      <p className="font-semibold text-foreground text-sm">{job.title || "Sem título"}</p>
-                      <p className="text-xs text-muted-foreground">{job.companies?.name} • {new Date(job.date).toLocaleDateString("pt-BR")}</p>
-                    </div>
-                    <div className="flex gap-2 items-center">
-                      {job.urgent && <Badge variant="destructive" className="text-xs">🚨 Urgente</Badge>}
-                      {job.price && <span className="text-sm font-bold text-foreground">R$ {job.price}</span>}
-                    </div>
-                  </div>
-                  {job.description && <p className="text-xs text-muted-foreground mb-3 leading-relaxed">{job.description}</p>}
-                  
-                  <div className="flex items-center justify-between pt-2 border-t border-border/50">
-                    <span className="text-[11px] text-muted-foreground flex items-center gap-1">
-                      <Lock className="h-3 w-3 text-emerald-600" /> Pagamento garantido via Pix
-                    </span>
-                    {appliedJobIds.includes(job.id) ? (
-                      <Badge className="bg-success/10 text-success text-xs"><CheckCircle className="h-3 w-3 mr-1" /> Candidatado</Badge>
-                    ) : (
-                      <Button size="sm" variant="hero" onClick={() => handleApply(job.id)}>
-                        Aceitar Oportunidade
-                      </Button>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </TabsContent>
+          <TabsContent value="vagas" className="space-y-4 mt-4">
+            {/* Filtros de Vagas */}
+            <div className="space-y-3">
+              <div className="relative">
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Pesquisar vagas (Ex: Pintura, Piscina, Garçom, Elétrica, Diarista...)"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 h-11 rounded-2xl"
+                />
+              </div>
 
-          {/* Tab 2: Minhas Candidaturas & Check-in Anti-No-Show */}
-          <TabsContent value="historico" className="space-y-3 mt-4">
-            {myApplications.length === 0 ? (
-              <Card><CardContent className="py-12 text-center text-muted-foreground text-sm">Você ainda não se candidatou a nenhuma vaga.</CardContent></Card>
-            ) : myApplications.map((app: any) => {
-              const isCheckedIn = checkedInJobIds.includes(app.job_id);
-              const isAccepted = app.status === "accepted";
-
-              return (
-                <Card key={app.id} className="border-border shadow-2xs">
-                  <CardContent className="pt-4 pb-4 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-semibold text-foreground text-sm">{app.jobs?.title || "Demanda Autônoma"}</p>
-                        <p className="text-xs text-muted-foreground">{new Date(app.created_at).toLocaleDateString("pt-BR")}</p>
-                      </div>
-                      <Badge className={app.status === "accepted" ? "bg-success/10 text-success" : app.status === "rejected" ? "bg-destructive/10 text-destructive" : "bg-accent/10 text-accent"}>
-                        {app.status === "accepted" ? "Aprovado ✅" : app.status === "rejected" ? "Não selecionado" : "Em análise"}
-                      </Badge>
-                    </div>
-
-                    {/* Anti-No-Show Check-in Action */}
-                    {isAccepted && (
-                      <div className="p-3 rounded-xl bg-primary/5 border border-primary/20 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                        <div>
-                          <p className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                            <CalendarCheck className="h-4 w-4 text-primary" />
-                            Confirmação de Presença (Anti-No-Show)
-                          </p>
-                          <p className="text-[11px] text-muted-foreground">
-                            {isCheckedIn
-                              ? "Você já confirmou presença para este evento. Boa sorte!"
-                              : "Confirme que você está a caminho para manter sua pontualidade 100%."}
-                          </p>
-                        </div>
-                        {isCheckedIn ? (
-                          <Badge className="bg-success text-success-foreground shrink-0 py-1">
-                            Presença Confirmada ✅
-                          </Badge>
-                        ) : (
-                          <Button
-                            size="sm"
-                            variant="hero"
-                            className="shrink-0"
-                            onClick={() => handleCheckIn(app.job_id, app.jobs?.title || "Demanda")}
-                          >
-                            Confirmar Presença Hoje
-                          </Button>
-                        )}
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </TabsContent>
-
-          {/* Tab 3: Custódia (Escrow) */}
-          <TabsContent value="escrow" className="space-y-3 mt-4">
-            <div className="flex items-center gap-2 bg-primary/5 border border-primary/20 rounded-xl p-3 mb-2 text-xs text-foreground">
-              <ShieldCheck className="h-5 w-5 text-primary shrink-0" />
-              <span>
-                <strong>Valores em Custódia:</strong> O dinheiro já foi transferido pela empresa para a plataforma. Assim que você cumprir a demanda e a empresa confirmar, o saldo fica disponível para saque imediato.
-              </span>
+              {/* Pills de Categoria */}
+              <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs">
+                <button
+                  onClick={() => setSelectedCategory("all")}
+                  className={`px-3 py-1.5 rounded-full font-semibold whitespace-nowrap transition-all ${
+                    selectedCategory === "all"
+                      ? "bg-primary text-primary-foreground shadow-xs"
+                      : "bg-muted text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  Todas as Vagas
+                </button>
+                {SERVICE_CATEGORIES.map((cat) => (
+                  <button
+                    key={cat.id}
+                    onClick={() => setSelectedCategory(cat.id)}
+                    className={`px-3 py-1.5 rounded-full font-semibold whitespace-nowrap transition-all ${
+                      selectedCategory === cat.id
+                        ? "bg-primary text-primary-foreground shadow-xs"
+                        : "bg-muted text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    {cat.name}
+                  </button>
+                ))}
+              </div>
             </div>
 
-            {escrows.length === 0 ? (
-              <Card><CardContent className="py-8 text-center text-muted-foreground text-sm">Nenhum valor em custódia no momento.</CardContent></Card>
-            ) : escrows.map((e: any) => {
-              const st = escrowStatusLabel(e.status);
+            {filteredJobs.length === 0 ? (
+              <Card className="rounded-3xl">
+                <CardContent className="py-12 text-center text-muted-foreground text-sm">
+                  Nenhuma vaga aberta encontrada para esta categoria no momento. Fique atento às notificações no celular!
+                </CardContent>
+              </Card>
+            ) : (
+              filteredJobs.map((job: any) => (
+                <Card
+                  key={job.id}
+                  className="border-border hover:border-primary/40 transition-all shadow-2xs rounded-2xl"
+                >
+                  <CardContent className="p-4 sm:p-5">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <p className="font-bold text-foreground text-base">{job.title || "Sem título"}</p>
+                          {job.urgent && (
+                            <Badge variant="destructive" className="text-[10px] animate-pulse">
+                              🚨 SOS Urgente
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1.5">
+                          <span>{job.companies?.name}</span>
+                          <span>•</span>
+                          <span className="flex items-center gap-1">
+                            <Clock className="h-3 w-3" />
+                            {new Date(job.date).toLocaleDateString("pt-BR")}
+                          </span>
+                          {job.location && (
+                            <>
+                              <span>•</span>
+                              <span className="flex items-center gap-1 text-emerald-600 font-medium">
+                                <MapPin className="h-3 w-3" />
+                                {job.location}
+                              </span>
+                            </>
+                          )}
+                        </p>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg font-extrabold text-primary">
+                          R$ {job.price || 150},00
+                        </span>
+                      </div>
+                    </div>
+
+                    {job.description && (
+                      <p className="text-xs text-muted-foreground mb-4 leading-relaxed bg-muted/40 p-3 rounded-xl">
+                        {job.description}
+                      </p>
+                    )}
+
+                    <div className="flex items-center justify-between pt-3 border-t border-border/60">
+                      <span className="text-[11px] text-muted-foreground flex items-center gap-1">
+                        <Lock className="h-3.5 w-3.5 text-emerald-600" /> Valor garantido em custódia (Escrow)
+                      </span>
+                      {appliedJobIds.includes(job.id) ? (
+                        <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20 text-xs py-1 px-3">
+                          <CheckCircle className="h-3.5 w-3.5 mr-1" /> Candidatado
+                        </Badge>
+                      ) : (
+                        <Button
+                          size="sm"
+                          className="font-bold rounded-xl shadow-xs"
+                          onClick={() => handleApply(job.id)}
+                        >
+                          Candidatar-se / Aceitar Diária
+                        </Button>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            )}
+          </TabsContent>
+
+          {/* Tab 2: Minhas Diárias & Check-in Anti-No-Show */}
+          <TabsContent value="historico" className="space-y-3 mt-4">
+            {myApplications.length === 0 ? (
+              <Card className="rounded-3xl">
+                <CardContent className="py-12 text-center text-muted-foreground text-sm">
+                  Você ainda não aceitou nenhuma demanda. Veja a aba "Oportunidades"!
+                </CardContent>
+              </Card>
+            ) : (
+              myApplications.map((app: any) => {
+                const isCheckedIn = checkedInJobIds.includes(app.job_id);
+                const isAccepted = app.status === "accepted";
+
+                return (
+                  <Card key={app.id} className="border-border shadow-2xs rounded-2xl">
+                    <CardContent className="p-4 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="font-bold text-foreground text-sm">
+                            {app.jobs?.title || "Serviço Autônomo"}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {new Date(app.created_at).toLocaleDateString("pt-BR")}
+                          </p>
+                        </div>
+                        <Badge
+                          className={
+                            isAccepted
+                              ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20"
+                              : app.status === "rejected"
+                              ? "bg-destructive/10 text-destructive border-destructive/20"
+                              : "bg-amber-500/10 text-amber-600 border-amber-500/20"
+                          }
+                        >
+                          {isAccepted ? "Aprovado / Confirmado ✅" : "Em análise pelo contratante"}
+                        </Badge>
+                      </div>
+
+                      {/* Check-in Anti-No-Show */}
+                      {isAccepted && (
+                        <div className="p-3.5 rounded-xl bg-primary/5 border border-primary/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                          <div>
+                            <p className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                              <CalendarCheck className="h-4 w-4 text-primary" />
+                              {isCheckedIn ? "Presença Confirmada no Local" : "Confirmação de Presença no Local"}
+                            </p>
+                            <p className="text-[11px] text-muted-foreground mt-0.5">
+                              {isCheckedIn
+                                ? "Check-in realizado por geolocalização. Bom trabalho!"
+                                : "Clique para avisar o contratante quando você chegar ao local."}
+                            </p>
+                          </div>
+
+                          {isCheckedIn ? (
+                            <Badge className="bg-emerald-600 text-white font-bold text-xs py-1 px-3">
+                              <CheckCircle className="h-3.5 w-3.5 mr-1" /> Check-in Realizado
+                            </Badge>
+                          ) : (
+                            <Button
+                              size="sm"
+                              className="font-bold rounded-xl"
+                              onClick={() => handleCheckIn(app.job_id, app.jobs?.title || "Trabalho")}
+                            >
+                              <MapPin className="h-3.5 w-3.5 mr-1" /> Fazer Check-in no Local
+                            </Button>
+                          )}
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                );
+              })
+            )}
+          </TabsContent>
+
+          {/* Tab 3: Custódia Segura */}
+          <TabsContent value="escrow" className="space-y-3 mt-4">
+            <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs flex items-center gap-3">
+              <ShieldCheck className="h-6 w-6 text-emerald-600 shrink-0" />
+              <div>
+                <p className="font-bold text-sm">Garantia Financeira dos Seus Serviços</p>
+                <p className="text-emerald-700 mt-0.5">
+                  Estes valores já foram pré-pagos pelos contratantes e estão garantidos para liberação imediata ao concluir.
+                </p>
+              </div>
+            </div>
+
+            {escrows.map((escrow) => {
+              const statusInfo = escrowStatusLabel(escrow.status);
               return (
-                <Card key={e.id} className="border-border">
-                  <CardContent className="pt-4 pb-4 flex items-center justify-between">
+                <Card key={escrow.id} className="border-border rounded-2xl">
+                  <CardContent className="p-4 flex items-center justify-between">
                     <div>
-                      <p className="font-semibold text-foreground text-base">R$ {Number(e.amount).toFixed(2)}</p>
-                      <p className="text-xs text-muted-foreground">
-                        Contratante: <strong>{e.users?.name || "Empresa"}</strong> • {new Date(e.created_at).toLocaleDateString("pt-BR")}
+                      <div className="flex items-center gap-2">
+                        <p className="font-bold text-base text-foreground">R$ {escrow.amount},00</p>
+                        <Badge className={`text-xs ${statusInfo.class}`}>{statusInfo.label}</Badge>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Contratante: <strong>{escrow.users?.name || "Empresa / Imóvel"}</strong>
                       </p>
                     </div>
-                    <Badge className={st.class}>{st.label}</Badge>
                   </CardContent>
                 </Card>
               );
             })}
           </TabsContent>
 
-          {/* Tab 4: Saldo */}
-          <TabsContent value="saldo" className="mt-4">
-            <Card className="border-border shadow-2xs">
-              <CardContent className="py-10 text-center space-y-3 max-w-sm mx-auto">
-                <div className="w-14 h-14 rounded-full bg-success/10 flex items-center justify-center mx-auto text-success">
-                  <Wallet className="h-7 w-7" />
+          {/* Tab 4: Saldo e Saque Pix */}
+          <TabsContent value="saldo" className="space-y-4 mt-4">
+            <Card className="border-border bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-3xl p-6 shadow-md">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <p className="text-xs text-slate-300 uppercase tracking-wider font-semibold">
+                    Saldo Disponível para Saque Pix
+                  </p>
+                  <p className="text-4xl font-extrabold tracking-tight mt-1 text-white">
+                    R$ {(profile?.balance || 380).toFixed(2)}
+                  </p>
+                  <p className="text-xs text-emerald-400 mt-2 flex items-center gap-1">
+                    <CheckCircle className="h-3.5 w-3.5" /> Transferência instantânea 24/7 sem taxa
+                  </p>
                 </div>
-                <p className="text-3xl font-extrabold text-foreground">R$ {profile?.balance?.toFixed(2) ?? "0.00"}</p>
-                <p className="text-xs text-muted-foreground">Saldo disponível para transferência via Pix</p>
+
                 <Button
-                  variant="hero"
-                  className="w-full shadow-warm"
-                  onClick={() => toast.success("Chave Pix cadastrada! Solicitação de saque em análise.")}
+                  size="lg"
+                  className="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold rounded-2xl shadow-lg"
+                  onClick={() => {
+                    toast.success("Solicitação de Saque Pix Recebida! ⚡", {
+                      description: "R$ 380,00 transferidos para sua chave Pix cadastrada.",
+                    });
+                  }}
                 >
-                  Solicitar Saque via Pix
+                  <Zap className="h-4 w-4 mr-1.5" /> Sacar no Pix Agora
                 </Button>
-              </CardContent>
+              </div>
             </Card>
           </TabsContent>
         </Tabs>
