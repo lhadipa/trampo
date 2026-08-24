@@ -1,0 +1,40 @@
+{
+  "expo": {
+    "name": "Trampô",
+    "slug": "trampo",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "scheme": "trampo",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#E85D04"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "app.trampo.mobile"
+    },
+    "android": {
+      "package": "app.trampo.mobile",
+      "adaptiveIcon": {
+        "backgroundColor": "#E85D04",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false,
+      "edgeToEdgeEnabled": true
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
+    },
+    "plugins": ["expo-router"],
+    "extra": {
+      "eas": {}
+    }
+  }
+}
