@@ -1,5 +1,8 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
+  // "class" espelha o app web e evita o loop de MutationObserver que o modo
+  // "media" do NativeWind provoca no alvo web.
+  darkMode: "class",
   content: ["./app/**/*.{ts,tsx}", "./src/**/*.{ts,tsx}"],
   presets: [require("nativewind/preset")],
   theme: {
