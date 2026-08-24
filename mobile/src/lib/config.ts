@@ -16,12 +16,13 @@ import Constants from "expo-constants";
 const API_PORT = 3001;
 
 const hostFromMetro = (): string | null => {
+  // manifest2/manifest sao campos legados, ausentes nos tipos publicos do
+  // expo-constants, mas presentes em builds standalone e dev-client.
+  const legacy = Constants as unknown as Record<string, any>;
   const hostUri =
     Constants.expoConfig?.hostUri ??
-    // @ts-expect-error: campos legados presentes em builds standalone/dev-client
-    Constants.manifest2?.extra?.expoGo?.debuggerHost ??
-    // @ts-expect-error: idem
-    Constants.manifest?.debuggerHost;
+    legacy.manifest2?.extra?.expoGo?.debuggerHost ??
+    legacy.manifest?.debuggerHost;
 
   if (typeof hostUri !== "string") return null;
   const host = hostUri.split(":")[0];
