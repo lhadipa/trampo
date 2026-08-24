@@ -1,10 +1,28 @@
-import { Text, View } from "react-native";
+import { ScrollView, View } from "react-native";
 
+import { Categories } from "../src/components/landing/Categories";
+import { CTA } from "../src/components/landing/CTA";
+import { Footer } from "../src/components/landing/Footer";
+import { Hero } from "../src/components/landing/Hero";
+import { HowItWorks } from "../src/components/landing/HowItWorks";
+import { Navbar } from "../src/components/landing/Navbar";
+import { Pricing } from "../src/components/landing/Pricing";
+import { Testimonials } from "../src/components/landing/Testimonials";
+
+/** Porte de src/pages/Index.tsx — mesma ordem de secoes da landing web. */
 export default function Index() {
   return (
-    <View className="flex-1 items-center justify-center bg-background">
-      <Text className="text-2xl font-bold text-primary">Trampô</Text>
-      <Text className="mt-2 text-sm text-muted-foreground">verificando bundling…</Text>
+    <View className="flex-1 bg-background">
+      <Navbar />
+      <ScrollView showsVerticalScrollIndicator={false}>
+        <Hero />
+        <HowItWorks />
+        <Categories />
+        <Pricing />
+        <Testimonials />
+        <CTA />
+        <Footer />
+      </ScrollView>
     </View>
   );
 }
