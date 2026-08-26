@@ -1,6 +1,8 @@
 import { useState, useEffect, createContext, useContext } from "react";
 import { isSupabaseConfigured, supabase } from "@/integrations/supabase/client";
-import type { User, Session } from "@supabase/supabase-js";
+
+type User = { id: string; email?: string; user_metadata?: Record<string, any>; [key: string]: any };
+type Session = { access_token: string; user: User; [key: string]: any };
 
 export interface Profile {
   id: string;
