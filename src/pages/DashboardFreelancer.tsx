@@ -98,10 +98,7 @@ const DashboardFreelancer = () => {
   const [freelancerId, setFreelancerId] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
-  const [checkedInJobIds, setCheckedInJobIds] = useState<string[]>(() => {
-    const saved = localStorage.getItem("trampo_checked_in_jobs");
-    return saved ? JSON.parse(saved) : [];
-  });
+  const [checkedInJobIds, setCheckedInJobIds] = useState<string[]>([]);
 
   useEffect(() => {
     if (!profile) return;
@@ -212,12 +209,29 @@ const DashboardFreelancer = () => {
     }
   };
 
-  const handleCheckIn = (jobId: string, jobTitle: string) => {
-    const updated = [...checkedInJobIds, jobId];
-    setCheckedInJobIds(updated);
-    localStorage.setItem("trampo_checked_in_jobs", JSON.stringify(updated));
-    toast.success(`Check-in de presença confirmado para "${jobTitle}"! 📍`, {
-      description: "Localização validada por GPS. Contratante notificado da sua chegada.",
+  const handleCheckIn = async (jobId: string, jobTitle: string) => {
+    const { data: contract, error: contractError } = await (supabase as any)
+      .from("contracts")
+      .select("id, freelancer_id")
+      .eq("job_id", jobId)
+      .maybeSingle();
+    if (contractError || !contract) {
+      toast.error("Este trabalho ainda não possui um contrato ativo para check-in.");
+      return;
+    }
+    const { error } = await (supabase as any).from("checkins").insert({
+      contract_id: contract.id,
+      freelancer_id: contract.freelancer_id,
+      method: "PIN",
+      status: "CONFIRMED",
+    });
+    if (error) {
+      toast.error("Não foi possível confirmar o check-in. Tente novamente.");
+      return;
+    }
+    setCheckedInJobIds((prev) => [...prev, jobId]);
+    toast.success(`Check-in confirmado para "${jobTitle}"!`, {
+      description: "O registro foi salvo no servidor e o contratante foi notificado.",
     });
   };
 

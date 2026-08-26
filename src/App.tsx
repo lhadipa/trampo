@@ -16,6 +16,7 @@ import Dashboard from "./pages/Dashboard.tsx";
 import Chat from "./pages/Chat.tsx";
 import Conversations from "./pages/Conversations.tsx";
 import Terms from "./pages/Terms.tsx";
+import Contracts from "./pages/Contracts.tsx";
 
 const queryClient = new QueryClient();
 
@@ -38,6 +39,8 @@ const App = () => (
             <Route path="/urgente" element={<UrgentRequest />} />
             <Route path="/conversas" element={<Conversations />} />
             <Route path="/chat/:conversationId" element={<Chat />} />
+            <Route path="/meus-trampos" element={<Contracts />} />
+            <Route path="/contratacoes" element={<Contracts />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

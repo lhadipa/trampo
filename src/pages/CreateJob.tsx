@@ -26,7 +26,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { ALL_SERVICE_TYPES, BRAZILIAN_REGIONS_PRESET, SERVICE_CATEGORIES } from "@/lib/categories";
-import { supabase } from "@/integrations/supabase/client";
+import { isSupabaseConfigured, supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 
 const CreateJob = () => {
@@ -80,7 +80,7 @@ const CreateJob = () => {
             scheduledDate.setHours(hours, minutes, 0, 0);
           }
 
-          await supabase.from("jobs").insert({
+          const { error: jobError } = await supabase.from("jobs").insert({
             company_id: comp.id,
             title: `${finalServiceName} - ${finalLocation}`,
             description: description || `Contratação de ${finalServiceName} para diária/turno. Pagamento garantido via Escrow.`,
@@ -90,6 +90,8 @@ const CreateJob = () => {
             boost: boost,
             status: "open",
           });
+
+          if (jobError) throw jobError;
         }
       }
 
