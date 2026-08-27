@@ -62,7 +62,7 @@ export const Categories = () => {
             <Pressable
               key={category.id}
               onPress={() => setSelectedCatId(category.id)}
-              className={`rounded-3xl border bg-white p-6 ${
+              className={`rounded-xl border bg-white p-6 ${
                 isSelected ? "border-primary" : "border-border"
               }`}
             >
@@ -98,7 +98,7 @@ export const Categories = () => {
       </View>
 
       {/* Detalhes da Categoria Selecionada */}
-      <View className="mt-8 rounded-3xl border border-primary/20 bg-white p-6">
+      <View className="mt-8 rounded-xl border border-primary/20 bg-white p-6">
         <View className="gap-4 border-b border-border pb-6">
           <View className="flex-row items-center gap-4">
             <View className="h-14 w-14 items-center justify-center rounded-2xl bg-primary/10">
@@ -114,7 +114,7 @@ export const Categories = () => {
             </View>
           </View>
           <Button
-            className="rounded-full"
+            className="rounded-lg"
             onPress={() => router.push("/auth")}
             iconRight={<ArrowRight size={16} color="#ffffff" />}
           >

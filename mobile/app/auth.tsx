@@ -112,12 +112,12 @@ export default function Auth() {
           {/* Login / Cadastro */}
           <Card>
             <CardContent className="pt-6">
-              <View className="mb-4 flex-row rounded-xl bg-muted p-1">
+              <View className="mb-4 flex-row border-b border-border">
                 {(["login", "signup"] as const).map((value) => (
                   <Pressable
                     key={value}
                     onPress={() => setTab(value)}
-                    className={`flex-1 rounded-lg py-2 ${tab === value ? "bg-background" : ""}`}
+                    className={`flex-1 border-b-2 py-2 ${tab === value ? "border-primary" : "border-transparent"}`}
                   >
                     <Text
                       className={`text-center text-sm font-semibold ${

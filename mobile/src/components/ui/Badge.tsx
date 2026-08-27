@@ -1,11 +1,12 @@
 import { Text, View } from "react-native";
 
-type Variant = "default" | "secondary" | "outline";
+type Variant = "default" | "secondary" | "outline" | "destructive";
 
 const styles: Record<Variant, { box: string; text: string }> = {
-  default: { box: "bg-primary", text: "text-primary-foreground" },
-  secondary: { box: "bg-muted", text: "text-muted-foreground" },
-  outline: { box: "border border-primary/30 bg-background", text: "text-primary" },
+  default: { box: "", text: "text-primary" },
+  secondary: { box: "", text: "text-muted-foreground" },
+  outline: { box: "border-b border-primary/30", text: "text-primary" },
+  destructive: { box: "", text: "text-destructive" },
 };
 
 export const Badge = ({
@@ -17,7 +18,7 @@ export const Badge = ({
   variant?: Variant;
   className?: string;
 }) => (
-  <View className={`self-start rounded-full px-2.5 py-1 ${styles[variant].box} ${className}`}>
-    <Text className={`text-[10px] font-bold ${styles[variant].text}`}>{children}</Text>
+  <View className={`self-start ${styles[variant].box} ${className}`}>
+    <Text className={`text-[10px] font-semibold ${styles[variant].text}`}>{children}</Text>
   </View>
 );

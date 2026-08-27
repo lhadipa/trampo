@@ -80,7 +80,7 @@ export const Hero = () => {
         <View className="mt-8 w-full gap-3.5">
           <Button
             size="lg"
-            className="rounded-full"
+            className="rounded-lg"
             onPress={() => router.push("/auth")}
             icon={<Sparkles size={18} color="#ffffff" />}
           >
@@ -89,7 +89,7 @@ export const Hero = () => {
           <Button
             size="lg"
             variant="outline"
-            className="rounded-full"
+            className="rounded-lg"
             onPress={() => router.push("/auth")}
             iconRight={<ArrowRight size={18} color="#1c1917" />}
           >
@@ -113,7 +113,7 @@ export const Hero = () => {
         {stats.map((stat) => (
           <View
             key={stat.label}
-            className="flex-1 basis-[45%] items-center justify-center gap-1 rounded-3xl border border-border bg-white p-5"
+            className="flex-1 basis-[45%] items-center justify-center gap-1 rounded-xl border border-border bg-white p-5"
           >
             <Text className="text-3xl font-extrabold tracking-tight text-primary">{stat.value}</Text>
             <Text className="text-center text-xs font-medium text-muted-foreground">

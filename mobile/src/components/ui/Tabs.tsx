@@ -21,17 +21,17 @@ export const Tabs = ({
   value: string;
   onChange: (value: string) => void;
 }) => (
-  <View className="rounded-2xl bg-muted/60 p-1">
+  <View className="border-b border-border bg-transparent">
     <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-      <View className="flex-row gap-1">
+      <View className="flex-row gap-5">
         {items.map((item) => {
           const active = item.value === value;
           return (
             <Pressable
               key={item.value}
               onPress={() => onChange(item.value)}
-              className={`flex-row items-center gap-1.5 rounded-xl px-3.5 py-2.5 ${
-                active ? "bg-background" : ""
+              className={`flex-row items-center gap-1.5 border-b-2 px-1 py-2.5 ${
+                active ? "border-primary" : "border-transparent"
               }`}
             >
               {item.Icon ? (
@@ -61,7 +61,7 @@ export const EmptyState = ({
   description?: string;
   icon?: React.ReactNode;
 }) => (
-  <View className="items-center gap-3 rounded-3xl border border-dashed border-border py-12">
+  <View className="items-center gap-3 rounded-xl border border-dashed border-border py-12">
     {icon ? (
       <View className="h-12 w-12 items-center justify-center rounded-2xl bg-primary/10">{icon}</View>
     ) : null}

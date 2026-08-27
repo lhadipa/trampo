@@ -60,7 +60,7 @@ export const Button = ({
     onPress={onPress}
     disabled={disabled || loading}
     accessibilityRole="button"
-    className={`flex-row items-center justify-center gap-2 rounded-xl ${containerByVariant[variant]} ${containerBySize[size]} ${
+    className={`flex-row items-center justify-center gap-2 rounded-lg ${containerByVariant[variant]} ${containerBySize[size]} ${
       disabled || loading ? "opacity-60" : ""
     } ${className}`}
   >

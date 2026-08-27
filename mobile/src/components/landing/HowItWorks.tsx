@@ -44,7 +44,7 @@ export const HowItWorks = () => (
       {steps.map((step, index) => (
         <View
           key={step.title}
-          className="items-center rounded-3xl border border-border bg-white p-8"
+          className="items-center rounded-xl border border-border bg-white p-8"
         >
           <View className="absolute -top-3.5 rounded-full bg-primary px-3 py-1">
             <Text className="text-xs font-bold text-primary-foreground">Passo {index + 1}</Text>

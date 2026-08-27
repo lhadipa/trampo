@@ -392,7 +392,7 @@ export const DashboardCompany = () => {
                       </Text>
                     </View>
                     <View className="flex-row items-center gap-2">
-                      {job.urgent ? <Badge className="bg-destructive">Urgente</Badge> : null}
+                      {job.urgent ? <Badge variant="destructive">Urgente</Badge> : null}
                       <Badge variant="secondary">{job.status}</Badge>
                     </View>
                   </CardContent>

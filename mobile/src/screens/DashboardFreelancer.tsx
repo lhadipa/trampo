@@ -218,7 +218,7 @@ export const DashboardFreelancer = () => {
                         <Text className="flex-1 text-base font-bold text-foreground">
                           {job.title}
                         </Text>
-                        {job.urgent ? <Badge className="bg-destructive">Urgente</Badge> : null}
+                        {job.urgent ? <Badge variant="destructive">Urgente</Badge> : null}
                       </View>
 
                       <Text className="text-xs font-medium text-muted-foreground">

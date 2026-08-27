@@ -2,12 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Tokens portados 1:1 de ../src/index.css (:root do app web).
-   NativeWind v4 resolve CSS variables, entao as cores sao identicas as da web. */
+/* Tokens alinhados com ../src/index.css para manter a mesma linguagem visual no web e no app. */
 @layer base {
   :root {
-    --background: 60 11% 98%;
-    --foreground: 24 10% 10%;
+    --background: 40 20% 97%;
+    --foreground: 24 12% 13%;
 
     --card: 0 0% 100%;
     --card-foreground: 24 10% 10%;
@@ -15,14 +14,14 @@
     --popover: 0 0% 100%;
     --popover-foreground: 24 10% 10%;
 
-    --primary: 24 97% 46%;
+    --primary: 24 92% 47%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 20 6% 15%;
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 60 6% 94%;
-    --muted-foreground: 25 6% 45%;
+    --muted: 36 14% 93%;
+    --muted-foreground: 25 7% 43%;
 
     --accent: 24 90% 95%;
     --accent-foreground: 24 60% 20%;
@@ -33,10 +32,10 @@
     --success: 142 72% 36%;
     --success-foreground: 0 0% 100%;
 
-    --border: 60 5% 88%;
-    --input: 60 5% 88%;
-    --ring: 24 97% 46%;
+    --border: 30 10% 86%;
+    --input: 30 10% 82%;
+    --ring: 24 92% 47%;
 
-    --radius: 0.625rem;
+    --radius: 0.5rem;
   }
 }

@@ -16,11 +16,11 @@ export const ScreenHeader = ({ title }: { title: string }) => {
       style={{ paddingTop: insets.top }}
       className="border-b border-border/60 bg-background"
     >
-      <View className="h-14 flex-row items-center gap-3 px-4">
+      <View className="h-16 flex-row items-center gap-3 px-4">
         <Pressable
           onPress={() => (router.canGoBack() ? router.back() : router.replace("/"))}
           hitSlop={10}
-          className="rounded-lg p-1"
+          className="p-1"
         >
           <ArrowLeft size={22} color="#1c1917" />
         </Pressable>

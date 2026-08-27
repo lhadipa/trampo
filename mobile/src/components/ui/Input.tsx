@@ -30,7 +30,7 @@ export const Input = ({
     keyboardType={keyboardType}
     autoCapitalize={autoCapitalize}
     multiline={multiline}
-    className={`rounded-xl border border-input bg-background px-3.5 text-sm text-foreground ${
+    className={`rounded-lg border border-input bg-background px-3.5 text-sm text-foreground ${
       multiline ? "min-h-[88px] py-3" : "h-11"
     } ${className}`}
     style={multiline ? { textAlignVertical: "top" } : undefined}

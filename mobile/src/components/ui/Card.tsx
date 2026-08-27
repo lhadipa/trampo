@@ -7,7 +7,7 @@ export const Card = ({
   children: React.ReactNode;
   className?: string;
 }) => (
-  <View className={`rounded-3xl border border-border/70 bg-card ${className}`}>{children}</View>
+  <View className={`rounded-xl border border-border/80 bg-card ${className}`}>{children}</View>
 );
 
 export const CardContent = ({
