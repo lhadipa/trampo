@@ -180,11 +180,32 @@ export const api: any = {
   },
 };
 
-/** Checa se a API local esta acessivel — usado pelo indicador de status na UI. */
+/**
+ * Chamadas aos endpoints de pagamento simulado (/api/mock/*). Ficam fora do
+ * shim porque nao sao CRUD de tabela: o saldo so pode ser movido pelo servidor.
+ */
+export const mockPayments = {
+  async topup(amount: number) {
+    const response = await fetch(`${API_URL}/api/mock/wallet/topup`, { method: "POST", headers: headers(), body: JSON.stringify({ amount }) });
+    const result = await response.json().catch(() => ({}));
+    return response.ok ? { data: result, error: null } : { data: null, error: new Error(result.error || "Falha ao adicionar saldo") };
+  },
+  async unlockChat(conversationId: string) {
+    const response = await fetch(`${API_URL}/api/mock/chat-unlock`, { method: "POST", headers: headers(), body: JSON.stringify({ conversation_id: conversationId }) });
+    const result = await response.json().catch(() => ({}));
+    return response.ok ? { data: result, error: null } : { data: null, error: new Error(result.error || "Falha ao desbloquear") };
+  },
+};
+
+/**
+ * Checa se a API esta acessivel — usado pelo indicador de status na UI.
+ * O timeout e' generoso porque o plano free do Render hiberna: a primeira
+ * requisicao depois de um periodo ocioso leva ~50s para responder.
+ */
 export const pingApi = async (): Promise<boolean> => {
   try {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 4000);
+    const timeout = setTimeout(() => controller.abort(), 60000);
     const response = await fetch(`${API_URL}/api/health`, { signal: controller.signal });
     clearTimeout(timeout);
     if (!response.ok) return false;

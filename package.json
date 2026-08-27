@@ -11,7 +11,10 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "start": "node server/index.js",
+    "seed": "node server/seed.js",
+    "db:migrate": "node server/migrate.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
@@ -92,5 +95,8 @@
     "typescript-eslint": "^8.38.0",
     "vite": "^5.4.19",
     "vitest": "^3.2.4"
+  },
+  "engines": {
+    "node": ">=22"
   }
 }

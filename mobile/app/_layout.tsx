@@ -3,6 +3,7 @@ import { StatusBar } from "expo-status-bar";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
+import DemoBanner from "../src/components/DemoBanner";
 import { Toaster } from "../src/components/ui/Toast";
 import { AuthProvider } from "../src/hooks/useAuth";
 import "../global.css";
@@ -13,6 +14,7 @@ export default function RootLayout() {
       <SafeAreaProvider>
         <AuthProvider>
           <StatusBar style="dark" />
+          <DemoBanner />
           <Stack
             screenOptions={{
               headerShown: false,

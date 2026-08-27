@@ -28,6 +28,24 @@ class QueryBuilder implements PromiseLike<any> {
   then<TResult1 = any, TResult2 = never>(onfulfilled?: ((value: any) => TResult1 | PromiseLike<TResult1>) | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | null) { return this.execute().then(onfulfilled, onrejected); }
 }
 
+/**
+ * Chamadas aos endpoints de pagamento simulado (/api/mock/*). Ficam fora do
+ * shim do supabase porque nao sao CRUD de tabela: o saldo so pode ser movido
+ * pelo servidor.
+ */
+export const mockPayments = {
+  async topup(amount: number) {
+    const response = await fetch(`${API_URL}/api/mock/wallet/topup`, { method: "POST", headers: headers(), body: JSON.stringify({ amount }) });
+    const result = await response.json().catch(() => ({}));
+    return response.ok ? { data: result, error: null } : { data: null, error: new Error(result.error || "Falha ao adicionar saldo") };
+  },
+  async unlockChat(conversationId: string) {
+    const response = await fetch(`${API_URL}/api/mock/chat-unlock`, { method: "POST", headers: headers(), body: JSON.stringify({ conversation_id: conversationId }) });
+    const result = await response.json().catch(() => ({}));
+    return response.ok ? { data: result, error: null } : { data: null, error: new Error(result.error || "Falha ao desbloquear") };
+  },
+};
+
 export const isSupabaseConfigured = true;
 export const supabase: any = {
   from: (table: string) => new QueryBuilder(table),

@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { mockPayments, supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -20,6 +20,9 @@ const Chat = () => {
   const [otherUser, setOtherUser] = useState<any>(null);
   const [sending, setSending] = useState(false);
   const [unlocking, setUnlocking] = useState(false);
+  // Saldo devolvido pelo servidor apos cada operacao simulada; enquanto null,
+  // vale o valor carregado no perfil.
+  const [balance, setBalance] = useState<number | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -140,47 +143,34 @@ const Chat = () => {
       return;
     }
 
-    // Check balance
-    if ((profile.balance ?? 0) < (conversation.unlock_price ?? 4.90)) {
-      toast.error(`Saldo insuficiente. Preço: R$ ${conversation.unlock_price ?? 4.90}`);
+    // Debito de saldo, desbloqueio e registro do pagamento acontecem em uma
+    // transacao no servidor -- o cliente nao pode escrever no proprio saldo.
+    const { data, error } = await mockPayments.unlockChat(conversation.id);
+
+    if (error) {
+      toast.error(error.message);
       setUnlocking(false);
       return;
     }
 
-    // Deduct balance and unlock
-    const newBalance = (profile.balance ?? 0) - (conversation.unlock_price ?? 4.90);
-    const { error: balanceErr } = await supabase
-      .from("users")
-      .update({ balance: newBalance })
-      .eq("id", profile.id);
+    setConversation(data.conversation ?? { ...conversation, unlocked: true });
+    if (typeof data.balance === "number") setBalance(data.balance);
+    toast.success("Chat desbloqueado! 🎉 (pagamento simulado)");
+    setUnlocking(false);
+  };
 
-    if (balanceErr) {
-      toast.error("Erro ao processar pagamento");
-      setUnlocking(false);
+  const handleTopup = async () => {
+    if (conversationId?.startsWith("demo-")) {
+      toast.success("Saldo simulado adicionado");
       return;
     }
-
-    const { error: unlockErr } = await supabase
-      .from("conversations")
-      .update({ unlocked: true })
-      .eq("id", conversation.id);
-
-    if (unlockErr) {
-      toast.error("Erro ao desbloquear chat");
-      setUnlocking(false);
-      return;
+    setUnlocking(true);
+    const { data, error } = await mockPayments.topup(50);
+    if (error) toast.error(error.message);
+    else {
+      setBalance(data.balance);
+      toast.success("R$ 50,00 adicionados (simulado)");
     }
-
-    // Record payment
-    await supabase.from("payments").insert({
-      from_user_id: profile.id,
-      to_user_id: "00000000-0000-0000-0000-000000000000",
-      amount: conversation.unlock_price ?? 4.90,
-      status: "paid",
-    });
-
-    setConversation({ ...conversation, unlocked: true });
-    toast.success("Chat desbloqueado! 🎉");
     setUnlocking(false);
   };
 
@@ -287,7 +277,13 @@ const Chat = () => {
               >
                 {unlocking ? "Processando..." : `Desbloquear por R$ ${(conversation.unlock_price ?? 4.90).toFixed(2).replace('.', ',')}`}
               </Button>
-              <p className="text-xs text-muted-foreground">Seu saldo: R$ {profile.balance?.toFixed(2) ?? "0.00"}</p>
+              <p className="text-xs text-muted-foreground">Seu saldo: R$ {(balance ?? profile.balance ?? 0).toFixed(2)}</p>
+              <Button variant="outline" size="sm" className="w-full" onClick={handleTopup} disabled={unlocking}>
+                Adicionar R$ 50 (saldo simulado)
+              </Button>
+              <p className="text-[10px] text-muted-foreground">
+                Ambiente de demonstração: nenhum pagamento real é processado.
+              </p>
             </CardContent>
           </Card>
         ) : (

@@ -27,3 +27,7 @@ supabase/.temp/
 *.njsproj
 *.sln
 *.sw?
+
+# Build nativo gerado pelo prebuild (o EAS Build refaz sozinho)
+mobile/android/
+mobile/ios/
