@@ -55,7 +55,7 @@ Variáveis de ambiente:
 Sem `JWT_SECRET` o processo aborta de propósito — um segredo padrão em produção
 permitiria forjar a sessão de qualquer usuário.
 
-Validar: `curl https://<api>.onrender.com/api/health` → `{"ok":true,...}`
+Validar: `curl https://trampo-api-5azl.onrender.com/api/health` → `{"ok":true,...}`
 
 ### Manter a API acordada
 
@@ -69,7 +69,7 @@ Import do repo; o `vercel.json` já define build, output e o rewrite de SPA.
 
 | Variável | Valor |
 |---|---|
-| `VITE_API_URL` | `https://<api>.onrender.com` |
+| `VITE_API_URL` | `https://trampo-api-5azl.onrender.com` |
 | `VITE_DEMO_MODE` | `true` (mostra a faixa de ambiente de demonstração) |
 
 ## 4. APK — EAS Build

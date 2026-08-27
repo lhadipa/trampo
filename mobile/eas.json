@@ -17,7 +17,7 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://trampo-api.onrender.com",
+        "EXPO_PUBLIC_API_URL": "https://trampo-api-5azl.onrender.com",
         "EXPO_PUBLIC_ENV": "demo"
       }
     },
@@ -37,7 +37,7 @@
         "buildType": "app-bundle"
       },
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://trampo-api.onrender.com",
+        "EXPO_PUBLIC_API_URL": "https://trampo-api-5azl.onrender.com",
         "EXPO_PUBLIC_ENV": "demo"
       }
     }
