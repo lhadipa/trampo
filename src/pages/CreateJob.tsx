@@ -26,7 +26,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { ALL_SERVICE_TYPES, BRAZILIAN_REGIONS_PRESET, SERVICE_CATEGORIES } from "@/lib/categories";
-import { isSupabaseConfigured, supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 
 const CreateJob = () => {
@@ -56,7 +56,7 @@ const CreateJob = () => {
     setLoading(true);
 
     try {
-      if (profile && isSupabaseConfigured) {
+      if (profile) {
         // Obter empresa do perfil ou criar
         let { data: comp } = await supabase
           .from("companies")

@@ -10,25 +10,6 @@ import { api } from "../src/lib/api";
 import { getContractState } from "../src/lib/contractState";
 
 /** Porte de src/pages/Contracts.tsx. */
-const demoContracts = [
-  {
-    id: "demo-contract-1",
-    status: "FUNDS_SECURED",
-    amount: 180,
-    start_at: new Date(Date.now() + 3600000 * 5).toISOString(),
-    description: "Garçom para evento",
-    jobs: { title: "Garçom para evento", companies: { name: "Restaurante XPTO" } },
-  },
-  {
-    id: "demo-contract-2",
-    status: "COMPLETED",
-    amount: 220,
-    start_at: new Date(Date.now() - 86400000 * 3).toISOString(),
-    description: "Pintura comercial",
-    jobs: { title: "Pintura comercial", companies: { name: "Imobiliária Vertentes" } },
-  },
-];
-
 const ContractCard = ({ contract }: { contract: any }) => {
   const state = getContractState(contract.status);
   const protectedPayment = ["FUNDS_SECURED", "RELEASED"].includes(contract.status);
@@ -96,7 +77,7 @@ export default function MeusTrampos() {
         .from("contracts")
         .select("*,jobs(title,companies(name))")
         .order("start_at", { ascending: true });
-      setContracts(!error && data?.length ? data : demoContracts);
+      setContracts(!error && data ? data : []);
       setLoading(false);
     })();
   }, [profile]);

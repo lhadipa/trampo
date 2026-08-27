@@ -31,64 +31,6 @@ import { toast } from "sonner";
 import logo from "@/assets/logo.png";
 import { SERVICE_CATEGORIES } from "@/lib/categories";
 
-const mockMultiJobs = [
-  {
-    id: "job-1",
-    title: "Pintor para Sala Comercial e Fachada",
-    companies: { name: "Imobiliária & Consultórios Vertentes" },
-    date: new Date().toISOString(),
-    price: 220,
-    urgent: true,
-    category: "reformas-manutencao",
-    description: "Aplicação de 2 demãos de tinta látex em sala de 40m². Tinta e rolos inclusos pelo contratante.",
-    location: "Centro / São João del-Rei",
-  },
-  {
-    id: "job-2",
-    title: "Limpador de Piscina e Tratamento Químico",
-    companies: { name: "Pousada Vila das Águas" },
-    date: new Date(Date.now() + 86400000).toISOString(),
-    price: 160,
-    urgent: false,
-    category: "piscinas-conservacao",
-    description: "Aspiração de fundo, decantação e controle de pH e cloro para o fim de semana.",
-    location: "Tiradentes / MG",
-  },
-  {
-    id: "job-3",
-    title: "Eletricista para Instalação de Painel",
-    companies: { name: "Empório & Restaurante Mineiro" },
-    date: new Date().toISOString(),
-    price: 250,
-    urgent: true,
-    category: "reformas-manutencao",
-    description: "Substituição de disjuntores e instalação de 4 novas tomadas industriais para cozinha.",
-    location: "São João del-Rei / MG",
-  },
-  {
-    id: "job-4",
-    title: "Garçom / Atendente de Salão (Noturno)",
-    companies: { name: "Cervejaria Artesanal del-Rei" },
-    date: new Date(Date.now() + 86400000 * 2).toISOString(),
-    price: 150,
-    urgent: false,
-    category: "gastronomia-hospitalidade",
-    description: "Turno das 18h às 00h. Atendimento de mesas e pedidos pelo tablet. Refeição inclusa.",
-    location: "Bairro Matosinhos / SJDR",
-  },
-  {
-    id: "job-5",
-    title: "Diarista / Faxina Residencial Completa",
-    companies: { name: "Residencial Parque das Flores" },
-    date: new Date(Date.now() + 86400000).toISOString(),
-    price: 170,
-    urgent: false,
-    category: "piscinas-conservacao",
-    description: "Apartamento de 3 quartos, limpeza detalhada de vidros, pisos e cozinha.",
-    location: "São João del-Rei / MG",
-  },
-];
-
 const DashboardFreelancer = () => {
   const { profile, signOut } = useAuth();
   const navigate = useNavigate();
@@ -134,59 +76,25 @@ const DashboardFreelancer = () => {
         .eq("status", "open")
         .order("created_at", { ascending: false });
       
-      if (openJobs && openJobs.length > 0) {
-        setJobs(openJobs);
-      } else {
-        setJobs(mockMultiJobs);
-      }
+      setJobs(openJobs || []);
 
       const { data: eData } = await supabase
         .from("escrow")
         .select("*, users!escrow_company_user_id_fkey(name)")
         .order("created_at", { ascending: false });
       
-      if (eData && eData.length > 0) {
-        setEscrows(eData);
-      } else {
-        setEscrows([
-          {
-            id: "esc-f1",
-            amount: 220,
-            status: "held",
-            created_at: new Date().toISOString(),
-            users: { name: "Imobiliária & Consultórios Vertentes" },
-            title: "Pintura Residencial & Comercial",
-          },
-          {
-            id: "esc-f2",
-            amount: 160,
-            status: "released",
-            created_at: new Date(Date.now() - 86400000 * 3).toISOString(),
-            released_at: new Date(Date.now() - 86400000 * 2).toISOString(),
-            users: { name: "Pousada Vila das Águas" },
-            title: "Manutenção e Limpeza de Piscina",
-          },
-        ]);
-      }
+      setEscrows(eData || []);
     };
     load();
   }, [profile]);
 
   const handleApply = async (jobId: string) => {
     if (!freelancerId) {
-      toast.success("Candidatura enviada com sucesso! 🚀", {
-        description: "O contratante foi notificado e pode conversar com você.",
+      // O registro de freelancer e' criado no carregamento; se faltou, algo
+      // falhou na conexao. Antes isto anunciava sucesso sem gravar nada.
+      toast.error("Não foi possível enviar a candidatura", {
+        description: "Recarregue a página e tente novamente.",
       });
-      setMyApplications((prev) => [
-        {
-          id: `demo-app-${Date.now()}`,
-          job_id: jobId,
-          status: "accepted",
-          created_at: new Date().toISOString(),
-          jobs: jobs.find((j) => j.id === jobId) || mockMultiJobs[0],
-        },
-        ...prev,
-      ]);
       return;
     }
 
@@ -289,10 +197,6 @@ const DashboardFreelancer = () => {
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-2xl font-bold text-foreground">Olá, {profile?.name || "Profissional"} 👋</h1>
-              <Badge className="bg-amber-500/10 text-amber-600 border-amber-500/20 font-semibold gap-1 text-xs">
-                <Star className="h-3 w-3 fill-amber-500" />
-                Profissional Verificado Ouro
-              </Badge>
             </div>
             <p className="text-xs text-muted-foreground mt-0.5">
               Diárias em Pintura, Piscinas, Elétrica, Gastronomia, Limpeza e Eventos

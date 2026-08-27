@@ -40,17 +40,6 @@ import logo from "@/assets/logo.png";
 import { SERVICE_CATEGORIES } from "@/lib/categories";
 
 // Seed de profissionais caso o banco esteja em estágio inicial
-const mockShowcaseWorkers = [
-  { id: "demo-1", user_id: "u-1", name: "Carlos Eduardo Pinturas", category: "Pintor Residencial / Comercial", rating: 4.9, completed: 38, location: "São João del-Rei / MG", available: true },
-  { id: "demo-2", user_id: "u-2", name: "Rodrigo Piscinas & Manutenção", category: "Limpador de Piscina / Piscineiro", rating: 5.0, completed: 52, location: "Tiradentes / MG", available: true },
-  { id: "demo-3", user_id: "u-3", name: "Marcos Vinicius Elétrica", category: "Eletricista", rating: 4.8, completed: 44, location: "São João del-Rei / MG", available: true },
-  { id: "demo-4", user_id: "u-4", name: "Lucas Silveira Eventos", category: "Garçom / Garçonete", rating: 4.9, completed: 61, location: "São João del-Rei / MG", available: true },
-  { id: "demo-5", user_id: "u-5", name: "Mariana Costa Diárias", category: "Faxineira / Diarista Residencial", rating: 5.0, completed: 77, location: "São João del-Rei / MG", available: true },
-  { id: "demo-6", user_id: "u-6", name: "Felipe Montador Rápido", category: "Montador de Móveis", rating: 4.7, completed: 29, location: "Santa Cruz de Minas / MG", available: true },
-  { id: "demo-7", user_id: "u-7", name: "Juliana Mendes Gastronomia", category: "Cozinheiro(a)", rating: 4.9, completed: 43, location: "São João del-Rei / MG", available: true },
-  { id: "demo-8", user_id: "u-8", name: "Bruno Bombeiro Hidráulico", category: "Encanador / Bombeiro Hidráulico", rating: 4.9, completed: 40, location: "São João del-Rei / MG", available: true },
-];
-
 const DashboardCompany = () => {
   const { profile, signOut } = useAuth();
   const navigate = useNavigate();
@@ -100,22 +89,7 @@ const DashboardCompany = () => {
         .from("freelancers")
         .select("*, users!freelancers_user_id_fkey(name, email)");
       
-      // Se houver dados reais no Supabase, mesclar; senão, usar base rica de demonstração
-      if (fData && fData.length > 0) {
-        setFreelancers(fData);
-      } else {
-        setFreelancers(
-          mockShowcaseWorkers.map((w) => ({
-            id: w.id,
-            user_id: w.user_id,
-            category: w.category,
-            users: { name: w.name, email: `${w.user_id}@trampo.com` },
-            rating: w.rating,
-            completed: w.completed,
-            location: w.location,
-          }))
-        );
-      }
+      setFreelancers(fData || []);
 
       const { data: pData } = await supabase
         .from("payments")
@@ -128,30 +102,7 @@ const DashboardCompany = () => {
         .select("*, users!escrow_freelancer_user_id_fkey(name)")
         .order("created_at", { ascending: false });
       
-      if (eData && eData.length > 0) {
-        setEscrows(eData);
-      } else {
-        // Mock escrows para demonstração financeira
-        setEscrows([
-          {
-            id: "esc-1",
-            amount: 180,
-            status: "held",
-            created_at: new Date().toISOString(),
-            users: { name: "Carlos Eduardo Pinturas" },
-            service: "Pintura Residencial e Retoque de Fachada",
-          },
-          {
-            id: "esc-2",
-            amount: 140,
-            status: "released",
-            created_at: new Date(Date.now() - 86400000 * 2).toISOString(),
-            released_at: new Date(Date.now() - 86400000).toISOString(),
-            users: { name: "Rodrigo Piscinas & Manutenção" },
-            service: "Tratamento de Água e Aspiração de Piscina",
-          },
-        ]);
-      }
+      setEscrows(eData || []);
     };
     load();
   }, [profile]);
@@ -309,22 +260,29 @@ const DashboardCompany = () => {
                 </p>
               </div>
 
-              {/* Stats pill */}
+              {/* Numeros reais da conta */}
               <div className="flex items-center gap-4 bg-background/90 border border-border rounded-2xl p-3 shadow-2xs">
                 <div className="text-center px-2">
                   <div className="flex items-center justify-center gap-1 text-primary font-bold text-base">
                     <Clock className="h-4 w-4" />
-                    <span>~18h</span>
+                    <span>{jobs.filter((j) => j.status === "open").length}</span>
                   </div>
-                  <p className="text-[10px] text-muted-foreground">Tempo Poupado</p>
+                  <p className="text-[10px] text-muted-foreground">Vagas abertas</p>
                 </div>
                 <div className="h-7 w-px bg-border" />
                 <div className="text-center px-2">
                   <div className="flex items-center justify-center gap-1 text-emerald-600 font-bold text-base">
                     <TrendingUp className="h-4 w-4" />
-                    <span>R$ 3.400+</span>
+                    <span>
+                      R${" "}
+                      {escrows
+                        .filter((e) => e.status === "held")
+                        .reduce((total, e) => total + Number(e.amount || 0), 0)
+                        .toFixed(2)
+                        .replace(".", ",")}
+                    </span>
                   </div>
-                  <p className="text-[10px] text-muted-foreground">Volume Transacionado</p>
+                  <p className="text-[10px] text-muted-foreground">Em custódia</p>
                 </div>
               </div>
             </div>
@@ -440,19 +398,10 @@ const DashboardCompany = () => {
                             <p className="font-bold text-sm text-foreground truncate">
                               {f.users?.name || "Profissional"}
                             </p>
-                            <ShieldCheck className="h-4 w-4 text-primary shrink-0" title="Verificado" />
                           </div>
                           <p className="text-xs text-muted-foreground font-medium truncate mt-0.5">
                             {f.category || "Serviços Gerais"}
                           </p>
-                          <div className="flex items-center gap-2.5 mt-2 text-[11px] text-muted-foreground">
-                            <span className="flex items-center gap-1 text-foreground font-semibold">
-                              <Star className="h-3 w-3 text-amber-500 fill-amber-500" />
-                              {f.rating || "4.9"}
-                            </span>
-                            <span>•</span>
-                            <span className="text-emerald-600 font-medium">Disponível</span>
-                          </div>
                         </div>
 
                         <div className="flex items-center gap-2 shrink-0">

@@ -23,22 +23,7 @@ const Conversations = () => {
         .order("created_at", { ascending: false });
 
       if (!data || data.length === 0) {
-        setConversations([
-          {
-            id: "demo-conv-1",
-            unlocked: true,
-            unlock_price: 4.90,
-            otherUser: { name: profile.type === "empresa" ? "Carlos Eduardo (Pintor & Eletricista)" : "Restaurante & Hotel Fazenda Solar", type: profile.type === "empresa" ? "freelancer" : "company" },
-            lastMessage: { content: "Perfeito! Estarei no local amanhã às 08:00 com os equipamentos.", created_at: new Date().toISOString() },
-          },
-          {
-            id: "demo-conv-2",
-            unlocked: false,
-            unlock_price: 4.90,
-            otherUser: { name: profile.type === "empresa" ? "Rodrigo (Piscineiro & Manutenção)" : "Pousada Vila das Águas SJDR", type: profile.type === "empresa" ? "freelancer" : "company" },
-            lastMessage: { content: "Olá! Tenho disponibilidade para a diária deste final de semana.", created_at: new Date().toISOString() },
-          },
-        ]);
+        setConversations([]);
         setLoading(false);
         return;
       }

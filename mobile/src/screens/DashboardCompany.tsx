@@ -29,7 +29,7 @@ import { toast } from "../components/ui/Toast";
 import { useAuth } from "../hooks/useAuth";
 import { api } from "../lib/api";
 import { SERVICE_CATEGORIES } from "../lib/categories";
-import { escrowStatusLabel, showcaseEscrows, showcaseWorkers } from "../lib/demoData";
+import { escrowStatusLabel } from "../lib/escrow";
 
 /** Porte de src/pages/DashboardCompany.tsx. */
 export const DashboardCompany = () => {
@@ -65,27 +65,14 @@ export const DashboardCompany = () => {
         setJobs(jobsData || []);
       }
 
-      // Dados reais tem precedencia; senao cai no seed de demonstracao
       const { data: freelancerData } = await api.from("freelancers").select("*,users(name,email)");
-      setFreelancers(
-        freelancerData?.length
-          ? freelancerData
-          : showcaseWorkers.map((w) => ({
-              id: w.id,
-              user_id: w.user_id,
-              category: w.category,
-              users: { name: w.name, email: `${w.user_id}@trampo.com` },
-              rating: w.rating,
-              completed: w.completed,
-              location: w.location,
-            })),
-      );
+      setFreelancers(freelancerData || []);
 
       const { data: escrowData } = await api
         .from("escrow")
         .select("*,users(name)")
         .order("created_at", { ascending: false });
-      setEscrows(escrowData?.length ? escrowData : showcaseEscrows);
+      setEscrows(escrowData || []);
     })();
   }, [profile]);
 
@@ -296,16 +283,6 @@ export const DashboardCompany = () => {
                           <Text className="mt-0.5 text-xs font-medium text-muted-foreground" numberOfLines={1}>
                             {f.category || "Serviços Gerais"}
                           </Text>
-                          <View className="mt-2 flex-row items-center gap-2.5">
-                            <View className="flex-row items-center gap-1">
-                              <Star size={12} color="#f59e0b" fill="#f59e0b" />
-                              <Text className="text-[11px] font-semibold text-foreground">
-                                {f.rating || "4.9"}
-                              </Text>
-                            </View>
-                            <Text className="text-[11px] text-muted-foreground">•</Text>
-                            <Text className="text-[11px] font-medium text-emerald-600">Disponível</Text>
-                          </View>
                         </View>
 
                         <View className="flex-row items-center gap-2">

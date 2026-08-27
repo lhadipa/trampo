@@ -9,7 +9,9 @@ import { Field, Input } from "../src/components/ui/Input";
 import { ScreenHeader } from "../src/components/ui/ScreenHeader";
 import { toast } from "../src/components/ui/Toast";
 import { ALL_SERVICE_TYPES } from "../src/lib/categories";
-import { showcaseWorkers } from "../src/lib/demoData";
+import { api } from "../src/lib/api";
+
+type Profissional = { id: string; name: string; category: string };
 
 /** Porte de src/pages/UrgentRequest.tsx (Radar SOS Turbo). */
 export default function Urgente() {
@@ -18,6 +20,27 @@ export default function Urgente() {
   const [details, setDetails] = useState("");
   const [address, setAddress] = useState("Centro / São João del-Rei - MG");
   const [invitedIds, setInvitedIds] = useState<string[]>([]);
+  const [workers, setWorkers] = useState<Profissional[]>([]);
+
+  // Profissionais reais cadastrados, filtrados pela especialidade informada.
+  useEffect(() => {
+    (async () => {
+      const { data } = await api.from("freelancers").select("*,users(name,email)");
+      const lista: Profissional[] = (data || []).map((f: any) => ({
+        id: f.id,
+        name: f.users?.name || "Profissional",
+        category: f.category || "Serviços gerais",
+      }));
+      const busca = service.trim().toLowerCase();
+      setWorkers(
+        busca
+          ? lista.filter(
+              (p) => p.category.toLowerCase().includes(busca) || busca.includes(p.category.toLowerCase()),
+            )
+          : lista,
+      );
+    })();
+  }, [service, step]);
 
   // A busca e' simulada, igual ao web: mostra o estado de "procurando" antes dos resultados.
   useEffect(() => {
@@ -34,17 +57,17 @@ export default function Urgente() {
     setStep("searching");
   };
 
-  const invite = (worker: (typeof showcaseWorkers)[number]) => {
-    if (invitedIds.includes(worker.user_id)) return;
-    setInvitedIds((prev) => [...prev, worker.user_id]);
+  const invite = (worker: Profissional) => {
+    if (invitedIds.includes(worker.id)) return;
+    setInvitedIds((prev) => [...prev, worker.id]);
     toast.success(`Disparo SOS enviado para ${worker.name}! 🚀`, {
       description: "O profissional recebe a notificação em tempo real.",
     });
   };
 
   const inviteAll = () => {
-    setInvitedIds(showcaseWorkers.map((w) => w.user_id));
-    toast.success(`${showcaseWorkers.length} profissionais notificados em tempo real! 🚨`, {
+    setInvitedIds(workers.map((w) => w.id));
+    toast.success(`${workers.length} profissionais notificados em tempo real! 🚨`, {
       description: "Quem estiver disponível responde em minutos.",
     });
   };
@@ -148,17 +171,27 @@ export default function Urgente() {
           <>
             <View className="flex-row items-center justify-between gap-2">
               <Text className="flex-1 text-xl font-bold text-foreground">
-                {showcaseWorkers.length} profissionais de plantão
+                {workers.length} profissionais de plantão
               </Text>
               <Button size="sm" onPress={inviteAll}>
                 Chamar todos
               </Button>
             </View>
 
-            {showcaseWorkers.map((worker) => {
-              const invited = invitedIds.includes(worker.user_id);
+            {workers.length === 0 ? (
+              <Card>
+                <CardContent>
+                  <Text className="py-6 text-center text-sm text-muted-foreground">
+                    Nenhum profissional cadastrado nessa especialidade ainda.
+                  </Text>
+                </CardContent>
+              </Card>
+            ) : null}
+
+            {workers.map((worker) => {
+              const invited = invitedIds.includes(worker.id);
               return (
-                <Card key={worker.user_id}>
+                <Card key={worker.id}>
                   <CardContent className="flex-row items-center gap-3">
                     <View className="h-12 w-12 items-center justify-center rounded-2xl bg-secondary">
                       <Text className="text-sm font-bold text-secondary-foreground">
@@ -178,18 +211,6 @@ export default function Urgente() {
                         {worker.category}
                       </Text>
                       <View className="mt-1 flex-row items-center gap-2.5">
-                        <View className="flex-row items-center gap-1">
-                          <Star size={11} color="#f59e0b" fill="#f59e0b" />
-                          <Text className="text-[11px] font-semibold text-foreground">
-                            {worker.rating}
-                          </Text>
-                        </View>
-                        <View className="flex-row items-center gap-1">
-                          <MapPin size={11} color="#78716c" />
-                          <Text className="text-[11px] text-muted-foreground">
-                            {worker.location}
-                          </Text>
-                        </View>
                       </View>
                     </View>
 

@@ -28,48 +28,6 @@ const Chat = () => {
   useEffect(() => {
     if (!profile || !conversationId) return;
 
-    if (conversationId.startsWith("demo-")) {
-      const isConv1 = conversationId === "demo-conv-1";
-      setConversation({
-        id: conversationId,
-        unlocked: isConv1,
-        unlock_price: 4.90,
-        company_user_id: profile.type === "empresa" ? profile.id : "other-company",
-        freelancer_user_id: profile.type === "empresa" ? "other-freelancer" : profile.id,
-      });
-
-      setOtherUser({
-        id: "demo-other",
-        name: profile.type === "empresa" ? (isConv1 ? "Carlos Eduardo (Pintor)" : "Rodrigo (Piscineiro)") : "Restaurante & Hotel Fazenda Solar",
-        type: profile.type === "empresa" ? "freelancer" : "company",
-      });
-
-      setMessages([
-        {
-          id: "m-1",
-          conversation_id: conversationId,
-          sender_id: "demo-other",
-          content: isConv1 ? "Olá! Tudo bem? Vi a vaga de pintura em SJDR e tenho total disponibilidade." : "Olá! Trabalho com manutenção de piscinas em toda a região das Vertentes.",
-          created_at: new Date(Date.now() - 3600000).toISOString(),
-        },
-        {
-          id: "m-2",
-          conversation_id: conversationId,
-          sender_id: profile.id,
-          content: isConv1 ? "Excelente Carlos! Precisamos para iniciar amanhã cedo. O valor de R$ 180 pela diária está de acordo?" : "Ótimo! O serviço é para a sexta-feira.",
-          created_at: new Date(Date.now() - 1800000).toISOString(),
-        },
-        {
-          id: "m-3",
-          conversation_id: conversationId,
-          sender_id: "demo-other",
-          content: isConv1 ? "Perfeito! Estarei no local amanhã às 08:00 com os equipamentos." : "Combinado! Pode contar comigo.",
-          created_at: new Date(Date.now() - 900000).toISOString(),
-        },
-      ]);
-      return;
-    }
-
     const loadConversation = async () => {
       const { data: conv } = await supabase
         .from("conversations")
@@ -128,15 +86,6 @@ const Chat = () => {
     if (!conversation || !profile) return;
     setUnlocking(true);
 
-    if (conversationId?.startsWith("demo-")) {
-      setTimeout(() => {
-        setConversation({ ...conversation, unlocked: true });
-        toast.success("Chat desbloqueado com sucesso! 🎉");
-        setUnlocking(false);
-      }, 500);
-      return;
-    }
-
     // Debito de saldo, desbloqueio e registro do pagamento acontecem em uma
     // transacao no servidor -- o cliente nao pode escrever no proprio saldo.
     const { data, error } = await mockPayments.unlockChat(conversation.id);
@@ -149,21 +98,17 @@ const Chat = () => {
 
     setConversation(data.conversation ?? { ...conversation, unlocked: true });
     if (typeof data.balance === "number") setBalance(data.balance);
-    toast.success("Chat desbloqueado! 🎉 (pagamento simulado)");
+    toast.success("Chat desbloqueado! 🎉");
     setUnlocking(false);
   };
 
   const handleTopup = async () => {
-    if (conversationId?.startsWith("demo-")) {
-      toast.success("Saldo simulado adicionado");
-      return;
-    }
     setUnlocking(true);
     const { data, error } = await mockPayments.topup(50);
     if (error) toast.error(error.message);
     else {
       setBalance(data.balance);
-      toast.success("R$ 50,00 adicionados (simulado)");
+      toast.success("R$ 50,00 adicionados ao seu saldo");
     }
     setUnlocking(false);
   };
@@ -173,34 +118,6 @@ const Chat = () => {
     setSending(true);
 
     const messageText = newMessage.trim();
-
-    if (conversationId?.startsWith("demo-")) {
-      const msgObj = {
-        id: `demo-msg-${Date.now()}`,
-        conversation_id: conversation.id,
-        sender_id: profile.id,
-        content: messageText,
-        created_at: new Date().toISOString(),
-      };
-      setMessages((prev) => [...prev, msgObj]);
-      setNewMessage("");
-      setSending(false);
-
-      // Simular resposta automática em 1.5s
-      setTimeout(() => {
-        setMessages((prev) => [
-          ...prev,
-          {
-            id: `demo-msg-reply-${Date.now()}`,
-            conversation_id: conversation.id,
-            sender_id: "demo-other",
-            content: "Recebido! Confirmo que estarei presente no horário combinado. Obrigado pela oportunidade!",
-            created_at: new Date().toISOString(),
-          },
-        ]);
-      }, 1500);
-      return;
-    }
 
     const { data, error } = await supabase.from("messages").insert({
       conversation_id: conversation.id,
@@ -277,11 +194,8 @@ const Chat = () => {
               </Button>
               <p className="text-xs text-muted-foreground">Seu saldo: R$ {(balance ?? profile.balance ?? 0).toFixed(2)}</p>
               <Button variant="outline" size="sm" className="w-full" onClick={handleTopup} disabled={unlocking}>
-                Adicionar R$ 50 (saldo simulado)
+                Adicionar R$ 50 ao saldo
               </Button>
-              <p className="text-[10px] text-muted-foreground">
-                Ambiente de demonstração: nenhum pagamento real é processado.
-              </p>
             </CardContent>
           </Card>
         ) : (

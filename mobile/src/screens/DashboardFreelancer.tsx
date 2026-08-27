@@ -24,7 +24,7 @@ import { toast } from "../components/ui/Toast";
 import { useAuth } from "../hooks/useAuth";
 import { api } from "../lib/api";
 import { SERVICE_CATEGORIES } from "../lib/categories";
-import { escrowStatusLabel, showcaseEscrows, showcaseJobs } from "../lib/demoData";
+import { escrowStatusLabel } from "../lib/escrow";
 
 /** Porte de src/pages/DashboardFreelancer.tsx. */
 export const DashboardFreelancer = () => {
@@ -47,13 +47,13 @@ export const DashboardFreelancer = () => {
         .from("jobs")
         .select("*,companies(name)")
         .order("created_at", { ascending: false });
-      setJobs(jobsData?.length ? jobsData : showcaseJobs);
+      setJobs(jobsData || []);
 
       const { data: escrowData } = await api
         .from("escrow")
         .select("*,users(name)")
         .order("created_at", { ascending: false });
-      setEscrows(escrowData?.length ? escrowData : showcaseEscrows);
+      setEscrows(escrowData || []);
     })();
   }, [profile]);
 
@@ -118,12 +118,6 @@ export const DashboardFreelancer = () => {
             <Text className="text-2xl font-bold text-foreground">
               Olá, {profile?.name || "Profissional"} 👋
             </Text>
-            <View className="flex-row items-center gap-1.5 self-start rounded-full bg-amber-500/10 px-2.5 py-1">
-              <Star size={12} color="#f59e0b" fill="#f59e0b" />
-              <Text className="text-[10px] font-bold text-amber-600">
-                Profissional Verificado Ouro
-              </Text>
-            </View>
             <Text className="mt-0.5 text-xs text-muted-foreground">
               Diárias em Pintura, Piscinas, Elétrica, Gastronomia, Limpeza e Eventos
             </Text>

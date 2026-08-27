@@ -1,49 +1,67 @@
 import { useLocalSearchParams } from "expo-router";
 import { Send, ShieldCheck } from "lucide-react-native";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, View } from "react-native";
 
 import { Input } from "../../src/components/ui/Input";
 import { ScreenHeader } from "../../src/components/ui/ScreenHeader";
 import { useAuth } from "../../src/hooks/useAuth";
+import { api } from "../../src/lib/api";
 
 /** Porte de src/pages/Chat.tsx. */
 type Message = { id: string; mine: boolean; content: string; time: string };
 
-const seedMessages: Message[] = [
-  {
-    id: "m1",
-    mine: false,
-    content: "Boa tarde! Vi sua vaga de pintura. Consigo passar aí amanhã pela manhã.",
-    time: "14:02",
-  },
-  { id: "m2", mine: true, content: "Perfeito! Que horas você chega?", time: "14:05" },
-  {
-    id: "m3",
-    mine: false,
-    content: "Por volta das 8h. Levo rolo e lixa, a tinta fica por sua conta, combinado?",
-    time: "14:06",
-  },
-];
+const hora = (iso: string) =>
+  new Date(iso).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
 
 export default function Chat() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { profile } = useAuth();
-  const [messages, setMessages] = useState<Message[]>(seedMessages);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [draft, setDraft] = useState("");
 
-  const send = () => {
+  const paraMensagem = (linha: any): Message => ({
+    id: linha.id,
+    mine: linha.sender_id === profile?.id,
+    content: linha.content,
+    time: hora(linha.created_at),
+  });
+
+  // A API nao tem canal de realtime, entao as mensagens do outro lado chegam
+  // por consulta periodica.
+  useEffect(() => {
+    if (!id || !profile) return;
+
+    const carregar = async () => {
+      const { data } = await api
+        .from("messages")
+        .select("*")
+        .eq("conversation_id", id)
+        .order("created_at", { ascending: true });
+      if (!data) return;
+      setMessages((prev) => (prev.length === data.length ? prev : data.map(paraMensagem)));
+    };
+
+    carregar();
+    const intervalo = setInterval(carregar, 5000);
+    return () => clearInterval(intervalo);
+  }, [id, profile]);
+
+  const send = async () => {
     const content = draft.trim();
-    if (!content) return;
-    setMessages((prev) => [
-      ...prev,
-      {
-        id: `m-${prev.length + 1}`,
-        mine: true,
-        content,
-        time: new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
-      },
-    ]);
+    if (!content || !profile || !id) return;
+
+    const { data, error } = await api
+      .from("messages")
+      .insert({ conversation_id: id, sender_id: profile.id, content });
+    if (error) return;
+
+    const enviada = Array.isArray(data) ? data[0] : data;
+    if (enviada) {
+      setMessages((prev) =>
+        prev.some((m) => m.id === enviada.id) ? prev : [...prev, paraMensagem(enviada)],
+      );
+    }
     setDraft("");
   };
 

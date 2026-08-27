@@ -50,7 +50,7 @@ export const mockPayments = {
   },
 };
 
-export const isSupabaseConfigured = true;
+
 export const supabase: any = {
   from: (table: string) => new QueryBuilder(table),
   channel: () => ({ on: () => ({ subscribe: () => ({}) }) }),

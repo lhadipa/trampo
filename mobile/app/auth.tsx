@@ -19,13 +19,11 @@ import { Button } from "../src/components/ui/Button";
 import { Card, CardContent } from "../src/components/ui/Card";
 import { Field, Input } from "../src/components/ui/Input";
 import { toast } from "../src/components/ui/Toast";
-import { useAuth, type DemoRole } from "../src/hooks/useAuth";
 import { api } from "../src/lib/api";
 
 /** Porte de src/pages/Auth.tsx. */
 export default function Auth() {
   const router = useRouter();
-  const { loginAsDemo } = useAuth();
   const insets = useSafeAreaInsets();
 
   const [loading, setLoading] = useState(false);
@@ -37,51 +35,6 @@ export default function Auth() {
   const [userType, setUserType] = useState<"empresa" | "freelancer">("freelancer");
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [tab, setTab] = useState<"login" | "signup">("login");
-
-  const quickAccess: {
-    role: DemoRole;
-    title: string;
-    subtitle: string;
-    Icon: typeof Building2;
-    tint: string;
-    color: string;
-  }[] = [
-    {
-      role: "empresa",
-      title: "Empresa / Contratante",
-      subtitle: "Publicar vagas, contratar e pagar",
-      Icon: Building2,
-      tint: "bg-orange-500/10",
-      color: "#ea580c",
-    },
-    {
-      role: "freelancer",
-      title: "Trabalhador Autônomo",
-      subtitle: "Candidaturas, agenda de diárias e chat",
-      Icon: HardHat,
-      tint: "bg-blue-500/10",
-      color: "#2563eb",
-    },
-    {
-      role: "admin",
-      title: "Administrador Geral",
-      subtitle: "Métricas, faturamento, cidades e usuários",
-      Icon: ShieldAlert,
-      tint: "bg-emerald-500/10",
-      color: "#059669",
-    },
-  ];
-
-  const handleQuickLogin = (role: DemoRole) => {
-    loginAsDemo(role);
-    const roleLabels: Record<DemoRole, string> = {
-      empresa: "Empresa / Contratante (Hotel Fazenda Solar)",
-      freelancer: "Profissional Autônomo (Carlos Silva)",
-      admin: "Painel do Administrador Geral",
-    };
-    toast.success(`Acesso rápido liberado! Entrando como ${roleLabels[role]} 🎉`);
-    router.replace("/painel");
-  };
 
   const handleLogin = async () => {
     if (!loginEmail || !loginPassword) {
@@ -155,45 +108,6 @@ export default function Auth() {
               Trabalho rápido e seguro em São João del-Rei e região
             </Text>
           </View>
-
-          {/* Acesso rápido de teste */}
-          <Card className="border-primary/30 bg-primary/5">
-            <CardContent className="gap-3">
-              <View className="flex-row items-center justify-between">
-                <View className="flex-row items-center gap-2">
-                  <Zap size={16} color="#e85d04" />
-                  <Text className="text-xs font-bold uppercase tracking-wider text-primary">
-                    Acesso Rápido de Teste
-                  </Text>
-                </View>
-                <Badge variant="outline">1 Clique</Badge>
-              </View>
-              <Text className="text-xs text-muted-foreground">
-                Entre imediatamente sem formulários para testar os recursos de cada perfil:
-              </Text>
-
-              <View className="gap-2 pt-1">
-                {quickAccess.map(({ role, title, subtitle, Icon, tint, color }) => (
-                  <Pressable
-                    key={role}
-                    onPress={() => handleQuickLogin(role)}
-                    className="flex-row items-center justify-between rounded-xl border border-border bg-background p-2.5 active:bg-primary/10"
-                  >
-                    <View className="flex-1 flex-row items-center gap-2.5">
-                      <View className={`rounded-lg p-2 ${tint}`}>
-                        <Icon size={16} color={color} />
-                      </View>
-                      <View className="flex-1">
-                        <Text className="text-xs font-bold text-foreground">{title}</Text>
-                        <Text className="text-[11px] text-muted-foreground">{subtitle}</Text>
-                      </View>
-                    </View>
-                    <ArrowRight size={14} color="#78716c" />
-                  </Pressable>
-                ))}
-              </View>
-            </CardContent>
-          </Card>
 
           {/* Login / Cadastro */}
           <Card>

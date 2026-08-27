@@ -8,7 +8,6 @@ import { ScreenHeader } from "../src/components/ui/ScreenHeader";
 import { EmptyState } from "../src/components/ui/Tabs";
 import { useAuth } from "../src/hooks/useAuth";
 import { api } from "../src/lib/api";
-import { showcaseWorkers } from "../src/lib/demoData";
 
 /** Porte de src/pages/Conversations.tsx. */
 export default function Conversas() {
@@ -23,21 +22,7 @@ export default function Conversas() {
         .select("*")
         .order("created_at", { ascending: false });
 
-      // Sem conversas reais, mostra a lista de demonstracao (mesma regra do web)
-      setConversations(
-        data?.length
-          ? data
-          : showcaseWorkers.slice(0, 4).map((w, index) => ({
-              id: `demo-conv-${index + 1}`,
-              name: w.name,
-              category: w.category,
-              preview:
-                index === 0
-                  ? "Boa tarde! Consigo passar aí amanhã pela manhã."
-                  : "Combinado, me chama quando precisar.",
-              unlocked: index < 2,
-            })),
-      );
+      setConversations(data || []);
     })();
   }, [profile]);
 

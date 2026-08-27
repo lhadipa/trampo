@@ -17,8 +17,7 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://trampo-api-5azl.onrender.com",
-        "EXPO_PUBLIC_ENV": "demo"
+        "EXPO_PUBLIC_API_URL": "https://trampo-api-5azl.onrender.com"
       }
     },
     "preview-lan": {
@@ -27,8 +26,7 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_API_URL": "http://192.168.15.7:3001",
-        "EXPO_PUBLIC_ENV": "demo"
+        "EXPO_PUBLIC_API_URL": "http://192.168.15.7:3001"
       }
     },
     "production": {
@@ -37,8 +35,7 @@
         "buildType": "app-bundle"
       },
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://trampo-api-5azl.onrender.com",
-        "EXPO_PUBLIC_ENV": "demo"
+        "EXPO_PUBLIC_API_URL": "https://trampo-api-5azl.onrender.com"
       }
     }
   },

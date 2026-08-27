@@ -7,7 +7,6 @@ import { Hero } from "../src/components/landing/Hero";
 import { HowItWorks } from "../src/components/landing/HowItWorks";
 import { Navbar } from "../src/components/landing/Navbar";
 import { Pricing } from "../src/components/landing/Pricing";
-import { Testimonials } from "../src/components/landing/Testimonials";
 
 /** Porte de src/pages/Index.tsx — mesma ordem de secoes da landing web. */
 export default function Index() {
@@ -19,7 +18,6 @@ export default function Index() {
         <HowItWorks />
         <Categories />
         <Pricing />
-        <Testimonials />
         <CTA />
         <Footer />
       </ScrollView>

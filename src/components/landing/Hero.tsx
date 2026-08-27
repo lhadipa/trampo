@@ -24,7 +24,6 @@ const stats = [
   { value: "40+", label: "categorias de serviços" },
   { value: "R$ 0", label: "mensalidade para começar" },
   { value: "100%", label: "proteção financeira (Escrow)" },
-  { value: "< 5 min", label: "para encontrar um profissional" },
 ];
 
 const Hero = () => {

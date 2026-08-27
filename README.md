@@ -1,26 +1,106 @@
-# João de Ofertas
+# Trampô
 
-Bruno, se a ideia é criar um app de freelancers para São João del Rei e região, o caminho mais forte é não ser só um “classificados de bicos”, mas sim um ecossistema de trabalho rápido para restaurantes, eventos, comércio e serviços. Isso resolve um problema real da cidade: empresa precisa de gente rápido e trabalhador precisa de renda rápida.
+Plataforma de contratação de diárias e serviços autônomos em São João del-Rei e região.
+Conecta contratantes (restaurantes, hotéis, comércio, eventos) a profissionais
+autônomos, com custódia do valor até a conclusão do serviço.
 
-This project was built with [Lovable](https://lovable.dev).
+- **Web**: https://trampo-hazel.vercel.app
+- **API**: https://trampo-api-5azl.onrender.com
 
-**Live app**: https://sjdr-rapid-flow.lovable.app
+## Estrutura
 
-## Build with Lovable
+| Pasta | O que é |
+|---|---|
+| `src/` | App web (React + Vite + Tailwind + shadcn/ui) |
+| `server/` | API (Express + Postgres) — `index.js`, `schema.sql`, `seed.js`, `migrate.js` |
+| `mobile/` | App React Native (Expo Router + NativeWind) |
+| `docs/DEPLOY.md` | Passo a passo de publicação |
 
-Continue developing this project in the [Lovable editor](https://lovable.dev/projects/2353f4cb-3394-4ff1-aa19-d5d951ec2cdc).
+## Rodando localmente
 
-- **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: every change made in Lovable is committed straight to this repository.
-- **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Lovable, ready for your next prompt.
+Precisa de **Node.js 22+**. Para o banco, use Docker ou aponte para um Postgres existente.
 
-## Development
+### 1. Variáveis de ambiente
 
-Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
+Copie o modelo e ajuste:
 
 ```sh
-git clone <this-repository-url>
-cd <repository-name>
-npm i
-npm run dev
+cp .env.example .env
 ```
+
+As variáveis estão documentadas no próprio arquivo. As que importam para subir local:
+
+| Variável | Para quê | Valor local |
+|---|---|---|
+| `DATABASE_URL` | conexão do Postgres | `postgres://trampo:trampo_local_dev@localhost:55433/trampo` |
+| `JWT_SECRET` | assinatura dos tokens | qualquer valor em dev; **obrigatório** em produção |
+| `VITE_API_URL` | URL da API que o front chama | `http://localhost:3001` |
+| `ALLOWED_ORIGINS` | origens liberadas no CORS | pode ficar vazio em dev |
+
+`VITE_API_URL` é lida em tempo de **build** pelo Vite: se mudar, reinicie o `npm run dev`.
+
+### 2. Banco de dados
+
+Com Docker:
+
+```sh
+docker compose -f docker-compose.local.yml up -d postgres
+```
+
+Aplique o schema e popule dados iniciais:
+
+```sh
+npm run db:migrate
+npm run seed
+```
+
+O seed cria contas de teste (senha `trampo123`, ou defina `SEED_PASSWORD`):
+`empresa@trampo.app`, `pintor@trampo.app`, `piscineiro@trampo.app`,
+`garcom@trampo.app` e `admin@trampo.app`.
+
+### 3. Subir API e web
+
+Em dois terminais:
+
+```sh
+npm run dev:api    # API em http://localhost:3001
+npm run dev        # web em http://localhost:8080
+```
+
+### 4. App mobile (opcional)
+
+```sh
+cd mobile
+npm install
+npm start
+```
+
+No Expo Go o celular é outro dispositivo: o app deriva o IP da sua máquina pelo
+host do Metro automaticamente. Se precisar forçar, defina `EXPO_PUBLIC_API_URL`.
+
+## Scripts
+
+| Comando | O que faz |
+|---|---|
+| `npm run dev` | web em modo desenvolvimento |
+| `npm run dev:api` | API local |
+| `npm run build` | build de produção da web |
+| `npm start` | API em produção |
+| `npm run db:migrate` | aplica `server/schema.sql` |
+| `npm run seed` | popula dados iniciais (idempotente) |
+| `npm test` | testes (Vitest) |
+
+## Pagamentos
+
+Não há gateway de pagamento integrado. O saldo é um número em `users.balance`,
+movido pelos endpoints `POST /api/mock/wallet/topup` e
+`POST /api/mock/chat-unlock` — este último debita, desbloqueia a conversa e
+registra o pagamento numa transação. A custódia (`escrow`) muda de `held` para
+`released` sem movimentação financeira real.
+
+Para integrar um provedor de verdade, substitua essas duas rotas; o resto do
+fluxo não muda.
+
+## Deploy
+
+Ver `docs/DEPLOY.md`.

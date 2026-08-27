@@ -20,22 +20,10 @@ import {
   PhoneCall,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { ALL_SERVICE_TYPES, SERVICE_CATEGORIES } from "@/lib/categories";
-
-const mockMultiWorkers = [
-  { id: 1, name: "Carlos Eduardo P.", service: "Pintor Residencial / Comercial", category: "reformas-manutencao", rating: 4.9, jobsDone: 38, distance: "1.4 km", avatar: "CP", verified: true },
-  { id: 2, name: "Rodrigo Alencar", service: "Limpador de Piscina / Piscineiro", category: "piscinas-conservacao", rating: 5.0, jobsDone: 52, distance: "2.1 km", avatar: "RA", verified: true },
-  { id: 3, name: "Marcos Vinicius", service: "Eletricista", category: "reformas-manutencao", rating: 4.8, jobsDone: 44, distance: "0.9 km", avatar: "MV", verified: true },
-  { id: 4, name: "Lucas Silveira", service: "Garçom / Garçonete", category: "gastronomia-hospitalidade", rating: 4.9, jobsDone: 61, distance: "1.2 km", avatar: "LS", verified: true },
-  { id: 5, name: "Mariana Costa", service: "Faxineira / Diarista Residencial", category: "piscinas-conservacao", rating: 5.0, jobsDone: 77, distance: "1.8 km", avatar: "MC", verified: true },
-  { id: 6, name: "Felipe Andrade", service: "Montador de Móveis", category: "reformas-manutencao", rating: 4.7, jobsDone: 29, distance: "3.0 km", avatar: "FA", verified: true },
-  { id: 7, name: "Juliana Mendes", service: "Cozinheiro(a)", category: "gastronomia-hospitalidade", rating: 4.9, jobsDone: 43, distance: "2.5 km", avatar: "JM", verified: true },
-  { id: 8, name: "Diego Barbosa", service: "Barman / Bartender", category: "gastronomia-hospitalidade", rating: 4.8, jobsDone: 35, distance: "1.7 km", avatar: "DB", verified: true },
-  { id: 9, name: "Bruno Carvalho", service: "Encanador / Bombeiro Hidráulico", category: "reformas-manutencao", rating: 4.9, jobsDone: 40, distance: "2.2 km", avatar: "BC", verified: true },
-  { id: 10, name: "Gabriel Souza", service: "Entregador / Motoboy", category: "logistica-comercio", rating: 4.8, jobsDone: 89, distance: "0.6 km", avatar: "GS", verified: true },
-];
+import { supabase } from "@/integrations/supabase/client";
 
 const UrgentRequest = () => {
   const navigate = useNavigate();
@@ -44,19 +32,38 @@ const UrgentRequest = () => {
   const [customService, setCustomService] = useState("");
   const [details, setDetails] = useState("");
   const [address, setAddress] = useState("Centro / São João del-Rei - MG");
-  const [invitedIds, setInvitedIds] = useState<number[]>([]);
+  const [invitedIds, setInvitedIds] = useState<string[]>([]);
+  const [workers, setWorkers] = useState<any[]>([]);
 
   const selectedServiceText = customService.trim() || service;
 
-  const filteredWorkers = selectedServiceText
-    ? mockMultiWorkers.filter(
-        (w) =>
-          w.service.toLowerCase().includes(selectedServiceText.toLowerCase()) ||
-          selectedServiceText.toLowerCase().includes(w.service.toLowerCase())
-      )
-    : mockMultiWorkers;
+  // Profissionais reais cadastrados; a busca filtra pela categoria informada.
+  useEffect(() => {
+    const load = async () => {
+      const { data } = await supabase
+        .from("freelancers")
+        .select("*, users!freelancers_user_id_fkey(name, email)");
+      setWorkers(data || []);
+    };
+    load();
+  }, []);
 
-  const displayWorkers = filteredWorkers.length > 0 ? filteredWorkers : mockMultiWorkers.slice(0, 4);
+  const iniciais = (nome: string) =>
+    nome.split(" ").filter(Boolean).slice(0, 2).map((parte) => parte[0]?.toUpperCase()).join("");
+
+  const displayWorkers = (selectedServiceText
+    ? workers.filter((w) => {
+        const categoria = (w.category || "").toLowerCase();
+        const busca = selectedServiceText.toLowerCase();
+        return categoria.includes(busca) || busca.includes(categoria);
+      })
+    : workers
+  ).map((w) => ({
+    id: w.id as string,
+    name: w.users?.name || "Profissional",
+    service: w.category || "Serviços gerais",
+    avatar: iniciais(w.users?.name || "P"),
+  }));
 
   const handleSearch = () => {
     if (!selectedServiceText) {
@@ -67,7 +74,7 @@ const UrgentRequest = () => {
     setTimeout(() => setStep("results"), 2000);
   };
 
-  const handleInvite = (workerId: number, workerName: string) => {
+  const handleInvite = (workerId: string, workerName: string) => {
     setInvitedIds((prev) => [...prev, workerId]);
     toast.success(`Disparo SOS enviado para ${workerName}! 🚀`, {
       description: "Notificação push e WhatsApp enviada com sucesso.",
@@ -263,6 +270,19 @@ const UrgentRequest = () => {
             )}
 
             {/* Worker list */}
+            {displayWorkers.length === 0 && (
+              <Card className="border-dashed">
+                <CardContent className="py-10 text-center space-y-1">
+                  <p className="text-sm font-medium text-foreground">
+                    Nenhum profissional cadastrado nessa especialidade ainda.
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Tente outra especialidade ou publique uma vaga para receber candidaturas.
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+
             <div className="space-y-3">
               {displayWorkers.map((worker) => {
                 const invited = invitedIds.includes(worker.id);
@@ -279,26 +299,8 @@ const UrgentRequest = () => {
                           {worker.avatar}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-1.5">
-                            <p className="text-sm font-bold text-foreground truncate">{worker.name}</p>
-                            {worker.verified && (
-                              <ShieldCheck className="h-4 w-4 text-primary shrink-0" title="Verificado" />
-                            )}
-                          </div>
+                          <p className="text-sm font-bold text-foreground truncate">{worker.name}</p>
                           <p className="text-xs font-medium text-muted-foreground truncate">{worker.service}</p>
-                          <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
-                            <span className="flex items-center gap-1 font-semibold text-foreground">
-                              <Star className="h-3 w-3 text-amber-500 fill-amber-500" />
-                              {worker.rating}
-                            </span>
-                            <span>•</span>
-                            <span>{worker.jobsDone} serviços</span>
-                            <span>•</span>
-                            <span className="flex items-center gap-1 text-emerald-600 font-medium">
-                              <MapPin className="h-3 w-3" />
-                              {worker.distance}
-                            </span>
-                          </div>
                         </div>
 
                         {invited ? (

@@ -1,29 +1,16 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { isSupabaseConfigured, supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import {
-  Sparkles,
-  ShieldCheck,
-  CheckSquare,
-  Square,
-  Building2,
-  HardHat,
-  ShieldAlert,
-  ArrowRight,
-  Zap,
-} from "lucide-react";
+import { Sparkles, CheckSquare, Square } from "lucide-react";
 import { toast } from "sonner";
 import logo from "@/assets/logo.png";
 
 const Auth = () => {
   const navigate = useNavigate();
-  const { loginAsDemo } = useAuth();
   const [loading, setLoading] = useState(false);
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
@@ -34,30 +21,9 @@ const Auth = () => {
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [tab, setTab] = useState("login");
 
-  const handleQuickLogin = (role: "empresa" | "freelancer" | "admin") => {
-    loginAsDemo(role);
-    const roleLabels = {
-      empresa: "Empresa / Contratante (Hotel Fazenda Solar)",
-      freelancer: "Profissional Autônomo (Carlos Silva)",
-      admin: "Painel do Administrador Geral",
-    };
-    toast.success(`Acesso rápido liberado! Entrando como ${roleLabels[role]} 🎉`);
-    navigate("/painel");
-  };
-
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-
-    if (!isSupabaseConfigured) {
-      setTimeout(() => {
-        loginAsDemo("empresa", { email: loginEmail || "usuario@demo.com", name: loginEmail.split("@")[0] || "Usuário Demo" });
-        setLoading(false);
-        toast.success("Login efetuado com sucesso (Modo Demonstração)!");
-        navigate("/painel");
-      }, 400);
-      return;
-    }
 
     try {
       const { error } = await supabase.auth.signInWithPassword({
@@ -72,11 +38,10 @@ const Auth = () => {
         navigate("/painel");
       }
     } catch {
-      // Fallback gracioso se a rede do Supabase falhar
-      loginAsDemo("empresa", { email: loginEmail });
       setLoading(false);
-      toast.success("Login efetuado no Modo Demonstração!");
-      navigate("/painel");
+      toast.error("Não foi possível entrar", {
+        description: "A conexão com o servidor falhou. Tente novamente em instantes.",
+      });
     }
   };
 
@@ -87,21 +52,6 @@ const Auth = () => {
       return;
     }
     setLoading(true);
-
-    if (!isSupabaseConfigured) {
-      setTimeout(() => {
-        loginAsDemo(userType === "empresa" ? "empresa" : "freelancer", {
-          name: signupName,
-          email: signupEmail,
-        });
-        setLoading(false);
-        toast.success(`Conta criada com sucesso! Bem-vindo(a), ${signupName}! 🎉`, {
-          description: "60 Dias Grátis de Membro Fundador VIP ativados.",
-        });
-        navigate("/painel");
-      }, 400);
-      return;
-    }
 
     try {
       const { error } = await supabase.auth.signUp({
@@ -150,77 +100,6 @@ const Auth = () => {
           </div>
           <p className="text-sm text-muted-foreground">Trabalho rápido e seguro em São João del-Rei e região</p>
         </div>
-
-        {/* 🚀 QUICK TEST DEMO SECTION */}
-        <Card className="border-primary/30 bg-primary/5 shadow-sm overflow-hidden">
-          <CardContent className="p-4 space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Zap className="h-4 w-4 text-primary animate-pulse" />
-                <span className="text-xs font-bold uppercase tracking-wider text-primary">Acesso Rápido de Teste</span>
-              </div>
-              <Badge variant="outline" className="text-[10px] bg-background font-semibold text-primary border-primary/30">
-                1 Clique
-              </Badge>
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Entre imediatamente sem formulários para testar os recursos de cada perfil:
-            </p>
-
-            <div className="grid grid-cols-1 gap-2 pt-1">
-              <button
-                type="button"
-                onClick={() => handleQuickLogin("empresa")}
-                className="group flex items-center justify-between p-2.5 rounded-xl bg-background hover:bg-primary/10 border border-border/80 hover:border-primary/40 transition-all text-left shadow-xs"
-              >
-                <div className="flex items-center gap-2.5">
-                  <div className="p-2 rounded-lg bg-orange-500/10 text-orange-600 font-bold">
-                    <Building2 className="h-4 w-4" />
-                  </div>
-                  <div>
-                    <div className="text-xs font-bold text-foreground">Empresa / Contratante</div>
-                    <div className="text-[11px] text-muted-foreground">Publicar vagas, contratar e pagar</div>
-                  </div>
-                </div>
-                <ArrowRight className="h-3.5 w-3.5 text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleQuickLogin("freelancer")}
-                className="group flex items-center justify-between p-2.5 rounded-xl bg-background hover:bg-primary/10 border border-border/80 hover:border-primary/40 transition-all text-left shadow-xs"
-              >
-                <div className="flex items-center gap-2.5">
-                  <div className="p-2 rounded-lg bg-blue-500/10 text-blue-600 font-bold">
-                    <HardHat className="h-4 w-4" />
-                  </div>
-                  <div>
-                    <div className="text-xs font-bold text-foreground">Trabalhador Autônomo</div>
-                    <div className="text-[11px] text-muted-foreground">Candidaturas, agenda de diárias e chat</div>
-                  </div>
-                </div>
-                <ArrowRight className="h-3.5 w-3.5 text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleQuickLogin("admin")}
-                className="group flex items-center justify-between p-2.5 rounded-xl bg-background hover:bg-primary/10 border border-border/80 hover:border-primary/40 transition-all text-left shadow-xs"
-              >
-                <div className="flex items-center gap-2.5">
-                  <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-600 font-bold">
-                    <ShieldAlert className="h-4 w-4" />
-                  </div>
-                  <div>
-                    <div className="text-xs font-bold text-foreground">Administrador Geral</div>
-                    <div className="text-[11px] text-muted-foreground">Métricas, faturamento, cidades e usuários</div>
-                  </div>
-                </div>
-                <ArrowRight className="h-3.5 w-3.5 text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
-              </button>
-            </div>
-          </CardContent>
-        </Card>
 
         {/* LOGIN / SIGNUP TABS */}
         <Card className="border-border shadow-sm">

@@ -70,7 +70,6 @@ Import do repo; o `vercel.json` já define build, output e o rewrite de SPA.
 | Variável | Valor |
 |---|---|
 | `VITE_API_URL` | `https://trampo-api-5azl.onrender.com` |
-| `VITE_DEMO_MODE` | `true` (mostra a faixa de ambiente de demonstração) |
 
 ## 4. APK — EAS Build
 

@@ -9,16 +9,11 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { getContractState } from "@/lib/contractState";
 
-const demoContracts = [
-  { id: "demo-contract-1", status: "FUNDS_SECURED", amount: 180, start_at: new Date(Date.now() + 3600000 * 5).toISOString(), description: "Garçom para evento", jobs: { title: "Garçom para evento", companies: { name: "Restaurante XPTO" } } },
-  { id: "demo-contract-2", status: "COMPLETED", amount: 220, start_at: new Date(Date.now() - 86400000 * 3).toISOString(), description: "Pintura comercial", jobs: { title: "Pintura comercial", companies: { name: "Imobiliária Vertentes" } } },
-];
-
 const Contracts = () => {
   const { profile } = useAuth();
   const [contracts, setContracts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  useEffect(() => { const load = async () => { if (!profile) return; const { data, error } = await (supabase as any).from("contracts").select("*, jobs(title, companies(name))").order("start_at", { ascending: true }); setContracts(!error && data?.length ? data : demoContracts); setLoading(false); }; load(); }, [profile]);
+  useEffect(() => { const load = async () => { if (!profile) return; const { data, error } = await (supabase as any).from("contracts").select("*, jobs(title, companies(name))").order("start_at", { ascending: true }); setContracts(!error && data ? data : []); setLoading(false); }; load(); }, [profile]);
   const active = contracts.filter((c) => !["COMPLETED", "RELEASED", "CANCELLED"].includes(c.status));
   const completed = contracts.filter((c) => ["COMPLETED", "RELEASED"].includes(c.status));
   const ContractCard = ({ contract }: { contract: any }) => { const state = getContractState(contract.status); return <Card className="rounded-2xl border-border shadow-sm"><CardContent className="p-4 space-y-3"><div className="flex items-start justify-between gap-3"><div><p className="font-bold text-foreground">{contract.jobs?.title || contract.description || "Trampo contratado"}</p><p className="text-xs text-muted-foreground mt-1">{contract.jobs?.companies?.name || "Empresa parceira"}</p></div><Badge variant="outline" className={state.tone}>{state.label}</Badge></div><div className="grid grid-cols-2 gap-2 text-xs"><span className="flex items-center gap-1.5 text-muted-foreground"><CalendarDays className="h-3.5 w-3.5" />{new Date(contract.start_at).toLocaleDateString("pt-BR")}</span><span className="flex items-center gap-1.5 text-muted-foreground"><Clock3 className="h-3.5 w-3.5" />{new Date(contract.start_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</span></div><div className="flex items-center justify-between border-t pt-3"><span className="font-extrabold text-emerald-600">R$ {Number(contract.amount).toFixed(2).replace(".", ",")}</span>{["FUNDS_SECURED", "RELEASED"].includes(contract.status) && <span className="text-[11px] text-emerald-700 flex items-center gap-1"><ShieldCheck className="h-3.5 w-3.5" /> Pagamento protegido</span>}</div></CardContent></Card>; };
