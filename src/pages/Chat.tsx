@@ -104,26 +104,20 @@ const Chat = () => {
 
     loadConversation();
 
-    // Realtime subscription
-    const channel = supabase
-      .channel(`chat-${conversationId}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "messages",
-          filter: `conversation_id=eq.${conversationId}`,
-        },
-        (payload) => {
-          setMessages((prev) => [...prev, payload.new as any]);
-        }
-      )
-      .subscribe();
+    // A API local nao tem canal de realtime, entao as mensagens do outro lado
+    // chegam por consulta periodica. So substitui a lista quando algo mudou,
+    // para nao rolar a tela a cada ciclo.
+    const intervalo = setInterval(async () => {
+      const { data: msgs } = await supabase
+        .from("messages")
+        .select("*")
+        .eq("conversation_id", conversationId)
+        .order("created_at", { ascending: true });
+      if (!msgs) return;
+      setMessages((prev) => (prev.length === msgs.length ? prev : msgs));
+    }, 5000);
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    return () => clearInterval(intervalo);
   }, [profile, conversationId]);
 
   useEffect(() => {
@@ -208,7 +202,7 @@ const Chat = () => {
       return;
     }
 
-    const { error } = await supabase.from("messages").insert({
+    const { data, error } = await supabase.from("messages").insert({
       conversation_id: conversation.id,
       sender_id: profile.id,
       content: messageText,
@@ -217,6 +211,10 @@ const Chat = () => {
     if (error) {
       toast.error("Erro ao enviar mensagem");
     } else {
+      // A API local nao tem realtime -- supabase.channel() e' um stub. Sem
+      // acrescentar a mensagem aqui ela so apareceria ao recarregar a tela.
+      const enviada = Array.isArray(data) ? data[0] : data;
+      if (enviada) setMessages((prev) => (prev.some((m) => m.id === enviada.id) ? prev : [...prev, enviada]));
       setNewMessage("");
     }
     setSending(false);

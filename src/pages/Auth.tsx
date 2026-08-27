@@ -116,18 +116,19 @@ const Auth = () => {
       if (error) {
         toast.error(error.message);
       } else {
-        toast.success("Conta criada com sucesso! 60 Dias VIP liberados 🎉", {
-          description: "Verifique seu email para confirmar o acesso.",
-        });
+        // O cadastro ja devolve sessao valida -- nao ha confirmacao por email
+        // neste backend. Antes a tela pedia para "verificar o email" e deixava
+        // o usuario parado no login, com a conta criada.
+        toast.success("Conta criada com sucesso! 60 Dias VIP liberados 🎉");
+        navigate("/painel");
       }
     } catch {
-      loginAsDemo(userType === "empresa" ? "empresa" : "freelancer", {
-        name: signupName,
-        email: signupEmail,
-      });
+      // Nao finge sucesso: antes caia num perfil de demonstracao e anunciava
+      // "conta criada", mascarando a falha de rede.
       setLoading(false);
-      toast.success(`Conta criada com sucesso! Bem-vindo(a), ${signupName}! 🎉`);
-      navigate("/painel");
+      toast.error("Não foi possível criar a conta", {
+        description: "A conexão com o servidor falhou. Tente novamente em instantes.",
+      });
     }
   };
 

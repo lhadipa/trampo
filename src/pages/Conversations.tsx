@@ -117,7 +117,9 @@ const Conversations = () => {
                     </p>
                   </div>
                   {!conv.unlocked && (
-                    <Badge className="bg-accent/10 text-accent text-xs shrink-0">R$ {conv.unlock_price}</Badge>
+                    <Badge className="bg-primary/10 text-primary text-xs shrink-0">
+                      R$ {Number(conv.unlock_price ?? 0).toFixed(2).replace(".", ",")}
+                    </Badge>
                   )}
                 </CardContent>
               </Card>

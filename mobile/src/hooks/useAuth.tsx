@@ -152,7 +152,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (restored) {
         setSession(restored);
         setUser(restored.user ?? null);
-        if (restored.user?.id) fetchProfile(restored.user.id);
+        // Aguarda o perfil: as telas que dependem dele redirecionam para o
+        // login quando ele ainda e' null com loading ja em false.
+        if (restored.user?.id) await fetchProfile(restored.user.id);
       }
       setLoading(false);
     })();

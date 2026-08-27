@@ -146,12 +146,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       return;
     }
 
+    /**
+     * O perfil precisa estar carregado antes de baixar o loading.
+     *
+     * Antes o loading virava false na hora e o fetchProfile corria solto: o
+     * Dashboard renderizava com profile ainda null e, como ele redireciona
+     * quem nao tem perfil, mandava de volta para /auth. Na pratica, entrar ou
+     * recarregar o painel logado devolvia a tela de login.
+     */
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
         if (session?.user) {
-          setTimeout(() => fetchProfile(session.user.id), 0);
+          await fetchProfile(session.user.id);
         } else {
           setProfile(null);
           setIsAdmin(false);
@@ -160,10 +168,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     );
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
-      if (session?.user) fetchProfile(session.user.id);
+      if (session?.user) await fetchProfile(session.user.id);
       setLoading(false);
     }).catch(() => {
       setLoading(false);

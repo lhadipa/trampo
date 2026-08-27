@@ -104,13 +104,11 @@ const CreateJob = () => {
 
       navigate("/painel");
     } catch {
-      toast.success(
-        urgent ? "Vaga Urgente Publicada (Modo Demonstração) 🚨" : "Vaga Publicada (Modo Demonstração) 🎉",
-        {
-          description: `Profissionais de "${finalServiceName}" em ${finalLocation} já podem se candidatar.`,
-        }
-      );
-      navigate("/painel");
+      // Antes isto exibia "Publicada com sucesso": a vaga nao era gravada e o
+      // usuario so descobria ao nao encontra-la na lista.
+      toast.error("Não foi possível publicar a vaga", {
+        description: "A conexão com o servidor falhou. Tente novamente em instantes.",
+      });
     } finally {
       setLoading(false);
     }
