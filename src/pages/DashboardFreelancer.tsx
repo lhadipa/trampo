@@ -305,7 +305,7 @@ const DashboardFreelancer = () => {
             <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20">
               <Wallet className="h-4 w-4 text-emerald-600" />
               <span className="font-bold text-sm text-foreground">
-                R$ {(profile?.balance || 380).toFixed(2)}
+                R$ {(profile?.balance ?? 0).toFixed(2)}
               </span>
             </div>
           </div>
@@ -585,7 +585,7 @@ const DashboardFreelancer = () => {
                     Saldo Disponível para Saque Pix
                   </p>
                   <p className="text-4xl font-extrabold tracking-tight mt-1 text-white">
-                    R$ {(profile?.balance || 380).toFixed(2)}
+                    R$ {(profile?.balance ?? 0).toFixed(2)}
                   </p>
                   <p className="text-xs text-emerald-400 mt-2 flex items-center gap-1">
                     <CheckCircle className="h-3.5 w-3.5" /> Transferência instantânea 24/7 sem taxa

@@ -114,13 +114,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         .select("*")
         .eq("auth_id", userId)
         .single();
-      if (data) setProfile(data as any);
+      if (!data) return;
+      setProfile(data as any);
 
+      // user_roles.user_id referencia users.id, nao o auth_id do token.
       const { data: roles } = await supabase
         .from("user_roles")
         .select("role")
-        .eq("user_id", userId);
-      setIsAdmin(roles?.some((r: any) => r.role === "admin") ?? false);
+        .eq("user_id", data.id);
+      setIsAdmin(data.type === "admin" || (roles?.some((r: any) => r.role === "admin") ?? false));
     } catch {
       // Ignora erro se backend não responder
     }

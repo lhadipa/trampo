@@ -21,6 +21,14 @@ const DATABASE_URL = process.env.DATABASE_URL || "postgres://trampo:trampo_local
 // Neon/Render exigem TLS; o Postgres do docker-compose local nao tem certificado.
 const isRemoteDb = !/localhost|127\.0\.0\.1|@postgres[:/]/.test(DATABASE_URL);
 
+/**
+ * Por padrao o driver devolve numeric/decimal como string, para nao perder
+ * precisao em valores grandes. Aqui todo numeric e' dinheiro em reais, bem
+ * dentro do alcance seguro de um double -- e o cliente espera numero: um
+ * balance "500" quebrava .toFixed() e derrubava a tela inteira.
+ */
+pg.types.setTypeParser(1700, (v) => (v === null ? null : Number(v)));
+
 const { Pool } = pg;
 const pool = new Pool({
   connectionString: DATABASE_URL,

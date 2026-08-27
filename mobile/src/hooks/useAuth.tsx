@@ -118,10 +118,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const fetchProfile = async (authId: string) => {
     try {
       const { data } = await api.from("users").select("*").eq("auth_id", authId).single();
-      if (data) setProfile(data as Profile);
+      if (!data) return;
+      setProfile(data as Profile);
 
-      const { data: roles } = await api.from("user_roles").select("role").eq("user_id", authId);
-      setIsAdmin(roles?.some((r: any) => r.role === "admin") ?? false);
+      // user_roles.user_id referencia users.id, nao o auth_id do token.
+      const { data: roles } = await api.from("user_roles").select("role").eq("user_id", data.id);
+      setIsAdmin(data.type === "admin" || (roles?.some((r: any) => r.role === "admin") ?? false));
     } catch {
       // API local fora do ar: segue sem perfil enriquecido
     }
