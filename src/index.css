@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,8 +6,8 @@
 
 @layer base {
   :root {
-    --background: 60 11% 98%;
-    --foreground: 24 10% 10%;
+    --background: 40 20% 97%;
+    --foreground: 24 12% 13%;
 
     --card: 0 0% 100%;
     --card-foreground: 24 10% 10%;
@@ -15,14 +15,14 @@
     --popover: 0 0% 100%;
     --popover-foreground: 24 10% 10%;
 
-    --primary: 24 97% 46%;
+    --primary: 24 92% 47%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 20 6% 15%;
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 60 6% 94%;
-    --muted-foreground: 25 6% 45%;
+    --muted: 36 14% 93%;
+    --muted-foreground: 25 7% 43%;
 
     --accent: 24 90% 95%;
     --accent-foreground: 24 60% 20%;
@@ -33,11 +33,11 @@
     --success: 142 72% 36%;
     --success-foreground: 0 0% 100%;
 
-    --border: 60 5% 88%;
-    --input: 60 5% 88%;
-    --ring: 24 97% 46%;
+    --border: 30 10% 86%;
+    --input: 30 10% 82%;
+    --ring: 24 92% 47%;
 
-    --radius: 0.625rem;
+    --radius: 0.5rem;
 
     --sidebar-background: 0 0% 100%;
     --sidebar-foreground: 24 10% 20%;
@@ -49,10 +49,10 @@
     --sidebar-ring: 24 97% 46%;
 
     /* Custom tokens */
-    --gradient-hero: linear-gradient(135deg, hsl(24 97% 46%), hsl(30 95% 55%));
-    --gradient-warm: linear-gradient(135deg, hsl(24 97% 46% / 0.1), hsl(30 95% 55% / 0.1));
-    --shadow-warm: 0 10px 40px -10px hsl(24 97% 46% / 0.3);
-    --shadow-card: 0 4px 20px -4px hsl(24 10% 10% / 0.08);
+    --gradient-hero: hsl(var(--primary));
+    --gradient-warm: hsl(24 92% 47% / 0.08);
+    --shadow-warm: 0 4px 12px hsl(24 12% 13% / 0.12);
+    --shadow-card: 0 1px 2px hsl(24 12% 13% / 0.04);
   }
 
   .dark {
@@ -98,16 +98,16 @@
   }
 
   h1, h2, h3, h4, h5, h6 {
-    @apply font-display;
+    @apply font-body;
   }
 }
 
 @layer utilities {
   .gradient-hero {
-    background: var(--gradient-hero);
+    background: hsl(var(--primary));
   }
   .gradient-warm {
-    background: var(--gradient-warm);
+    background: hsl(24 92% 47% / 0.08);
   }
   .shadow-warm {
     box-shadow: var(--shadow-warm);
@@ -116,9 +116,39 @@
     box-shadow: var(--shadow-card);
   }
   .text-gradient {
-    background: var(--gradient-hero);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: hsl(var(--primary));
   }
+}
+
+/* Visual system: compact, calm surfaces with one consistent radius scale. */
+.rounded-3xl,
+.rounded-2xl { border-radius: 12px !important; }
+.rounded-xl { border-radius: 10px !important; }
+.shadow-warm { box-shadow: var(--shadow-warm) !important; }
+.shadow-card { box-shadow: var(--shadow-card) !important; }
+.shadow-sm, .shadow-md, .shadow-lg, .shadow-xs, .shadow-2xs { box-shadow: 0 1px 2px hsl(24 12% 13% / 0.06) !important; }
+
+/* Authenticated navigation is an operational tab row, never a segmented pill. */
+.tabs-list {
+  background: transparent !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+}
+.tabs-trigger {
+  background: transparent !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+.tabs-trigger[data-state="active"] {
+  border-bottom-color: hsl(var(--primary)) !important;
+}
+
+/* Statuses remain readable through color, without pill containers. */
+.badge {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
 }

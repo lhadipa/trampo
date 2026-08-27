@@ -16,7 +16,6 @@ import {
   MessageSquare,
   ShieldCheck,
   Star,
-  Sparkles,
   CalendarCheck,
   Lock,
   ArrowRight,
@@ -31,6 +30,7 @@ import { toast } from "sonner";
 import logo from "@/assets/logo.png";
 import { SERVICE_CATEGORIES } from "@/lib/categories";
 import { getContractState } from "@/lib/contractState";
+import { ShieldCheck as PhosphorShieldCheck } from "@phosphor-icons/react";
 
 const DashboardFreelancer = () => {
   const { profile, signOut } = useAuth();
@@ -207,7 +207,7 @@ const DashboardFreelancer = () => {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-bold text-foreground">Olá, {profile?.name || "Profissional"} 👋</h1>
+              <h1 className="text-2xl font-bold text-foreground">Olá, {profile?.name || "Profissional"}</h1>
             </div>
             <p className="text-xs text-muted-foreground mt-0.5">
               Diárias em Pintura, Piscinas, Elétrica, Gastronomia, Limpeza e Eventos
@@ -227,10 +227,10 @@ const DashboardFreelancer = () => {
         </div>
 
         {/* Protection & Trust Banner */}
-        <Card className="border-emerald-500/20 bg-emerald-500/5 shadow-2xs rounded-3xl">
+        <Card className="border-border bg-card shadow-none rounded-3xl">
           <CardContent className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
             <div className="flex items-center gap-2.5">
-              <ShieldCheck className="h-5 w-5 text-emerald-600 shrink-0" />
+              <PhosphorShieldCheck size={20} weight="regular" className="text-emerald-600 shrink-0" />
               <span className="text-foreground leading-relaxed">
                 <strong>Garantia Anti-Calote:</strong> O valor do serviço já fica bloqueado na conta da plataforma antes de você iniciar e é transferido para sua chave Pix assim que concluir.
               </span>
@@ -238,7 +238,7 @@ const DashboardFreelancer = () => {
             <Button
               size="sm"
               variant="outline"
-              className="border-emerald-500/30 text-emerald-700 hover:bg-emerald-500/10 shrink-0 rounded-xl"
+              className="border-border text-foreground hover:border-primary hover:bg-primary/5 hover:text-primary shrink-0 rounded-lg"
               onClick={() => navigate("/disponibilidade")}
             >
               Definir Minha Agenda & Raio
@@ -281,10 +281,10 @@ const DashboardFreelancer = () => {
               <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs">
                 <button
                   onClick={() => setSelectedCategory("all")}
-                  className={`px-3 py-1.5 rounded-full font-semibold whitespace-nowrap transition-all ${
+                  className={`px-1 py-1.5 border-b-2 border-transparent font-semibold whitespace-nowrap transition-all ${
                     selectedCategory === "all"
-                      ? "bg-primary text-primary-foreground shadow-xs"
-                      : "bg-muted text-muted-foreground hover:text-foreground"
+                      ? "border-primary text-primary"
+                      : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
                   Todas as Vagas
@@ -293,10 +293,10 @@ const DashboardFreelancer = () => {
                   <button
                     key={cat.id}
                     onClick={() => setSelectedCategory(cat.id)}
-                    className={`px-3 py-1.5 rounded-full font-semibold whitespace-nowrap transition-all ${
-                      selectedCategory === cat.id
-                        ? "bg-primary text-primary-foreground shadow-xs"
-                        : "bg-muted text-muted-foreground hover:text-foreground"
+                  className={`px-1 py-1.5 border-b-2 border-transparent font-semibold whitespace-nowrap transition-all ${
+                    selectedCategory === cat.id
+                      ? "border-primary text-primary"
+                        : "text-muted-foreground hover:text-foreground"
                     }`}
                   >
                     {cat.name}
@@ -499,7 +499,7 @@ const DashboardFreelancer = () => {
 
           {/* Tab 4: Saldo e Saque Pix */}
           <TabsContent value="saldo" className="space-y-4 mt-4">
-            <Card className="border-border bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-3xl p-6 shadow-md">
+            <Card className="border-border bg-secondary text-white rounded-3xl p-6 shadow-md">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                   <p className="text-xs text-slate-300 uppercase tracking-wider font-semibold">

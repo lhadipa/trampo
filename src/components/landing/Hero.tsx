@@ -1,4 +1,4 @@
-import { ArrowRight, CircleCheck, Globe, MapPin, Sparkles, Shield, Zap } from "lucide-react";
+import { ArrowRight, CircleCheck, Globe } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 
@@ -10,14 +10,14 @@ const trustItems = [
 ];
 
 const trendingServices = [
-  "🎨 Pintor",
-  "🏊 Limpador de Piscina",
-  "⚡ Eletricista",
-  "🍽️ Garçom",
-  "🧹 Diarista",
-  "🔧 Montador de Móveis",
-  "✂️ Manicure / Barbeiro",
-  "📦 Entregador",
+  "Pintor",
+  "Limpador de Piscina",
+  "Eletricista",
+  "Garçom",
+  "Diarista",
+  "Montador de Móveis",
+  "Manicure / Barbeiro",
+  "Entregador",
 ];
 
 const stats = [
@@ -31,17 +31,10 @@ const Hero = () => {
 
   return (
     <section id="inicio" className="relative overflow-hidden pt-20 lg:pt-28 pb-16">
-      {/* Background Glow */}
-      <div
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_70%_60%_at_50%_-10%,rgba(232,93,4,0.15),transparent_70%)]"
-        aria-hidden="true"
-      />
-
       <div className="relative mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mx-auto flex max-w-4xl flex-col items-center text-center">
           {/* Tag de Expansão Nacional e Polo */}
-          <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-white/80 px-4 py-1.5 text-xs sm:text-sm font-semibold text-primary shadow-xs backdrop-blur">
-            <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+          <div className="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-primary">
             <Globe className="h-4 w-4" />
             <span>Polo São João del-Rei & Região • Expansão para todo o Brasil</span>
           </div>
@@ -49,7 +42,7 @@ const Hero = () => {
           {/* Título Principal de Alto Impacto */}
           <h1 className="mt-6 text-balance text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-6xl text-foreground">
             O profissional ou serviço certo,{" "}
-            <span className="text-primary bg-gradient-to-r from-primary via-orange-500 to-amber-500 bg-clip-text text-transparent">
+            <span className="text-primary">
               na hora que você precisa.
             </span>
           </h1>
@@ -60,12 +53,12 @@ const Hero = () => {
           </p>
 
           {/* Carrossel de Tags de Serviços em Alta */}
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-2 max-w-3xl">
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 max-w-3xl text-xs">
             <span className="text-xs font-semibold text-muted-foreground mr-1">Serviços em alta:</span>
             {trendingServices.map((service) => (
               <span
                 key={service}
-                className="inline-flex items-center rounded-lg border border-border/80 bg-background/90 px-2.5 py-1 text-xs font-medium text-foreground shadow-2xs hover:border-primary/40 hover:text-primary transition-colors cursor-default"
+                className="font-medium text-foreground/75 after:content-['•'] after:ml-3 last:after:content-['']"
               >
                 {service}
               </span>
@@ -76,16 +69,15 @@ const Hero = () => {
           <div className="mt-9 flex w-full flex-col gap-3.5 sm:w-auto sm:flex-row sm:items-center sm:gap-4">
             <Button
               size="lg"
-              className="h-13 rounded-full px-8 text-base font-bold shadow-md shadow-primary/20 hover:shadow-lg transition-all"
+              className="h-13 rounded-lg px-8 text-base font-bold"
               onClick={() => navigate("/auth")}
             >
-              <Sparkles className="mr-2 h-5 w-5" />
               Preciso de um Profissional
             </Button>
             <Button
               size="lg"
               variant="outline"
-              className="h-13 rounded-full border-border bg-white/80 px-8 text-base font-semibold shadow-xs backdrop-blur hover:bg-muted"
+              className="h-13 rounded-lg border-border bg-white px-8 text-base font-semibold hover:bg-muted"
               onClick={() => navigate("/auth")}
             >
               Quero Trabalhar e Receber no Pix

@@ -46,7 +46,7 @@ const HowItWorks = () => {
               key={step.title}
               className="relative flex flex-col items-center rounded-3xl border border-border/80 bg-white p-8 text-center shadow-xs transition-all hover:border-primary/30 hover:shadow-md"
             >
-              <span className="absolute -top-3.5 rounded-full bg-primary px-3 py-1 text-xs font-bold text-primary-foreground shadow-sm">
+              <span className="text-xs font-bold uppercase tracking-wide text-primary">
                 Passo {index + 1}
               </span>
               <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-primary mb-2">

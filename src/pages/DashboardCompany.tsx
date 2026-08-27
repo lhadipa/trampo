@@ -18,12 +18,11 @@ import {
   ShieldCheck,
   CheckCircle,
   Heart,
-  Sparkles,
   TrendingUp,
   Clock,
   FileText,
   Printer,
-  Zap,
+  BellRing,
   Scale,
   Search,
   MapPin,
@@ -260,7 +259,7 @@ const DashboardCompany = () => {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-bold text-foreground">Olá, {profile?.name || "Contratante"} 👋</h1>
+              <h1 className="text-2xl font-bold text-foreground">Olá, {profile?.name || "Contratante"}</h1>
               <Badge className="bg-primary/10 text-primary border-primary/20 font-semibold text-xs">
                 Membro Fundador VIP
               </Badge>
@@ -276,10 +275,10 @@ const DashboardCompany = () => {
             <Button
               variant="outline"
               size="sm"
-              className="border-destructive/30 text-destructive hover:bg-destructive/10 font-semibold"
+              className="border-border text-foreground hover:border-primary hover:bg-primary/5 hover:text-primary font-semibold"
               onClick={() => navigate("/urgente")}
             >
-              <Zap className="h-4 w-4 mr-1 text-destructive" /> Radar SOS Turbo
+              <BellRing className="h-4 w-4 mr-1 text-primary" /> Chamada urgente
             </Button>
             <Button size="sm" className="font-bold" onClick={() => navigate("/criar-vaga")}>
               <Plus className="h-4 w-4 mr-1" /> Criar Vaga
@@ -288,12 +287,11 @@ const DashboardCompany = () => {
         </div>
 
         {/* ROI & Membership Widget */}
-        <Card className="border-primary/25 bg-gradient-to-r from-primary/10 via-primary/5 to-background shadow-xs rounded-3xl">
+        <Card className="border-border bg-card shadow-none rounded-3xl">
           <CardContent className="p-5">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
-                  <Sparkles className="h-4 w-4 text-primary shrink-0" />
                   <span className="text-sm font-bold text-foreground">
                     Período VIP Ativo: Acesso Completo Liberado (São João del-Rei & Brasil)
                   </span>
@@ -304,7 +302,7 @@ const DashboardCompany = () => {
               </div>
 
               {/* Numeros reais da conta */}
-              <div className="flex items-center gap-4 bg-background/90 border border-border rounded-2xl p-3 shadow-2xs">
+              <div className="flex items-center gap-4 border-l border-border pl-4">
                 <div className="text-center px-2">
                   <div className="flex items-center justify-center gap-1 text-primary font-bold text-base">
                     <Clock className="h-4 w-4" />
@@ -370,10 +368,10 @@ const DashboardCompany = () => {
               <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs">
                 <button
                   onClick={() => setSelectedCategoryFilter("all")}
-                  className={`px-3 py-1.5 rounded-full font-semibold whitespace-nowrap transition-all ${
+                  className={`px-1 py-1.5 border-b-2 border-transparent font-semibold whitespace-nowrap transition-all ${
                     selectedCategoryFilter === "all"
-                      ? "bg-primary text-primary-foreground shadow-xs"
-                      : "bg-muted text-muted-foreground hover:text-foreground"
+                      ? "border-primary text-primary"
+                      : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
                   Todas as Áreas
@@ -382,10 +380,10 @@ const DashboardCompany = () => {
                   <button
                     key={cat.id}
                     onClick={() => setSelectedCategoryFilter(cat.id)}
-                    className={`px-3 py-1.5 rounded-full font-semibold whitespace-nowrap transition-all ${
-                      selectedCategoryFilter === cat.id
-                        ? "bg-primary text-primary-foreground shadow-xs"
-                        : "bg-muted text-muted-foreground hover:text-foreground"
+                  className={`px-1 py-1.5 border-b-2 border-transparent font-semibold whitespace-nowrap transition-all ${
+                    selectedCategoryFilter === cat.id
+                      ? "border-primary text-primary"
+                        : "text-muted-foreground hover:text-foreground"
                     }`}
                   >
                     {cat.name}

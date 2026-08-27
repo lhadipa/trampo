@@ -8,11 +8,9 @@ import {
   Scissors,
   Truck,
   ArrowRight,
-  Sparkles,
   CheckCircle2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { SERVICE_CATEGORIES } from "@/lib/categories";
 
 const iconMap: Record<string, any> = {
@@ -36,8 +34,7 @@ const Categories = () => {
     <section id="categorias" className="py-20 lg:py-28 bg-slate-50/50">
       <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-3xl text-center">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold uppercase tracking-wider">
-            <Sparkles className="h-3.5 w-3.5" />
+          <div className="text-primary text-xs font-semibold uppercase tracking-wider">
             Ecossistema Multi-Serviços
           </div>
           <h2 className="mt-3 text-balance text-3xl font-bold tracking-tight sm:text-4xl text-foreground">
@@ -75,9 +72,9 @@ const Categories = () => {
                     >
                       <IconComponent className="h-6 w-6" aria-hidden="true" />
                     </span>
-                    <Badge variant={isSelected ? "default" : "secondary"} className="text-xs">
+                    <span className="text-xs font-semibold text-muted-foreground">
                       {category.badge}
-                    </Badge>
+                    </span>
                   </div>
 
                   <h3 className="text-lg font-bold text-foreground">{category.name}</h3>
@@ -116,7 +113,7 @@ const Categories = () => {
               </div>
             </div>
             <Button
-              className="rounded-full shadow-sm"
+              className="rounded-lg shadow-none"
               onClick={() => navigate("/auth")}
             >
               Chamar Profissional Agora

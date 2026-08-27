@@ -1,4 +1,4 @@
-import { ArrowRight, Check, Crown, Sparkles, Star, Zap, ShieldCheck, Building2 } from "lucide-react";
+import { ArrowRight, Check, Crown, BriefcaseBusiness, Star, Zap, ShieldCheck, Building2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 
@@ -13,7 +13,7 @@ const plans = [
     period: "por 60 dias",
     featured: true,
     badge: "Oferta de Expansão",
-    icon: Sparkles,
+    icon: BriefcaseBusiness,
     features: [
       "60 dias de acesso VIP 100% liberado",
       "Vagas e chamados ilimitados em qualquer categoria",
@@ -96,10 +96,10 @@ const Pricing = () => {
             >
               {plan.badge && (
                 <span
-                  className={`absolute -top-3.5 left-1/2 -translate-x-1/2 rounded-full px-4 py-1 text-xs font-bold shadow-sm ${
+                  className={`mb-5 text-xs font-bold uppercase tracking-wide ${
                     plan.featured
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-secondary text-secondary-foreground"
+                      ? "text-primary"
+                      : "text-muted-foreground"
                   }`}
                 >
                   {plan.badge}
@@ -139,9 +139,7 @@ const Pricing = () => {
               <Button
                 size="lg"
                 variant={plan.featured ? "default" : "outline"}
-                className={`mt-8 w-full rounded-full font-bold text-sm ${
-                  plan.featured ? "shadow-md shadow-primary/20" : ""
-                }`}
+                className="mt-8 w-full rounded-lg font-bold text-sm shadow-none"
                 onClick={() => navigate("/auth")}
               >
                 {plan.cta}

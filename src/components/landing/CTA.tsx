@@ -1,4 +1,4 @@
-import { ArrowRight, Sparkles, ShieldCheck } from "lucide-react";
+import { ArrowRight, ShieldCheck } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 
@@ -8,14 +8,9 @@ const CTA = () => {
   return (
     <section className="py-20 lg:pb-32 lg:pt-24">
       <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="relative overflow-hidden rounded-[2.5rem] border border-primary/20 bg-gradient-to-b from-primary/10 via-primary/5 to-background px-6 py-16 text-center sm:px-12 lg:py-20 shadow-xs">
-          <div
-            className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_60%_70%_at_50%_100%,rgba(232,93,4,0.15),transparent_70%)]"
-            aria-hidden="true"
-          />
+        <div className="relative overflow-hidden rounded-xl border border-primary/20 bg-primary/5 px-6 py-16 text-center sm:px-12 lg:py-20 shadow-xs">
           <div className="relative mx-auto max-w-3xl">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold uppercase tracking-wider mb-4">
-              <Sparkles className="h-3.5 w-3.5" />
+            <div className="text-primary text-xs font-semibold uppercase tracking-wider mb-4">
               Faça Parte da Revolução do Trabalho
             </div>
             <h2 className="text-balance text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-foreground">
@@ -27,7 +22,7 @@ const CTA = () => {
             <div className="mt-9 flex flex-col gap-3.5 sm:flex-row sm:justify-center">
               <Button
                 size="lg"
-                className="h-13 rounded-full px-8 text-base font-bold shadow-md shadow-primary/20"
+                className="h-13 rounded-lg px-8 text-base font-bold"
                 onClick={() => navigate("/auth")}
               >
                 Garantir 60 Dias Grátis VIP
@@ -36,7 +31,7 @@ const CTA = () => {
               <Button
                 size="lg"
                 variant="outline"
-                className="h-13 rounded-full border-border bg-white/80 px-8 text-base font-semibold shadow-xs backdrop-blur hover:bg-muted"
+                className="h-13 rounded-lg border-border bg-white px-8 text-base font-semibold hover:bg-muted"
                 onClick={() => navigate("/auth")}
               >
                 Quero Trabalhar como Autônomo
