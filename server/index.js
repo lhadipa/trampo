@@ -211,6 +211,27 @@ app.post("/api/mock/chat-unlock", async (req, res) => {
 });
 
 /**
+ * Colunas reais de cada tabela, lidas uma vez e mantidas em memoria.
+ *
+ * Serve para nao ordenar por uma coluna que nao existe: public_profiles e
+ * user_roles nao tem created_at, e o ORDER BY padrao fazia toda consulta a
+ * essas duas tabelas falhar com 42703 -- era por isso que o nome do outro
+ * participante da conversa aparecia como "Usuario" e o papel de admin nunca
+ * era reconhecido.
+ */
+const columnCache = new Map();
+const columnsOf = async (table) => {
+  if (!columnCache.has(table)) {
+    const { rows } = await pool.query(
+      "SELECT column_name FROM information_schema.columns WHERE table_schema = 'public' AND table_name = $1",
+      [table],
+    );
+    columnCache.set(table, new Set(rows.map((r) => r.column_name)));
+  }
+  return columnCache.get(table);
+};
+
+/**
  * Extrai os filtros ?eq.<coluna>=<valor> validando o nome da coluna. Sem essa
  * validacao o nome cairia interpolado direto no SQL.
  */
@@ -265,10 +286,13 @@ app.all("/api/data/:table", async (req, res) => {
     const filters = parseFilters(req.query);
     const values = filters.map(([, v]) => v);
     const where = filters.length ? `WHERE ${filters.map(([column], i) => `${column}=$${i + 1}`).join(" AND ")}` : "";
+    const columns = await columnsOf(table);
     const orderColumn = String(req.query.order || "").split(".")[0];
-    const order = IDENT.test(orderColumn)
+    const order = IDENT.test(orderColumn) && columns.has(orderColumn)
       ? `ORDER BY ${orderColumn} ${String(req.query.order).includes("ascending=false") ? "DESC" : "ASC"}`
-      : "ORDER BY created_at DESC";
+      : columns.has("created_at")
+        ? "ORDER BY created_at DESC"
+        : "";
     const pedido = Number(req.query.limit);
     const limit = Number.isInteger(pedido) && pedido > 0 ? ` LIMIT ${Math.min(pedido, 500)}` : "";
     const result = await pool.query(`SELECT * FROM ${table} ${where} ${order}${limit}`, values);
