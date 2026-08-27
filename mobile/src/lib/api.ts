@@ -81,6 +81,11 @@ class QueryBuilder implements PromiseLike<any> {
     return this;
   }
 
+  limit(count: number) {
+    this.params.set("limit", String(count));
+    return this;
+  }
+
   insert(body: any) {
     this.method = "POST";
     this.body = body;
@@ -98,6 +103,12 @@ class QueryBuilder implements PromiseLike<any> {
       ...result,
       data: Array.isArray(result.data) ? result.data[0] || null : result.data,
     }));
+  }
+
+  // Mesma coisa que single(), mas "nenhuma linha" nao e' erro. Como este shim
+  // ja devolve null nesse caso, as duas se comportam igual.
+  maybeSingle() {
+    return this.single();
   }
 
   async execute() {

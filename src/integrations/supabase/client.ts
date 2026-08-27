@@ -17,9 +17,13 @@ class QueryBuilder implements PromiseLike<any> {
   select(value = "*") { this.params.set("select", value); return this; }
   eq(column: string, value: any) { this.params.set(`eq.${column}`, String(value)); return this; }
   order(column: string, options?: { ascending?: boolean }) { this.params.set("order", `${column}.ascending=${options?.ascending !== false}`); return this; }
+  limit(count: number) { this.params.set("limit", String(count)); return this; }
   insert(body: any) { this.method = "POST"; this.body = body; return this; }
   update(body: any) { this.method = "PATCH"; this.body = body; return this; }
   single() { return this.then((result) => ({ ...result, data: Array.isArray(result.data) ? result.data[0] || null : result.data })); }
+  // Mesma coisa que single(), mas "nenhuma linha" nao e' erro. Como este shim
+  // ja devolve null nesse caso, as duas se comportam igual.
+  maybeSingle() { return this.single(); }
   async execute() {
     const response = await fetch(`${API_URL}/api/data/${this.table}${this.params.size ? `?${this.params}` : ""}`, { method: this.method, headers: headers(), body: this.method === "GET" ? undefined : JSON.stringify(this.body) });
     const result = await response.json().catch(() => ({ data: null, error: { message: response.statusText } }));

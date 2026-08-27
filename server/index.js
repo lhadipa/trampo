@@ -144,7 +144,10 @@ app.get("/api/me", async (req, res) => { const user = await userFrom(req); if (!
 const hydrate = async (table, rows, select) => {
   if (table === "jobs" && select?.includes("companies")) for (const row of rows) { const r = await pool.query("SELECT name FROM companies WHERE id=$1", [row.company_id]); row.companies = r.rows[0] || null; }
   if (table === "applications" && select?.includes("jobs")) for (const row of rows) { const r = await pool.query("SELECT * FROM jobs WHERE id=$1", [row.job_id]); row.jobs = r.rows[0] || null; }
-  if ((table === "freelancers" || table === "escrow") && select?.includes("users")) for (const row of rows) { const uid = table === "escrow" ? row.freelancer_id : row.user_id; const r = await pool.query("SELECT name,email FROM users WHERE id=$1", [uid]); row.users = r.rows[0] || null; }
+  if (table === "freelancers" && select?.includes("users")) for (const row of rows) { const r = await pool.query("SELECT name,email FROM users WHERE id=$1", [row.user_id]); row.users = r.rows[0] || null; }
+  // escrow.freelancer_id aponta para freelancers.id, nao para users.id: o nome
+  // do profissional so aparece passando pela tabela freelancers.
+  if (table === "escrow" && select?.includes("users")) for (const row of rows) { const r = await pool.query("SELECT u.name, u.email FROM freelancers f JOIN users u ON u.id = f.user_id WHERE f.id = $1", [row.freelancer_id]); row.users = r.rows[0] || null; }
   return rows;
 };
 
@@ -266,7 +269,9 @@ app.all("/api/data/:table", async (req, res) => {
     const order = IDENT.test(orderColumn)
       ? `ORDER BY ${orderColumn} ${String(req.query.order).includes("ascending=false") ? "DESC" : "ASC"}`
       : "ORDER BY created_at DESC";
-    const result = await pool.query(`SELECT * FROM ${table} ${where} ${order}`, values);
+    const pedido = Number(req.query.limit);
+    const limit = Number.isInteger(pedido) && pedido > 0 ? ` LIMIT ${Math.min(pedido, 500)}` : "";
+    const result = await pool.query(`SELECT * FROM ${table} ${where} ${order}${limit}`, values);
     res.json({ data: sanitize(table, await hydrate(table, result.rows, req.query.select)), error: null });
   } catch (e) {
     res.status(400).json({ data: null, error: { message: isProduction ? "Falha ao consultar dados" : e.message, code: e.code } });

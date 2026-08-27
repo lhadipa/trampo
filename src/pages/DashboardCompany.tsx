@@ -591,7 +591,7 @@ const DashboardCompany = () => {
                   <CardContent className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
                       <div className="flex items-center gap-2">
-                        <p className="font-bold text-base text-foreground">R$ {escrow.amount},00</p>
+                        <p className="font-bold text-base text-foreground">R$ {Number(escrow.amount).toFixed(2).replace(".", ",")}</p>
                         <Badge className={`text-xs ${statusInfo.class}`}>{statusInfo.label}</Badge>
                       </div>
                       <p className="text-xs text-muted-foreground mt-1">
@@ -641,7 +641,7 @@ const DashboardCompany = () => {
                 <CardContent className="p-4 flex items-center justify-between">
                   <div>
                     <p className="font-bold text-foreground text-sm">
-                      Recibo #{escrow.id.slice(0, 8)} • R$ {escrow.amount},00
+                      Recibo #{escrow.id.slice(0, 8)} • R$ {Number(escrow.amount).toFixed(2).replace(".", ",")}
                     </p>
                     <p className="text-xs text-muted-foreground mt-0.5">
                       {escrow.users?.name} • {new Date(escrow.created_at).toLocaleDateString("pt-BR")}
