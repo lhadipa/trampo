@@ -161,12 +161,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     const {
       data: { subscription },
-    } = api.auth.onAuthStateChange((_event: string, nextSession: Session | null) => {
+    } = api.auth.onAuthStateChange(async (_event: string, nextSession: Session | null) => {
       if (!active) return;
       setSession(nextSession);
       setUser(nextSession?.user ?? null);
       if (nextSession?.user) {
-        fetchProfile(nextSession.user.id);
+        // Volta para loading enquanto busca o perfil: no login o loading ja era
+        // false e as telas que exigem perfil devolviam o usuario para o login.
+        setLoading(true);
+        await fetchProfile(nextSession.user.id);
+        if (!active) return;
       } else {
         setProfile(null);
         setIsAdmin(false);

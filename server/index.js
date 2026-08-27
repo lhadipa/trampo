@@ -145,9 +145,24 @@ const hydrate = async (table, rows, select) => {
   if (table === "jobs" && select?.includes("companies")) for (const row of rows) { const r = await pool.query("SELECT name FROM companies WHERE id=$1", [row.company_id]); row.companies = r.rows[0] || null; }
   if (table === "applications" && select?.includes("jobs")) for (const row of rows) { const r = await pool.query("SELECT * FROM jobs WHERE id=$1", [row.job_id]); row.jobs = r.rows[0] || null; }
   if (table === "freelancers" && select?.includes("users")) for (const row of rows) { const r = await pool.query("SELECT name,email FROM users WHERE id=$1", [row.user_id]); row.users = r.rows[0] || null; }
-  // escrow.freelancer_id aponta para freelancers.id, nao para users.id: o nome
-  // do profissional so aparece passando pela tabela freelancers.
-  if (table === "escrow" && select?.includes("users")) for (const row of rows) { const r = await pool.query("SELECT u.name, u.email FROM freelancers f JOIN users u ON u.id = f.user_id WHERE f.id = $1", [row.freelancer_id]); row.users = r.rows[0] || null; }
+  /**
+   * Em escrow o cliente pede o nome pela chave estrangeira que interessa a ele:
+   * o painel da empresa quer o profissional, o do prestador quer o contratante.
+   * Antes o servidor resolvia sempre o profissional, entao o prestador via o
+   * proprio nome no rotulo "Contratante".
+   *
+   * Alem disso company_id e freelancer_id apontam para companies.id e
+   * freelancers.id, nao para users.id -- dai o join em duas etapas.
+   */
+  if (table === "escrow" && select?.includes("users")) {
+    const querContratante = /company/i.test(select);
+    for (const row of rows) {
+      const r = querContratante
+        ? await pool.query("SELECT u.name, u.email FROM companies c JOIN users u ON u.id = c.user_id WHERE c.id = $1", [row.company_id])
+        : await pool.query("SELECT u.name, u.email FROM freelancers f JOIN users u ON u.id = f.user_id WHERE f.id = $1", [row.freelancer_id]);
+      row.users = r.rows[0] || null;
+    }
+  }
   return rows;
 };
 

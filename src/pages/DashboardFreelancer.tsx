@@ -563,7 +563,7 @@ const DashboardFreelancer = () => {
                   <CardContent className="p-4 flex items-center justify-between">
                     <div>
                       <div className="flex items-center gap-2">
-                        <p className="font-bold text-base text-foreground">R$ {escrow.amount},00</p>
+                        <p className="font-bold text-base text-foreground">R$ {Number(escrow.amount).toFixed(2).replace(".", ",")}</p>
                         <Badge className={`text-xs ${statusInfo.class}`}>{statusInfo.label}</Badge>
                       </div>
                       <p className="text-xs text-muted-foreground mt-1">

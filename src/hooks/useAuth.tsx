@@ -159,6 +159,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setSession(session);
         setUser(session?.user ?? null);
         if (session?.user) {
+          // Volta para loading enquanto busca o perfil. No login o loading ja
+          // era false, entao a tela de destino renderizava com profile null e
+          // devolvia o usuario para /auth antes de o perfil chegar.
+          setLoading(true);
           await fetchProfile(session.user.id);
         } else {
           setProfile(null);
