@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { contracts as contracts_api, supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -38,6 +38,7 @@ import {
 import { toast } from "sonner";
 import logo from "@/assets/logo.png";
 import { SERVICE_CATEGORIES } from "@/lib/categories";
+import { getContractState } from "@/lib/contractState";
 
 // Seed de profissionais caso o banco esteja em estágio inicial
 const DashboardCompany = () => {
@@ -54,12 +55,15 @@ const DashboardCompany = () => {
     const saved = localStorage.getItem("trampo_favorite_freelancers");
     return saved ? JSON.parse(saved) : ["u-1", "u-2", "u-4"];
   });
+  const [applications, setApplications] = useState<any[]>([]);
+  const [contracts, setContracts] = useState<any[]>([]);
+  const [acceptingId, setAcceptingId] = useState<string | null>(null);
   const [receiptData, setReceiptData] = useState<any | null>(null);
   const [receiptModalOpen, setReceiptModalOpen] = useState(false);
 
-  useEffect(() => {
+  const load = async () => {
     if (!profile) return;
-    const load = async () => {
+    {
       let { data: company } = await supabase
         .from("companies")
         .select("*")
@@ -103,9 +107,48 @@ const DashboardCompany = () => {
         .order("created_at", { ascending: false });
       
       setEscrows(eData || []);
-    };
+
+      // Candidaturas e contratos das vagas desta empresa, para o fluxo de aceite.
+      const { data: aData } = await supabase
+        .from("applications")
+        .select("*, jobs(*), freelancers(name)")
+        .order("created_at", { ascending: false });
+      setApplications(aData || []);
+
+      const { data: cData } = await supabase.from("contracts").select("*");
+      setContracts(cData || []);
+    }
+  };
+
+  useEffect(() => {
     load();
   }, [profile]);
+
+  /** A empresa escolhe o profissional: cria contrato e retem o valor. */
+  const handleAccept = async (applicationId: string, nome: string) => {
+    setAcceptingId(applicationId);
+    const { error } = await contracts_api.acceptApplication(applicationId);
+    setAcceptingId(null);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success(`${nome} contratado! 🎉`, {
+      description: "O valor ficou retido em custódia até a conclusão do serviço.",
+    });
+    load();
+  };
+
+  /** Conclusao confirmada: libera a custodia ao profissional. */
+  const handleComplete = async (contractId: string) => {
+    const { error } = await contracts_api.complete(contractId);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success("Serviço concluído! Pagamento liberado ao profissional. ✅");
+    load();
+  };
 
   const toggleFavorite = (fUserId: string, fName: string) => {
     setFavoriteIds((prev) => {
@@ -498,26 +541,89 @@ const DashboardCompany = () => {
                 </CardContent>
               </Card>
             ) : (
-              jobs.map((job) => (
-                <Card key={job.id} className="border-border rounded-2xl">
-                  <CardContent className="p-4 flex items-center justify-between">
-                    <div>
-                      <p className="font-bold text-foreground text-sm">{job.title || "Sem título"}</p>
-                      <p className="text-xs text-muted-foreground mt-0.5">
-                        {new Date(job.date).toLocaleDateString("pt-BR")} • Diária: R$ {job.price || "150,00"}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {job.urgent && (
-                        <Badge variant="destructive" className="text-[11px]">
-                          Urgente
-                        </Badge>
+              jobs.map((job) => {
+                const contrato = contracts.find((c) => c.job_id === job.id);
+                const candidatos = applications.filter((a) => a.job_id === job.id);
+                const estado = contrato ? getContractState(contrato.status) : null;
+
+                return (
+                  <Card key={job.id} className="border-border rounded-2xl">
+                    <CardContent className="p-4 space-y-3">
+                      <div className="flex items-center justify-between gap-3">
+                        <div>
+                          <p className="font-bold text-foreground text-sm">{job.title || "Sem título"}</p>
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            {new Date(job.date).toLocaleDateString("pt-BR")} • Diária: R${" "}
+                            {Number(job.price || 0).toFixed(2).replace(".", ",")}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
+                          {job.urgent && (
+                            <Badge variant="destructive" className="text-[11px]">
+                              Urgente
+                            </Badge>
+                          )}
+                          <Badge className={estado ? estado.tone : statusColor(job.status)}>
+                            {estado ? estado.label : job.status}
+                          </Badge>
+                        </div>
+                      </div>
+
+                      {contrato ? (
+                        <div className="rounded-xl border border-border bg-muted/40 p-3 space-y-2">
+                          <p className="text-xs text-muted-foreground">
+                            {contrato.status === "FUNDS_SECURED" &&
+                              "Profissional contratado. Aguardando o check-in dele no local."}
+                            {contrato.status === "IN_PROGRESS" &&
+                              "O profissional confirmou presença — trabalho em execução agora."}
+                            {contrato.status === "RELEASED" && "Serviço concluído e pagamento liberado."}
+                          </p>
+                          {contrato.status === "IN_PROGRESS" && (
+                            <Button size="sm" className="w-full sm:w-auto" onClick={() => handleComplete(contrato.id)}>
+                              <CheckCircle className="h-4 w-4 mr-1.5" />
+                              Confirmar conclusão e liberar pagamento
+                            </Button>
+                          )}
+                        </div>
+                      ) : candidatos.length === 0 ? (
+                        <p className="text-xs text-muted-foreground border-t pt-3">
+                          Nenhuma candidatura ainda.
+                        </p>
+                      ) : (
+                        <div className="border-t pt-3 space-y-2">
+                          <p className="text-xs font-semibold text-foreground">
+                            {candidatos.length} candidatura(s) aguardando sua escolha
+                          </p>
+                          {candidatos.map((candidatura) => (
+                            <div
+                              key={candidatura.id}
+                              className="flex items-center justify-between gap-3 rounded-xl border border-border p-2.5"
+                            >
+                              <div className="min-w-0">
+                                <p className="text-sm font-medium text-foreground truncate">
+                                  {candidatura.freelancers?.name || "Profissional"}
+                                </p>
+                                <p className="text-[11px] text-muted-foreground truncate">
+                                  {candidatura.freelancers?.category || "Serviços gerais"}
+                                </p>
+                              </div>
+                              <Button
+                                size="sm"
+                                disabled={acceptingId === candidatura.id}
+                                onClick={() =>
+                                  handleAccept(candidatura.id, candidatura.freelancers?.name || "Profissional")
+                                }
+                              >
+                                {acceptingId === candidatura.id ? "Contratando..." : "Contratar"}
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
                       )}
-                      <Badge className={statusColor(job.status)}>{job.status}</Badge>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))
+                    </CardContent>
+                  </Card>
+                );
+              })
             )}
           </TabsContent>
 

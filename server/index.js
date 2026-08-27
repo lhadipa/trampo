@@ -144,6 +144,15 @@ app.get("/api/me", async (req, res) => { const user = await userFrom(req); if (!
 const hydrate = async (table, rows, select) => {
   if (table === "jobs" && select?.includes("companies")) for (const row of rows) { const r = await pool.query("SELECT name FROM companies WHERE id=$1", [row.company_id]); row.companies = r.rows[0] || null; }
   if (table === "applications" && select?.includes("jobs")) for (const row of rows) { const r = await pool.query("SELECT * FROM jobs WHERE id=$1", [row.job_id]); row.jobs = r.rows[0] || null; }
+  // A empresa precisa saber quem se candidatou: applications.freelancer_id
+  // aponta para freelancers.id, entao o nome vem por join em duas etapas.
+  if (table === "applications" && select?.includes("freelancers")) for (const row of rows) {
+    const r = await pool.query(
+      "SELECT f.id, f.category, u.name, u.email FROM freelancers f JOIN users u ON u.id = f.user_id WHERE f.id = $1",
+      [row.freelancer_id],
+    );
+    row.freelancers = r.rows[0] || null;
+  }
   if (table === "freelancers" && select?.includes("users")) for (const row of rows) { const r = await pool.query("SELECT name,email FROM users WHERE id=$1", [row.user_id]); row.users = r.rows[0] || null; }
   /**
    * Em escrow o cliente pede o nome pela chave estrangeira que interessa a ele:
@@ -165,6 +174,179 @@ const hydrate = async (table, rows, select) => {
   }
   return rows;
 };
+
+/* -------------------------------------------------------------------------
+ * Contratacao
+ *
+ * Da candidatura ao trabalho em execucao. Sao varias tabelas por operacao
+ * (application, contract, escrow, job, checkin) e a autorizacao depende de
+ * quem e' o dono da vaga, coisas que o CRUD generico de /api/data nao tem
+ * como garantir -- por isso vivem aqui, em transacao.
+ * ---------------------------------------------------------------------- */
+
+/**
+ * A empresa aceita um candidato: fecha a vaga, recusa os demais, cria o
+ * contrato e retem o valor em custodia.
+ */
+app.post("/api/contracts/accept-application", async (req, res) => {
+  const user = await userFrom(req);
+  if (!user) return res.status(401).json({ error: "Não autenticado" });
+
+  const applicationId = req.body?.application_id;
+  if (!applicationId) return res.status(400).json({ error: "application_id obrigatório" });
+
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+
+    const { rows } = await client.query(
+      `SELECT a.id, a.status, a.freelancer_id, j.id AS job_id, j.title, j.price, j.date,
+              c.id AS company_id, c.user_id AS company_user_id
+         FROM applications a
+         JOIN jobs j ON j.id = a.job_id
+         JOIN companies c ON c.id = j.company_id
+        WHERE a.id = $1
+        FOR UPDATE OF a`,
+      [applicationId],
+    );
+    const candidatura = rows[0];
+    if (!candidatura) { await client.query("ROLLBACK"); return res.status(404).json({ error: "Candidatura não encontrada" }); }
+    if (candidatura.company_user_id !== user.id) {
+      await client.query("ROLLBACK");
+      return res.status(403).json({ error: "Apenas a empresa dona da vaga pode aceitar" });
+    }
+
+    // Ja existe contrato para esta vaga? Entao alguem ja foi aceito.
+    const { rows: jaTem } = await client.query("SELECT id FROM contracts WHERE job_id = $1", [candidatura.job_id]);
+    if (jaTem.length) {
+      await client.query("ROLLBACK");
+      return res.status(409).json({ error: "Esta vaga já tem um profissional contratado" });
+    }
+
+    await client.query("UPDATE applications SET status = 'accepted' WHERE id = $1", [applicationId]);
+    await client.query("UPDATE applications SET status = 'rejected' WHERE job_id = $1 AND id <> $2", [candidatura.job_id, applicationId]);
+    await client.query("UPDATE jobs SET status = 'filled' WHERE id = $1", [candidatura.job_id]);
+
+    const valor = Number(candidatura.price || 0);
+    const { rows: contratos } = await client.query(
+      `INSERT INTO contracts (job_id, company_id, freelancer_id, amount, freelancer_amount, start_at, description, status)
+       VALUES ($1,$2,$3,$4,$4,$5,$6,'FUNDS_SECURED') RETURNING *`,
+      [candidatura.job_id, candidatura.company_id, candidatura.freelancer_id, valor, candidatura.date, candidatura.title],
+    );
+    await client.query(
+      "INSERT INTO escrow (job_id, company_id, freelancer_id, amount, status, service) VALUES ($1,$2,$3,$4,'held',$5)",
+      [candidatura.job_id, candidatura.company_id, candidatura.freelancer_id, valor, candidatura.title],
+    );
+
+    await client.query("COMMIT");
+    res.json({ contract: contratos[0] });
+  } catch (e) {
+    await client.query("ROLLBACK");
+    res.status(400).json({ error: isProduction ? "Falha ao aceitar a candidatura" : e.message });
+  } finally {
+    client.release();
+  }
+});
+
+/**
+ * Check-in do profissional no local: registra a presenca e coloca o contrato
+ * em execucao. E' o que faz o trabalho aparecer como "Em andamento" dos dois
+ * lados.
+ */
+app.post("/api/contracts/check-in", async (req, res) => {
+  const user = await userFrom(req);
+  if (!user) return res.status(401).json({ error: "Não autenticado" });
+
+  const contractId = req.body?.contract_id;
+  if (!contractId) return res.status(400).json({ error: "contract_id obrigatório" });
+
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    const { rows } = await client.query(
+      `SELECT ct.id, ct.status, ct.freelancer_id, f.user_id AS freelancer_user_id
+         FROM contracts ct
+         JOIN freelancers f ON f.id = ct.freelancer_id
+        WHERE ct.id = $1
+        FOR UPDATE OF ct`,
+      [contractId],
+    );
+    const contrato = rows[0];
+    if (!contrato) { await client.query("ROLLBACK"); return res.status(404).json({ error: "Contrato não encontrado" }); }
+    if (contrato.freelancer_user_id !== user.id) {
+      await client.query("ROLLBACK");
+      return res.status(403).json({ error: "Apenas o profissional contratado pode fazer check-in" });
+    }
+
+    await client.query(
+      `INSERT INTO checkins (contract_id, freelancer_id, method, status)
+       VALUES ($1,$2,$3,'CONFIRMED')
+       ON CONFLICT (contract_id, freelancer_id) DO NOTHING`,
+      [contrato.id, contrato.freelancer_id, req.body?.method || "PIN"],
+    );
+    const { rows: atualizados } = await client.query(
+      "UPDATE contracts SET status = 'IN_PROGRESS' WHERE id = $1 RETURNING *",
+      [contrato.id],
+    );
+
+    await client.query("COMMIT");
+    res.json({ contract: atualizados[0] });
+  } catch (e) {
+    await client.query("ROLLBACK");
+    res.status(400).json({ error: isProduction ? "Falha ao registrar o check-in" : e.message });
+  } finally {
+    client.release();
+  }
+});
+
+/**
+ * A empresa confirma a conclusao: libera a custodia e encerra o contrato.
+ */
+app.post("/api/contracts/complete", async (req, res) => {
+  const user = await userFrom(req);
+  if (!user) return res.status(401).json({ error: "Não autenticado" });
+
+  const contractId = req.body?.contract_id;
+  if (!contractId) return res.status(400).json({ error: "contract_id obrigatório" });
+
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    const { rows } = await client.query(
+      `SELECT ct.id, ct.job_id, ct.amount, ct.freelancer_id, c.user_id AS company_user_id, f.user_id AS freelancer_user_id
+         FROM contracts ct
+         JOIN companies c ON c.id = ct.company_id
+         JOIN freelancers f ON f.id = ct.freelancer_id
+        WHERE ct.id = $1
+        FOR UPDATE OF ct`,
+      [contractId],
+    );
+    const contrato = rows[0];
+    if (!contrato) { await client.query("ROLLBACK"); return res.status(404).json({ error: "Contrato não encontrado" }); }
+    if (contrato.company_user_id !== user.id) {
+      await client.query("ROLLBACK");
+      return res.status(403).json({ error: "Apenas a empresa contratante pode concluir" });
+    }
+
+    await client.query("UPDATE contracts SET status = 'RELEASED', end_at = now() WHERE id = $1", [contrato.id]);
+    await client.query("UPDATE escrow SET status = 'released' WHERE job_id = $1", [contrato.job_id]);
+    await client.query("UPDATE jobs SET status = 'completed' WHERE id = $1", [contrato.job_id]);
+    // O valor cai no saldo do profissional (movimentacao simulada, sem PSP).
+    await client.query("UPDATE users SET balance = balance + $1 WHERE id = $2", [Number(contrato.amount || 0), contrato.freelancer_user_id]);
+    await client.query(
+      "INSERT INTO payments (user_id, amount, status, service) VALUES ($1,$2,'paid_mock','contract_release')",
+      [contrato.freelancer_user_id, Number(contrato.amount || 0)],
+    );
+
+    await client.query("COMMIT");
+    res.json({ ok: true });
+  } catch (e) {
+    await client.query("ROLLBACK");
+    res.status(400).json({ error: isProduction ? "Falha ao concluir o contrato" : e.message });
+  } finally {
+    client.release();
+  }
+});
 
 /* -------------------------------------------------------------------------
  * Pagamentos simulados

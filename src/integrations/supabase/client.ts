@@ -32,6 +32,27 @@ class QueryBuilder implements PromiseLike<any> {
   then<TResult1 = any, TResult2 = never>(onfulfilled?: ((value: any) => TResult1 | PromiseLike<TResult1>) | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | null) { return this.execute().then(onfulfilled, onrejected); }
 }
 
+const chamar = async (caminho: string, body: any) => {
+  const response = await fetch(`${API_URL}${caminho}`, { method: "POST", headers: headers(), body: JSON.stringify(body) });
+  const result = await response.json().catch(() => ({}));
+  return response.ok ? { data: result, error: null } : { data: null, error: new Error(result.error || "Falha na operação") };
+};
+
+/**
+ * Fluxo de contratacao. Cada passo mexe em varias tabelas e depende de quem e'
+ * o dono da vaga, entao roda no servidor, em transacao.
+ */
+export const contracts = {
+  /** A empresa aceita um candidato: cria o contrato e retem o valor. */
+  acceptApplication: (applicationId: string) =>
+    chamar("/api/contracts/accept-application", { application_id: applicationId }),
+  /** O profissional confirma presenca: o contrato passa a "Em andamento". */
+  checkIn: (contractId: string, method = "PIN") =>
+    chamar("/api/contracts/check-in", { contract_id: contractId, method }),
+  /** A empresa confirma a conclusao: libera a custodia ao profissional. */
+  complete: (contractId: string) => chamar("/api/contracts/complete", { contract_id: contractId }),
+};
+
 /**
  * Chamadas aos endpoints de pagamento simulado (/api/mock/*). Ficam fora do
  * shim do supabase porque nao sao CRUD de tabela: o saldo so pode ser movido

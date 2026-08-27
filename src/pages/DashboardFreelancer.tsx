@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { contracts as contracts_api, supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -30,6 +30,7 @@ import {
 import { toast } from "sonner";
 import logo from "@/assets/logo.png";
 import { SERVICE_CATEGORIES } from "@/lib/categories";
+import { getContractState } from "@/lib/contractState";
 
 const DashboardFreelancer = () => {
   const { profile, signOut } = useAuth();
@@ -41,10 +42,11 @@ const DashboardFreelancer = () => {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [checkedInJobIds, setCheckedInJobIds] = useState<string[]>([]);
+  const [myContracts, setMyContracts] = useState<any[]>([]);
 
-  useEffect(() => {
+  const load = async () => {
     if (!profile) return;
-    const load = async () => {
+    {
       let { data: freelancer } = await supabase
         .from("freelancers")
         .select("*")
@@ -84,7 +86,20 @@ const DashboardFreelancer = () => {
         .order("created_at", { ascending: false });
       
       setEscrows(eData || []);
-    };
+
+      if (freelancer) {
+        // Contratos deste profissional: definem o que ja esta em execucao.
+        const { data: cData } = await supabase
+          .from("contracts")
+          .select("*")
+          .eq("freelancer_id", freelancer.id);
+        setMyContracts(cData || []);
+        setCheckedInJobIds((cData || []).filter((c: any) => c.status !== "FUNDS_SECURED").map((c: any) => c.job_id));
+      }
+    }
+  };
+
+  useEffect(() => {
     load();
   }, [profile]);
 
@@ -118,29 +133,25 @@ const DashboardFreelancer = () => {
   };
 
   const handleCheckIn = async (jobId: string, jobTitle: string) => {
-    const { data: contract, error: contractError } = await (supabase as any)
-      .from("contracts")
-      .select("id, freelancer_id")
-      .eq("job_id", jobId)
-      .maybeSingle();
-    if (contractError || !contract) {
+    const contrato = myContracts.find((c: any) => c.job_id === jobId);
+    if (!contrato) {
       toast.error("Este trabalho ainda não possui um contrato ativo para check-in.");
       return;
     }
-    const { error } = await (supabase as any).from("checkins").insert({
-      contract_id: contract.id,
-      freelancer_id: contract.freelancer_id,
-      method: "PIN",
-      status: "CONFIRMED",
-    });
+
+    // O servidor registra a presenca e coloca o contrato em execucao numa so
+    // transacao -- e' o que muda o estado para "Em andamento" dos dois lados.
+    const { error } = await contracts_api.checkIn(contrato.id);
     if (error) {
-      toast.error("Não foi possível confirmar o check-in. Tente novamente.");
+      toast.error(error.message);
       return;
     }
+
     setCheckedInJobIds((prev) => [...prev, jobId]);
     toast.success(`Check-in confirmado para "${jobTitle}"!`, {
-      description: "O registro foi salvo no servidor e o contratante foi notificado.",
+      description: "O contratante já vê o trabalho como em execução.",
     });
+    load();
   };
 
   const appliedJobIds = myApplications.map((a: any) => a.job_id);
@@ -385,6 +396,8 @@ const DashboardFreelancer = () => {
               myApplications.map((app: any) => {
                 const isCheckedIn = checkedInJobIds.includes(app.job_id);
                 const isAccepted = app.status === "accepted";
+                const contrato = myContracts.find((c: any) => c.job_id === app.job_id);
+                const estado = contrato ? getContractState(contrato.status) : null;
 
                 return (
                   <Card key={app.id} className="border-border shadow-2xs rounded-2xl">
@@ -400,14 +413,18 @@ const DashboardFreelancer = () => {
                         </div>
                         <Badge
                           className={
-                            isAccepted
-                              ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20"
+                            estado
+                              ? estado.tone
                               : app.status === "rejected"
                               ? "bg-destructive/10 text-destructive border-destructive/20"
                               : "bg-amber-500/10 text-amber-600 border-amber-500/20"
                           }
                         >
-                          {isAccepted ? "Aprovado / Confirmado ✅" : "Em análise pelo contratante"}
+                          {estado
+                            ? estado.label
+                            : app.status === "rejected"
+                            ? "Não selecionado"
+                            : "Em análise pelo contratante"}
                         </Badge>
                       </div>
 
