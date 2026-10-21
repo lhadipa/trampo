@@ -1,8 +1,23 @@
 @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
+@import "leaflet/dist/leaflet.css";
+@import "react-leaflet-cluster/lib/assets/MarkerCluster.css";
+@import "react-leaflet-cluster/lib/assets/MarkerCluster.Default.css";
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.leaflet-container {
+  min-height: 22rem;
+  width: 100%;
+  font-family: inherit;
+  z-index: 0;
+}
+
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+  box-shadow: none;
+}
 
 @layer base {
   :root {
@@ -94,11 +109,34 @@
   }
 
   body {
-    @apply bg-background text-foreground font-body antialiased;
+    @apply bg-background text-foreground font-body antialiased overflow-x-hidden;
+    font-size: 16px;
+    line-height: 1.5;
   }
 
   h1, h2, h3, h4, h5, h6 {
     @apply font-body;
+  }
+}
+
+@layer base {
+  :focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 3px;
+  }
+
+  button,
+  a,
+  input,
+  select,
+  textarea,
+  [role="button"] {
+    min-height: 44px;
+  }
+
+  p,
+  li {
+    overflow-wrap: anywhere;
   }
 }
 
@@ -151,4 +189,30 @@
   background: transparent !important;
   padding-left: 0 !important;
   padding-right: 0 !important;
+}
+
+.pilot-copy {
+  max-width: 72ch;
+}
+
+.pilot-surface {
+  border: 1px solid hsl(var(--border));
+  background: hsl(var(--card));
+  border-radius: 12px;
+}
+
+.pilot-demo-notice {
+  border-color: hsl(var(--primary) / 0.35);
+  background: hsl(var(--primary) / 0.07);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

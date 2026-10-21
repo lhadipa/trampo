@@ -1,5 +1,11 @@
 # Trampô
 
+• Use:
+
+  - E-mail: admin@trampo.app
+  - Senha: trampo123
+
+
 Plataforma de contratação de diárias e serviços autônomos em São João del-Rei e região.
 Conecta contratantes (restaurantes, hotéis, comércio, eventos) a profissionais
 autônomos, com custódia do valor até a conclusão do serviço.
@@ -12,7 +18,7 @@ autônomos, com custódia do valor até a conclusão do serviço.
 | Pasta | O que é |
 |---|---|
 | `src/` | App web (React + Vite + Tailwind + shadcn/ui) |
-| `server/` | API (Express + Postgres) — `index.js`, `schema.sql`, `seed.js`, `migrate.js` |
+| `server/` | API (Express + PostgreSQL do Render) — `index.js`, `schema.sql`, `seed.js`, `migrate.js` |
 | `mobile/` | App React Native (Expo Router + NativeWind) |
 | `docs/DEPLOY.md` | Passo a passo de publicação |
 
@@ -86,7 +92,7 @@ host do Metro automaticamente. Se precisar forçar, defina `EXPO_PUBLIC_API_URL`
 | `npm run dev:api` | API local |
 | `npm run build` | build de produção da web |
 | `npm start` | API em produção |
-| `npm run db:migrate` | aplica `server/schema.sql` |
+| `npm run db:migrate` | aplica `server/schema.sql` no PostgreSQL configurado em `DATABASE_URL` |
 | `npm run seed` | popula dados iniciais (idempotente) |
 | `npm test` | testes (Vitest) |
 

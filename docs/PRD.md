@@ -3,7 +3,7 @@
 **Produto:** marketplace mobile-first de contratação de profissionais autônomos
 **Data da documentação:** 27/08/2026
 **Status:** baseline do produto existente + especificação consolidada
-**Escopo:** web React/Vite, app Expo/React Native, API Express/Postgres e camada Supabase
+**Escopo:** web React/Vite, app Expo/React Native, API Express e PostgreSQL do Render
 
 ## 1. Resumo executivo
 
@@ -192,7 +192,7 @@ Expo Router possui telas equivalentes para autenticação, painel, criação de 
 - CRUD protegido por tabela em `/api/data/:table`.
 - Operações críticas em `/api/contracts/accept-application`, `/api/contracts/check-in` e `/api/contracts/complete`.
 - Operações mock em `/api/mock/wallet/topup` e `/api/mock/chat-unlock`.
-- Migrações SQL e políticas RLS no diretório `supabase/migrations`.
+- Schema e compatibilidade do banco no diretório `server/schema.sql`; o Render aplica isso via `npm run db:migrate`.
 - Deploy documentado para Vercel (web) e Render (API), com Docker para banco local.
 
 ## 10. Requisitos não funcionais
@@ -281,4 +281,3 @@ Padronização visual mobile-first, acessibilidade, performance, notificações 
 - Modelo comercial: comissão, assinatura, desbloqueio ou combinação.
 - Região inicial definitiva e expansão geográfica.
 - Responsabilidade de emissão fiscal/recibo e requisitos jurídicos locais.
-

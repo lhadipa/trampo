@@ -208,7 +208,7 @@ sequenceDiagram
   actor F as Freelancer
   participant UI as Web/Mobile
   participant API as Express API
-  participant DB as Postgres/Supabase
+  participant DB as PostgreSQL/Render
   participant P as Provedor de pagamento
 
   C->>UI: Seleciona candidatura e aceita
@@ -296,4 +296,3 @@ flowchart TD
   G -- Sim --> H[Transação, evento e resposta]
   H --> I[Notificação/auditoria quando aplicável]
 ```
-

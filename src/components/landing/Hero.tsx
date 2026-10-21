@@ -1,29 +1,22 @@
-import { ArrowRight, CircleCheck, Globe } from "lucide-react";
+import { ArrowRight, CircleCheck, MapPin } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 
 const trustItems = [
-  "Pagamento 100% Garantido via Pix (Escrow)",
-  "Profissionais Avaliados e Verificados",
-  "Sem Burocracia e Sem Vínculo CLT",
-  "Cobertura Nacional em Expansão",
+  "Piloto local em São João del-Rei",
+  "Perfis e disponibilidade simulados",
+  "Valores claros antes de confirmar",
 ];
 
 const trendingServices = [
-  "Pintor",
-  "Limpador de Piscina",
+  "Panfletista",
+  "Vendedor porta a porta",
   "Eletricista",
   "Garçom",
   "Diarista",
   "Montador de Móveis",
   "Manicure / Barbeiro",
   "Entregador",
-];
-
-const stats = [
-  { value: "40+", label: "categorias de serviços" },
-  { value: "R$ 0", label: "mensalidade para começar" },
-  { value: "100%", label: "proteção financeira (Escrow)" },
 ];
 
 const Hero = () => {
@@ -33,23 +26,23 @@ const Hero = () => {
     <section id="inicio" className="relative overflow-hidden pt-20 lg:pt-28 pb-16">
       <div className="relative mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mx-auto flex max-w-4xl flex-col items-center text-center">
-          {/* Tag de Expansão Nacional e Polo */}
+          <p className="pilot-demo-notice w-full">Demonstração do piloto: perfis, vagas, valores e confirmações são simulados.</p>
           <div className="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-primary">
-            <Globe className="h-4 w-4" />
-            <span>Polo São João del-Rei & Região • Expansão para todo o Brasil</span>
+            <MapPin className="h-4 w-4" />
+            <span>São João del-Rei e região</span>
           </div>
 
           {/* Título Principal de Alto Impacto */}
           <h1 className="mt-6 text-balance text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-6xl text-foreground">
-            O profissional ou serviço certo,{" "}
+            Contrate ajuda local para a próxima diária,{" "}
             <span className="text-primary">
-              na hora que você precisa.
+              sem enrolação.
             </span>
           </h1>
 
           {/* Descrição Multi-Setor */}
           <p className="mt-6 max-w-3xl text-balance text-base sm:text-lg leading-relaxed text-muted-foreground">
-            De <strong>pintores</strong> e <strong>limpadores de piscina</strong> a <strong>eletricistas</strong>, <strong>garçons</strong> e <strong>diaristas</strong>. Conectamos quem precisa de ajuda rápida a profissionais autônomos verificados, com <strong>pagamento seguro via Pix</strong> e <strong>recibo digital automático</strong>.
+            Encontre profissionais de <strong>panfletagem</strong>, <strong>vendas porta a porta</strong>, eventos, manutenção e serviços gerais. Neste piloto, todas as ações financeiras são demonstrações: o pagamento combinado acontece diretamente entre as partes.
           </p>
 
           {/* Carrossel de Tags de Serviços em Alta */}
@@ -72,7 +65,7 @@ const Hero = () => {
               className="h-13 rounded-lg px-8 text-base font-bold"
               onClick={() => navigate("/auth")}
             >
-              Preciso de um Profissional
+              Quero contratar
             </Button>
             <Button
               size="lg"
@@ -80,7 +73,7 @@ const Hero = () => {
               className="h-13 rounded-lg border-border bg-white px-8 text-base font-semibold hover:bg-muted"
               onClick={() => navigate("/auth")}
             >
-              Quero Trabalhar e Receber no Pix
+              Quero encontrar trabalho
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
           </div>
@@ -96,20 +89,6 @@ const Hero = () => {
           </ul>
         </div>
 
-        {/* Métricas de Tração & Projeção */}
-        <div className="mx-auto mt-14 grid max-w-5xl grid-cols-2 gap-4 sm:grid-cols-4 sm:gap-6">
-          {stats.map((stat) => (
-            <div
-              key={stat.label}
-              className="flex flex-col items-center justify-center gap-1 rounded-3xl border border-border/80 bg-white/80 p-5 sm:p-6 text-center shadow-xs backdrop-blur transition-all hover:border-primary/30 hover:shadow-sm"
-            >
-              <p className="text-2xl sm:text-3xl font-extrabold tracking-tight text-primary">
-                {stat.value}
-              </p>
-              <p className="text-xs sm:text-sm text-muted-foreground font-medium">{stat.label}</p>
-            </div>
-          ))}
-        </div>
       </div>
     </section>
   );

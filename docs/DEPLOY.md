@@ -4,7 +4,7 @@ Arquitetura, tudo em plano gratuito:
 
 ```
 Vercel (web SPA)  ──┐
-                    ├──► Render Free (API Express) ──► Neon Free (Postgres)
+                    ├──► Render (API Express) ──► PostgreSQL configurado no Render
 EAS Build (APK)   ──┘
 ```
 
@@ -13,7 +13,7 @@ transita. Ver a seção "Pagamento simulado" no fim.
 
 ---
 
-## 1. Banco — Neon
+## 1. Banco — PostgreSQL do Render
 
 1. <https://neon.tech> → login com GitHub → novo projeto `trampo`, região `AWS São Paulo`.
 2. Copiar a connection string (`postgresql://...?sslmode=require`).
@@ -40,7 +40,7 @@ O `render.yaml` na raiz já descreve o serviço. New → Blueprint → apontar o
 ou criar um Web Service manual com:
 
 - Build: `npm install`
-- Start: `npm start`
+- Start: `npm run db:migrate && npm start`
 - Health check: `/api/health`
 
 Variáveis de ambiente:
@@ -49,7 +49,7 @@ Variáveis de ambiente:
 |---|---|
 | `NODE_ENV` | `production` |
 | `JWT_SECRET` | valor aleatório (o Render gera pelo blueprint) |
-| `DATABASE_URL` | connection string do Neon |
+| `DATABASE_URL` | connection string do PostgreSQL usado pelo Render |
 | `ALLOWED_ORIGINS` | `https://<seu-app>.vercel.app` |
 
 Sem `JWT_SECRET` o processo aborta de propósito — um segredo padrão em produção

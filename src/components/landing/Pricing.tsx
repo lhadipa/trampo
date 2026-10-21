@@ -1,67 +1,65 @@
-import { ArrowRight, Check, Crown, BriefcaseBusiness, Star, Zap, ShieldCheck, Building2 } from "lucide-react";
+import { ArrowRight, Check, Crown, BriefcaseBusiness, Star } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 
 const plans = [
   {
-    id: "founder",
-    name: "Membro Fundador VIP",
-    audience: "PMEs, Residências e Pequenos Contratantes",
+    id: "avulso",
+    name: "Contratante Avulso",
+    audience: "Para contratar quando precisar",
     description:
-      "Aproveite 60 dias de acesso VIP completo sem mensalidade. Crie sua equipe favorita e teste na prática.",
-    price: "Grátis",
-    period: "por 60 dias",
+      "Publique oportunidades sem mensalidade e acompanhe o valor da plataforma antes de confirmar.",
+    price: "12%",
+    period: "por diária concluída",
     featured: true,
-    badge: "Oferta de Expansão",
+    badge: "Sem mensalidade",
     icon: BriefcaseBusiness,
     features: [
-      "60 dias de acesso VIP 100% liberado",
-      "Vagas e chamados ilimitados em qualquer categoria",
-      "Recurso 'Minha Equipe Favorita'",
-      "Chat direto e avaliações verificadas",
-      "Garantia de pagamento seguro via Escrow Pix",
-      "Emissão de Recibos Digitais de Prestação Autônoma",
+      "Publicação de oportunidades",
+      "Comparação de profissionais interessados",
+      "Favoritos para próximas diárias",
+      "Valor discriminado no resumo",
+      "Fluxo financeiro simulado no piloto",
     ],
-    cta: "Garantir 60 Dias VIP",
+    cta: "Testar contratação avulsa",
   },
   {
     id: "pro",
-    name: "Pro Negócio & Condomínios",
+    name: "Contratante Pro",
     audience: "Bares, Hotéis, Obras, Condomínios e Lojas",
     description:
-      "A proteção contínua para sua operação ou imóvel. Menos de R$ 1,35/dia para nunca mais ficar desfalcado.",
-    price: "R$ 39,90",
-    period: "/mês pós-teste",
+      "Para operações recorrentes que querem organizar equipe e publicar sem taxa por diária.",
+    price: "R$ 59,90",
+    period: "/mês após 14 dias grátis",
     featured: false,
-    badge: "Seguro Operacional",
+    badge: "14 dias grátis",
     icon: Crown,
     features: [
-      "Vagas prioritárias ilimitadas",
-      "Acesso completo ao banco nacional de autônomos",
-      "Emissão ilimitada de Recibos (RPA) para contabilidade",
-      "Selo de Empresa / Contratante Verificado",
-      "Desconto exclusivo nos disparos do Radar SOS Turbo",
-      "Suporte prioritário via WhatsApp",
+      "Publicações sem taxa por diária",
+      "Minha Equipe de profissionais favoritos",
+      "Histórico e recibos demonstrativos",
+      "Comparação de profissionais interessados",
+      "Cancelamento simulado a qualquer momento",
     ],
     cta: "Conhecer Plano Pro",
   },
   {
     id: "freelancer",
-    name: "Autônomo & Prestador",
-    audience: "Pintores, Piscineiros, Garçons, Diaristas e Todos os Autônomos",
+    name: "Profissional",
+    audience: "Panfletistas, vendedores e outros autônomos",
     description:
-      "Trabalhe com liberdade de horários, receba pagamentos seguros no Pix e construa sua reputação.",
-    price: "Grátis",
-    period: "para sempre",
+      "Encontre oportunidades sem assinatura. A taxa aparece somente após você ser selecionado.",
+    price: "R$ 7,90",
+    period: "por seleção confirmada",
     featured: false,
-    badge: "100% Gratuito",
+    badge: "Sem assinatura",
     icon: Star,
     features: [
-      "Candidaturas sem limite e sem custo de moedas",
-      "Pagamento 100% protegido via Pix (Anti-Calote)",
-      "Histórico de serviços e avaliações no perfil público",
-      "Autonomia total de agenda, valores e aceites",
-      "Emissão de comprovantes de renda profissional",
+      "Cadastro e demonstração de interesse grátis",
+      "Taxa somente depois da seleção",
+      "Disponibilidade e perfil profissional",
+      "Check-in e recibo demonstrativos",
+      "Nenhuma cobrança real nesta versão",
     ],
     cta: "Cadastrar como Profissional",
   },
@@ -75,14 +73,14 @@ const Pricing = () => {
       <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-3xl text-center">
           <p className="text-sm font-semibold uppercase tracking-widest text-primary">
-            Planos & Monetização
+            Valores do piloto
           </p>
           <h2 className="mt-3 text-balance text-3xl font-bold tracking-tight sm:text-4xl text-foreground">
-            Comece grátis por 60 dias,{" "}
-            <span className="text-primary">cresça com segurança</span>
+            Escolha como quer contratar,{" "}
+            <span className="text-primary">sem taxas escondidas</span>
           </h2>
           <p className="mt-4 text-muted-foreground leading-relaxed text-base">
-            Modelo transparente sem taxas ocultas, com proteção total contra calotes e sem burocracia trabalhista.
+            Todos os valores e pagamentos exibidos são simulações para validar a experiência do produto.
           </p>
         </div>
 

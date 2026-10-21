@@ -1,8 +1,8 @@
 /**
  * Aplica server/schema.sql no banco apontado por DATABASE_URL.
  *
- * Existe porque nem toda maquina tem o cliente psql instalado, e o Neon so
- * aceita conexao TLS -- o mesmo tratamento que a API faz.
+ * Existe porque nem toda máquina tem o cliente psql instalado. O mesmo
+ * script funciona no PostgreSQL gerenciado pelo Render e localmente.
  *
  * Uso: DATABASE_URL="postgres://..." npm run db:migrate
  */

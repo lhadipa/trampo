@@ -33,11 +33,14 @@ import {
   Scissors,
   Truck,
   Building2,
+  ArrowLeft,
 } from "lucide-react";
 import { toast } from "sonner";
 import logo from "@/assets/logo.png";
 import { SERVICE_CATEGORIES } from "@/lib/categories";
 import { getContractState } from "@/lib/contractState";
+import { confirmContractorFeeMock, getContractorDashboard, getPilotSnapshot, selectProfessionalMock, toggleFavoriteMock } from "@/lib/pilotMockService";
+import { formatBRL } from "@/lib/pilotPricing";
 
 // Seed de profissionais caso o banco esteja em estágio inicial
 const DashboardCompany = () => {
@@ -59,6 +62,7 @@ const DashboardCompany = () => {
   const [acceptingId, setAcceptingId] = useState<string | null>(null);
   const [receiptData, setReceiptData] = useState<any | null>(null);
   const [receiptModalOpen, setReceiptModalOpen] = useState(false);
+  const [pilotRevision, setPilotRevision] = useState(0);
 
   const load = async () => {
     if (!profile) return;
@@ -120,7 +124,8 @@ const DashboardCompany = () => {
   };
 
   useEffect(() => {
-    load();
+    // O painel do piloto opera somente com fixtures em memória.
+    setPilotRevision((value) => value + 1);
   }, [profile]);
 
   /** A empresa escolhe o profissional: cria contrato e retem o valor. */
@@ -231,12 +236,73 @@ const DashboardCompany = () => {
 
   const favoriteFreelancers = freelancers.filter((f) => favoriteIds.includes(f.user_id));
 
+  void pilotRevision;
+  const pilotDashboard = getContractorDashboard();
+  const pilotSnapshot = getPilotSnapshot();
+  const pilotProfessionals = pilotSnapshot.professionals.map((professional) => ({
+    ...professional,
+    user: pilotSnapshot.users.find((user) => user.id === professional.userId)!,
+  }));
+  const pilotFavorites = pilotProfessionals.filter((professional) => pilotDashboard.contractor.favoriteProfessionalIds.includes(professional.id));
+  const pilotInterests = pilotSnapshot.interests.filter((interest) => pilotDashboard.jobs.some((job) => job.id === interest.jobId));
+  const refreshPilot = (message: string) => { setPilotRevision((value) => value + 1); toast.success(message); };
+
+  const confirmPilotFee = (jobId: string) => {
+    const result = confirmContractorFeeMock(jobId);
+    result.success ? refreshPilot(result.message) : toast.error(result.message);
+  };
+
+  const selectPilotProfessional = (interestId: string) => {
+    const result = selectProfessionalMock(interestId);
+    result.success ? refreshPilot(result.message) : toast.error(result.message);
+  };
+
+  const togglePilotFavorite = (professionalId: string) => {
+    const result = toggleFavoriteMock(pilotDashboard.contractor.id, professionalId);
+    result.success ? refreshPilot(result.message) : toast.error(result.message);
+  };
+
+  return (
+    <div className="min-h-screen bg-background pb-12">
+      <header className="sticky top-0 z-50 border-b bg-secondary/95">
+        <div className="container mx-auto flex h-14 max-w-5xl items-center justify-between px-4">
+          <div className="flex items-center gap-2"><Button variant="ghost" size="sm" onClick={() => navigate("/")} className="text-secondary-foreground/70"><ArrowLeft className="mr-1 h-4 w-4" />Início</Button><img src={logo} alt="Trampô" className="h-7 w-7" /><span className="font-bold text-secondary-foreground">Painel do contratante</span></div>
+          <Button variant="ghost" size="sm" onClick={() => { signOut(); navigate("/"); }} className="text-secondary-foreground/70"><LogOut className="mr-1 h-4 w-4" />Sair</Button>
+        </div>
+      </header>
+      <main className="container mx-auto max-w-5xl space-y-6 px-4 py-6">
+        <p className="pilot-demo-notice">Demonstração do piloto: vagas, profissionais, taxas e confirmações abaixo são fictícios.</p>
+        <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+          <div><div className="flex items-center gap-2"><h1 className="text-2xl font-bold">Olá, {profile?.name || pilotDashboard.contractor.displayName}</h1><Badge variant="outline">Plano {pilotDashboard.plan.name}</Badge></div><p className="mt-1 text-sm text-muted-foreground">Operação local em São João del-Rei</p></div>
+          <Button onClick={() => navigate("/criar-vaga")}><Plus className="mr-2 h-4 w-4" />Publicar oportunidade</Button>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-3">
+          <Card className="pilot-surface"><CardContent className="p-5"><p className="text-sm text-muted-foreground">Plano</p><p className="mt-1 text-xl font-bold">{pilotDashboard.plan.name}</p><p className="mt-1 text-xs text-muted-foreground">{pilotDashboard.plan.id === "pro" ? `${formatBRL(pilotDashboard.plan.monthlyPrice)}/mês · 14 dias grátis` : "12% por diária"}</p></CardContent></Card>
+          <Card className="pilot-surface"><CardContent className="p-5"><p className="text-sm text-muted-foreground">Vagas abertas</p><p className="mt-1 text-xl font-bold">{pilotDashboard.jobs.filter((job) => ["open", "partially_filled"].includes(job.status)).length}</p></CardContent></Card>
+          <Card className="pilot-surface"><CardContent className="p-5"><p className="text-sm text-muted-foreground">Equipe favorita</p><p className="mt-1 text-xl font-bold">{pilotFavorites.length}</p></CardContent></Card>
+        </div>
+        <Tabs defaultValue="vagas">
+          <TabsList className="grid h-auto w-full grid-cols-3"><TabsTrigger value="vagas">Vagas</TabsTrigger><TabsTrigger value="profissionais">Profissionais</TabsTrigger><TabsTrigger value="equipe">Minha equipe</TabsTrigger></TabsList>
+          <TabsContent value="vagas" className="space-y-3">
+            {pilotDashboard.jobs.map((job) => <Card key={job.id} className="pilot-surface"><CardContent className="space-y-3 p-5"><div className="flex flex-wrap items-start justify-between gap-3"><div><p className="font-bold">{job.title}</p><p className="text-sm text-muted-foreground">{job.quantity} posição(ões) · {job.neighborhood} · {new Date(job.startsAt).toLocaleDateString("pt-BR")}</p></div><Badge variant="outline">{job.status}</Badge></div><div className="grid gap-2 text-sm sm:grid-cols-3"><span>Diárias: <strong>{formatBRL(job.dailyRate * job.quantity)}</strong></span><span>Taxa: <strong>{formatBRL(job.contractorFee)}</strong></span><span>Plano: <strong>{job.planId}</strong></span></div>{job.status === "awaiting_fee_mock" && <Button size="sm" onClick={() => confirmPilotFee(job.id)}>Simular confirmação da taxa</Button>}{pilotInterests.filter((interest) => interest.jobId === job.id && interest.status === "interested").map((interest) => { const professional = pilotProfessionals.find((item) => item.id === interest.professionalId); return <div key={interest.id} className="flex items-center justify-between border-t pt-3 text-sm"><span>{professional?.user.name} · {professional?.roleLabel}</span><Button size="sm" variant="outline" onClick={() => selectPilotProfessional(interest.id)}>Selecionar</Button></div>; })}</CardContent></Card>)}
+          </TabsContent>
+          <TabsContent value="profissionais" className="grid gap-3 sm:grid-cols-2">{pilotProfessionals.map((professional) => <Card key={professional.id} className="pilot-surface"><CardContent className="p-5"><div className="flex justify-between gap-3"><div><p className="font-bold">{professional.user.name}</p><p className="text-sm text-muted-foreground">{professional.roleLabel} · {professional.user.neighborhood}</p><p className="mt-2 text-sm"><Star className="mr-1 inline h-4 w-4 text-primary" />{professional.rating} · {professional.completedShifts} diárias</p></div><Button size="icon" variant="outline" aria-label="Alternar favorito" onClick={() => togglePilotFavorite(professional.id)}><Heart className={pilotDashboard.contractor.favoriteProfessionalIds.includes(professional.id) ? "fill-primary text-primary" : ""} /></Button></div></CardContent></Card>)}</TabsContent>
+          <TabsContent value="equipe" className="space-y-3">{pilotFavorites.length ? pilotFavorites.map((professional) => <Card key={professional.id} className="pilot-surface"><CardContent className="flex items-center justify-between gap-3 p-5"><div><p className="font-bold">{professional.user.name}</p><p className="text-sm text-muted-foreground">{professional.roleLabel} · {professional.user.neighborhood} · nota {professional.rating}</p></div><Button variant="outline" onClick={() => navigate("/criar-vaga", { state: { professionalId: professional.id, roleLabel: professional.roleLabel } })}>Convocar</Button></CardContent></Card>) : <div className="rounded-xl border border-dashed p-8 text-center text-sm text-muted-foreground">Favorite profissionais para montar sua equipe.</div>}</TabsContent>
+        </Tabs>
+      </main>
+    </div>
+  );
+
+  /* Fluxo legado preservado abaixo como referência durante o piloto. */
   return (
     <div className="min-h-screen bg-background pb-12">
       {/* Top bar */}
       <header className="sticky top-0 z-50 bg-secondary/90 backdrop-blur-md border-b border-secondary-foreground/5">
         <div className="container flex items-center justify-between h-14 max-w-5xl mx-auto px-4">
-          <div className="flex items-center gap-2">
+          <div className="flex min-w-0 items-center gap-2">
+            <Button variant="ghost" size="sm" onClick={() => navigate("/")} className="shrink-0 text-secondary-foreground/70">
+              <ArrowLeft className="mr-1 h-4 w-4" /> Início
+            </Button>
             <img src={logo} alt="Trampô" className="w-7 h-7" />
             <span className="font-bold text-secondary-foreground">Painel Contratante & Empresa</span>
           </div>
@@ -250,6 +316,9 @@ const DashboardCompany = () => {
             className="text-secondary-foreground/70"
           >
             <LogOut className="h-4 w-4 mr-1" /> Sair
+          </Button>
+          <Button variant="ghost" size="sm" onClick={() => navigate("/perfil-contratante")} className="text-secondary-foreground/70">
+            <Building2 className="h-4 w-4 mr-1" /> Perfil
           </Button>
         </div>
       </header>
@@ -552,7 +621,7 @@ const DashboardCompany = () => {
                           <p className="font-bold text-foreground text-sm">{job.title || "Sem título"}</p>
                           <p className="text-xs text-muted-foreground mt-0.5">
                             {new Date(job.date).toLocaleDateString("pt-BR")} • Diária: R${" "}
-                            {Number(job.price || 0).toFixed(2).replace(".", ",")}
+                            {Number(job.price || 0).toFixed(2).replace(".", ",")} {job.payment_type === "hourly" ? "/hora" : "(fechado)"}
                           </p>
                         </div>
                         <div className="flex items-center gap-2 shrink-0">

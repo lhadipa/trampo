@@ -26,7 +26,7 @@ const Terms = () => {
             </div>
           </div>
           <span className="text-xs text-secondary-foreground/60 hidden sm:inline">
-            Atualizado em Agosto/2026 • São João del-Rei/MG
+            Versão do piloto • São João del-Rei/MG
           </span>
         </div>
       </header>
@@ -90,7 +90,7 @@ const Terms = () => {
           </h2>
           <div className="space-y-3 text-sm text-muted-foreground leading-relaxed">
             <p>
-              <strong>2.1. Do Contratante (Empresa / Tomador):</strong> O Contratante declara que as vagas publicadas representam demandas pontuais, lícitas e eventuais, comprometendo-se a respeitar as condições acordadas e a honrar o pagamento ajustado via custódia ou diretamente ao profissional.
+              <strong>2.1. Do Contratante (Empresa / Tomador):</strong> O Contratante declara que as oportunidades publicadas representam demandas lícitas e compromete-se a respeitar as condições combinadas diretamente com o profissional.
             </p>
             <p>
               <strong>2.2. Do Prestador (Trabalhador Autônomo / MEI):</strong> O Prestador declara possuir capacidade técnica, civil e jurídica para prestar os serviços informados, sendo responsável direto pelo cumprimento do acordado com pontualidade e integridade.
@@ -98,18 +98,18 @@ const Terms = () => {
           </div>
         </div>
 
-        {/* Section 3: Pagamentos, Custódia e Taxa de Intermediação */}
+        {/* Section 3: valores demonstrativos do piloto */}
         <div className="space-y-4">
           <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
             <Lock className="h-5 w-5 text-primary" />
-            3. Fluxo Financeiro, Custódia (Escrow) e Taxas
+            3. Valores, Planos e Limites do Piloto
           </h2>
           <div className="space-y-3 text-sm text-muted-foreground leading-relaxed">
             <p>
-              <strong>3.1. Retenção em Custódia:</strong> Quando contratado via pagamento na plataforma, o valor acordado permanece temporariamente retido em garantia (*Escrow*), sendo repassado ao Prestador logo após a confirmação de conclusão do serviço pelo Contratante.
+              <strong>3.1. Sem movimentação financeira:</strong> Esta versão é uma demonstração. O Trampô não recebe, retém, transfere ou garante o pagamento da diária. Qualquer pagamento do serviço acontece diretamente entre contratante e profissional.
             </p>
             <p>
-              <strong>3.2. Taxa de Serviço e Tecnologia:</strong> O Trampô poderá cobrar taxas de intermediação tecnológica, mensalidade de software (Planos Pro) ou serviços avulsos de destaque e convite urgente. Tais valores referem-se estritamente ao licenciamento do software e ferramentas digitais.
+              <strong>3.2. Valores simulados:</strong> O contratante Avulso visualiza 12% por diária; o plano Pro custa R$ 59,90/mês após 14 dias grátis e não aplica taxa por diária; o profissional não paga assinatura e vê R$ 7,90 somente depois de ser selecionado, antes de reservar o trabalho. Nenhuma dessas cobranças é processada no piloto.
             </p>
           </div>
         </div>

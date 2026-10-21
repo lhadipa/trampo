@@ -1,5 +1,5 @@
 # Blueprint do Render (plano free) para a API.
-# O banco fica no Neon, nao aqui: o Postgres free do Render expira em 30 dias.
+# A API e o banco PostgreSQL são executados/configurados pelo Render.
 services:
   - type: web
     name: trampo-api
@@ -7,7 +7,7 @@ services:
     plan: free
     region: oregon
     buildCommand: npm install
-    startCommand: npm start
+    startCommand: npm run db:migrate && npm start
     healthCheckPath: /api/health
     envVars:
       - key: NODE_ENV
@@ -15,6 +15,6 @@ services:
       - key: JWT_SECRET
         generateValue: true
       - key: DATABASE_URL
-        sync: false # colar a connection string do Neon no painel
+        sync: false # colar a connection string do PostgreSQL do Render no painel
       - key: ALLOWED_ORIGINS
         sync: false # ex.: https://trampo.vercel.app

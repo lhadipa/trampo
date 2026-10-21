@@ -18,6 +18,7 @@ class QueryBuilder implements PromiseLike<any> {
   eq(column: string, value: any) { this.params.set(`eq.${column}`, String(value)); return this; }
   order(column: string, options?: { ascending?: boolean }) { this.params.set("order", `${column}.ascending=${options?.ascending !== false}`); return this; }
   limit(count: number) { this.params.set("limit", String(count)); return this; }
+  adminScope() { this.params.set("scope", "admin"); return this; }
   insert(body: any) { this.method = "POST"; this.body = body; return this; }
   update(body: any) { this.method = "PATCH"; this.body = body; return this; }
   single() { return this.then((result) => ({ ...result, data: Array.isArray(result.data) ? result.data[0] || null : result.data })); }
@@ -82,7 +83,7 @@ export const supabase: any = {
       const result = await response.json(); if (!response.ok) return { data: null, error: new Error(result.error) }; saveSession(result.session); return { data: result, error: null };
     },
     async signUp({ email, password, options }: any) {
-      const response = await fetch(`${API_URL}/api/auth/signup`, { method: "POST", headers: headers(), body: JSON.stringify({ email, password, name: options?.data?.name, user_type: options?.data?.user_type }) });
+      const response = await fetch(`${API_URL}/api/auth/signup`, { method: "POST", headers: headers(), body: JSON.stringify({ email, password, name: options?.data?.name, user_type: options?.data?.user_type, contractor_type: options?.data?.contractor_type, corporate_name: options?.data?.corporate_name, cnpj: options?.data?.cnpj, cpf: options?.data?.cpf }) });
       const result = await response.json(); if (!response.ok) return { data: null, error: new Error(result.error) }; saveSession(result.session); return { data: result, error: null };
     },
     async getSession() { const session = JSON.parse(localStorage.getItem("trampo_local_session") || "null"); return { data: { session }, error: null }; },

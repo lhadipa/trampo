@@ -18,7 +18,7 @@ if (!JWT_SECRET) {
 }
 
 const DATABASE_URL = process.env.DATABASE_URL || "postgres://trampo:trampo_local_dev@localhost:55433/trampo";
-// Neon/Render exigem TLS; o Postgres do docker-compose local nao tem certificado.
+// O PostgreSQL remoto do Render exige TLS; o Postgres local nao tem certificado.
 const isRemoteDb = !/localhost|127\.0\.0\.1|@postgres[:/]/.test(DATABASE_URL);
 
 /**
@@ -57,7 +57,7 @@ app.use(
 );
 app.use(express.json({ limit: "1mb" }));
 
-const tables = new Set(["users", "user_roles", "companies", "freelancers", "jobs", "applications", "conversations", "messages", "payments", "escrow", "reviews", "public_profiles", "contracts", "checkins"]);
+const tables = new Set(["users", "user_roles", "companies", "individual_contractors", "freelancers", "jobs", "applications", "conversations", "messages", "payments", "escrow", "reviews", "public_profiles", "proposals", "contracts", "checkins"]);
 
 /**
  * Politica por tabela para o CRUD generico /api/data/:table.
@@ -69,6 +69,9 @@ const policies = {
   users: { insert: false, update: { adminOnly: true, columns: ["blocked"] } },
   user_roles: { insert: false, update: false },
   public_profiles: { insert: false, update: false },
+  freelancers: { update: { own: "user_id", columns: ["category", "service_types", "work_types", "experience_years", "bio"] } },
+  individual_contractors: { update: { own: "user_id", columns: ["full_name", "cpf", "preferred_service_types", "bio", "updated_at"] } },
+  companies: { update: { own: "user_id", columns: ["name", "corporate_name", "cnpj", "preferred_service_types", "bio"] } },
 };
 
 // Colunas que nunca saem da API, independente do select.
@@ -116,7 +119,7 @@ app.get("/api/health", (_req, res) => res.json({ ok: true, database: "postgresql
 
 app.post("/api/auth/signup", async (req, res) => {
   try {
-    const { email, password, name, user_type = "empresa" } = req.body;
+    const { email, password, name, user_type = "empresa", contractor_type = "company", corporate_name, cnpj, cpf } = req.body;
     if (!email || !password || !name) return res.status(400).json({ error: "Nome, email e senha são obrigatórios" });
     if (String(password).length < 6) return res.status(400).json({ error: "A senha precisa ter ao menos 6 caracteres" });
     // Papel privilegiado nunca vem do cliente.
@@ -126,6 +129,13 @@ app.post("/api/auth/signup", async (req, res) => {
     const { rows } = await pool.query("INSERT INTO users (auth_id,name,email,type,password_hash) VALUES ($1,$2,$3,$4,$5) RETURNING *", [authId, name, email.toLowerCase(), type, passwordHash]);
     const user = rows[0];
     await pool.query("INSERT INTO public_profiles (user_id,name,type) VALUES ($1,$2,$3) ON CONFLICT DO NOTHING", [user.id, name, type]);
+    if (type === "empresa" || type === "company") {
+      if (contractor_type === "pessoa_fisica") {
+        await pool.query("INSERT INTO individual_contractors (user_id, full_name, cpf) VALUES ($1,$2,$3)", [user.id, name, cpf || "PENDENTE"]);
+      } else {
+        await pool.query("INSERT INTO companies (user_id, name, corporate_name, cnpj) VALUES ($1,$2,$3,$4)", [user.id, corporate_name || name, corporate_name || name, cnpj || null]);
+      }
+    }
     res.json({ user: { id: user.auth_id, email: user.email, user_metadata: { name, user_type: type } }, session: { access_token: tokenFor(user), user: { id: user.auth_id, email: user.email } } });
   } catch (e) { res.status(400).json({ error: e.code === "23505" ? "Email já cadastrado" : e.message }); }
 });
@@ -152,6 +162,15 @@ const hydrate = async (table, rows, select) => {
       [row.freelancer_id],
     );
     row.freelancers = r.rows[0] || null;
+  }
+  if (table === "contracts" && select?.includes("jobs")) for (const row of rows) {
+    const r = await pool.query(
+      "SELECT j.*, c.name AS company_name FROM jobs j JOIN companies c ON c.id = j.company_id WHERE j.id = $1",
+      [row.job_id],
+    );
+    const job = r.rows[0];
+    row.jobs = job ? { ...job, companies: { name: job.company_name } } : null;
+    if (row.jobs) delete row.jobs.company_name;
   }
   if (table === "freelancers" && select?.includes("users")) for (const row of rows) { const r = await pool.query("SELECT name,email FROM users WHERE id=$1", [row.user_id]); row.users = r.rows[0] || null; }
   /**
@@ -200,11 +219,12 @@ app.post("/api/contracts/accept-application", async (req, res) => {
     await client.query("BEGIN");
 
     const { rows } = await client.query(
-      `SELECT a.id, a.status, a.freelancer_id, j.id AS job_id, j.title, j.price, j.date,
-              c.id AS company_id, c.user_id AS company_user_id
-         FROM applications a
-         JOIN jobs j ON j.id = a.job_id
-         JOIN companies c ON c.id = j.company_id
+      `SELECT a.id, a.status, a.freelancer_id, f.user_id AS freelancer_user_id, j.id AS job_id, j.title, j.price, j.date,
+               c.id AS company_id, c.user_id AS company_user_id
+          FROM applications a
+          JOIN jobs j ON j.id = a.job_id
+          JOIN companies c ON c.id = j.company_id
+          JOIN freelancers f ON f.id = a.freelancer_id
         WHERE a.id = $1
         FOR UPDATE OF a`,
       [applicationId],
@@ -228,15 +248,24 @@ app.post("/api/contracts/accept-application", async (req, res) => {
     await client.query("UPDATE jobs SET status = 'filled' WHERE id = $1", [candidatura.job_id]);
 
     const valor = Number(candidatura.price || 0);
+    const inicio = new Date(candidatura.date);
+    const fim = new Date(inicio.getTime() + 60 * 60 * 1000);
+    const { rows: propostas } = await client.query(
+      `INSERT INTO proposals (job_id, application_id, company_id, freelancer_id, amount, start_at, end_at, description, status, accepted_at)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,'ACCEPTED',now()) RETURNING id`,
+      [candidatura.job_id, applicationId, candidatura.company_id, candidatura.freelancer_id, valor, inicio, fim, candidatura.title],
+    );
     const { rows: contratos } = await client.query(
-      `INSERT INTO contracts (job_id, company_id, freelancer_id, amount, freelancer_amount, start_at, description, status)
-       VALUES ($1,$2,$3,$4,$4,$5,$6,'FUNDS_SECURED') RETURNING *`,
-      [candidatura.job_id, candidatura.company_id, candidatura.freelancer_id, valor, candidatura.date, candidatura.title],
+      `INSERT INTO contracts (job_id, company_id, freelancer_id, proposal_id, amount, freelancer_amount, start_at, end_at, description, status)
+       VALUES ($1,$2,$3,$4,$5,$5,$6,$7,$8,'FUNDS_SECURED') RETURNING *`,
+      [candidatura.job_id, candidatura.company_id, candidatura.freelancer_id, propostas[0].id, valor, inicio, fim, candidatura.title],
     );
-    await client.query(
-      "INSERT INTO escrow (job_id, company_id, freelancer_id, amount, status, service) VALUES ($1,$2,$3,$4,'held',$5)",
-      [candidatura.job_id, candidatura.company_id, candidatura.freelancer_id, valor, candidatura.title],
+    const { rows: escrows } = await client.query(
+      `INSERT INTO escrow (job_id, company_id, freelancer_id, company_user_id, freelancer_user_id, amount, status, service)
+       VALUES ($1,$2,$3,$4,$5,$6,'held',$7) RETURNING id`,
+      [candidatura.job_id, candidatura.company_id, candidatura.freelancer_id, candidatura.company_user_id, candidatura.freelancer_user_id, valor, candidatura.title],
     );
+    await client.query("UPDATE contracts SET escrow_id = $1 WHERE id = $2", [escrows[0].id, contratos[0].id]);
 
     await client.query("COMMIT");
     res.json({ contract: contratos[0] });
@@ -449,6 +478,9 @@ app.all("/api/data/:table", async (req, res) => {
   const policy = policies[table] || {};
 
   try {
+    const adminScope = req.query.scope === "admin";
+    const privilegedRead = adminScope && (await isAdmin(user));
+    if (adminScope && !privilegedRead) return res.status(403).json({ data: null, error: { message: "Apenas administradores" } });
     if (req.method === "POST") {
       if (policy.insert === false) return res.status(403).json({ data: null, error: { message: "Escrita não permitida nesta tabela" } });
       const payload = Array.isArray(req.body) ? req.body : [req.body];
@@ -468,6 +500,16 @@ app.all("/api/data/:table", async (req, res) => {
       // UPDATE sem WHERE reescreveria a tabela inteira.
       if (!filters.length) return res.status(400).json({ data: null, error: { message: "Filtro obrigatório para atualizar" } });
 
+      if (rule?.own) {
+        const ownerFilter = filters.find(([column]) => column === rule.own);
+        if (ownerFilter && ownerFilter[1] !== user.id) return res.status(403).json({ data: null, error: { message: "Somente o dono pode editar este perfil" } });
+        if (!ownerFilter) {
+          const { rows: owned } = await pool.query(`SELECT id FROM ${table} WHERE ${rule.own} = $1`, [user.id]);
+          if (!owned.length) return res.status(404).json({ data: null, error: { message: "Perfil nao encontrado" } });
+          filters.push(["id", owned[0].id]);
+        }
+      }
+
       const updates = Object.entries(req.body || {})
         .filter(([k]) => IDENT.test(k))
         .filter(([k]) => !rule?.columns || rule.columns.includes(k));
@@ -482,7 +524,20 @@ app.all("/api/data/:table", async (req, res) => {
 
     const filters = parseFilters(req.query);
     const values = filters.map(([, v]) => v);
-    const where = filters.length ? `WHERE ${filters.map(([column], i) => `${column}=$${i + 1}`).join(" AND ")}` : "";
+    const clauses = filters.map(([column], i) => `${column}=$${i + 1}`);
+    if (table === "contracts" && !privilegedRead) {
+      clauses.push(`(company_id IN (SELECT id FROM companies WHERE user_id = $${values.length + 1}) OR freelancer_id IN (SELECT id FROM freelancers WHERE user_id = $${values.length + 1}))`);
+      values.push(user.id);
+    }
+    if (table === "proposals" && !privilegedRead) {
+      clauses.push(`(company_id IN (SELECT id FROM companies WHERE user_id = $${values.length + 1}) OR freelancer_id IN (SELECT id FROM freelancers WHERE user_id = $${values.length + 1}))`);
+      values.push(user.id);
+    }
+    if (table === "escrow" && !privilegedRead) {
+      clauses.push(`(company_id IN (SELECT id FROM companies WHERE user_id = $${values.length + 1}) OR freelancer_id IN (SELECT id FROM freelancers WHERE user_id = $${values.length + 1}) OR company_user_id = $${values.length + 1} OR freelancer_user_id = $${values.length + 1})`);
+      values.push(user.id);
+    }
+    const where = clauses.length ? `WHERE ${clauses.join(" AND ")}` : "";
     const columns = await columnsOf(table);
     const orderColumn = String(req.query.order || "").split(".")[0];
     const order = IDENT.test(orderColumn) && columns.has(orderColumn)
@@ -500,4 +555,30 @@ app.all("/api/data/:table", async (req, res) => {
 });
 
 const port = process.env.PORT || 3001;
+// Mantem bancos locais criados antes do perfil profissional compativeis.
+// Assim, reiniciar a API aplica a evolucao sem apagar dados existentes.
+await pool.query("ALTER TABLE freelancers ADD COLUMN IF NOT EXISTS service_types text[] NOT NULL DEFAULT '{}'");
+await pool.query("ALTER TABLE freelancers ADD COLUMN IF NOT EXISTS work_types text[] NOT NULL DEFAULT '{}'");
+await pool.query("ALTER TABLE freelancers ADD COLUMN IF NOT EXISTS experience_years integer NOT NULL DEFAULT 0");
+await pool.query("ALTER TABLE freelancers ADD COLUMN IF NOT EXISTS bio text NOT NULL DEFAULT ''");
+await pool.query("ALTER TABLE companies ADD COLUMN IF NOT EXISTS corporate_name text");
+await pool.query("ALTER TABLE companies ADD COLUMN IF NOT EXISTS cnpj text");
+await pool.query("ALTER TABLE companies ADD COLUMN IF NOT EXISTS preferred_service_types text[] NOT NULL DEFAULT '{}'");
+await pool.query("ALTER TABLE companies ADD COLUMN IF NOT EXISTS bio text NOT NULL DEFAULT ''");
+await pool.query("ALTER TABLE individual_contractors ADD COLUMN IF NOT EXISTS preferred_service_types text[] NOT NULL DEFAULT '{}'");
+await pool.query("ALTER TABLE individual_contractors ADD COLUMN IF NOT EXISTS bio text NOT NULL DEFAULT ''");
+await pool.query("ALTER TABLE jobs ADD COLUMN IF NOT EXISTS payment_type text NOT NULL DEFAULT 'service'");
+await pool.query("ALTER TABLE jobs ADD COLUMN IF NOT EXISTS service_price numeric(10,2)");
+await pool.query("ALTER TABLE jobs ADD COLUMN IF NOT EXISTS hourly_rate numeric(10,2)");
+await pool.query("CREATE TABLE IF NOT EXISTS individual_contractors (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), user_id uuid NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE, full_name text NOT NULL, cpf text NOT NULL UNIQUE, created_at timestamptz NOT NULL DEFAULT now(), updated_at timestamptz NOT NULL DEFAULT now())");
+await pool.query("ALTER TABLE payments ADD COLUMN IF NOT EXISTS user_id uuid REFERENCES users(id)");
+await pool.query("ALTER TABLE payments ADD COLUMN IF NOT EXISTS service text");
+await pool.query("ALTER TABLE payments ALTER COLUMN from_user_id DROP NOT NULL").catch(() => {});
+await pool.query("ALTER TABLE payments ALTER COLUMN to_user_id DROP NOT NULL").catch(() => {});
+await pool.query("ALTER TABLE escrow ADD COLUMN IF NOT EXISTS company_id uuid REFERENCES companies(id)");
+await pool.query("ALTER TABLE escrow ADD COLUMN IF NOT EXISTS freelancer_id uuid REFERENCES freelancers(id)");
+await pool.query("ALTER TABLE escrow ADD COLUMN IF NOT EXISTS company_user_id uuid REFERENCES users(id)");
+await pool.query("ALTER TABLE escrow ADD COLUMN IF NOT EXISTS freelancer_user_id uuid REFERENCES users(id)");
+await pool.query("ALTER TABLE escrow ADD COLUMN IF NOT EXISTS released_at timestamptz");
+await pool.query("CREATE TABLE IF NOT EXISTS proposals (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), job_id uuid NOT NULL REFERENCES jobs(id), application_id uuid NOT NULL UNIQUE REFERENCES applications(id), company_id uuid NOT NULL REFERENCES companies(id), freelancer_id uuid NOT NULL REFERENCES freelancers(id), amount numeric(10,2) NOT NULL DEFAULT 0, start_at timestamptz NOT NULL, end_at timestamptz NOT NULL, description text, status text NOT NULL DEFAULT 'PENDING', created_at timestamptz NOT NULL DEFAULT now(), accepted_at timestamptz, rejected_at timestamptz)");
 app.listen(port, () => console.log(`Trampo API em http://localhost:${port} (${isProduction ? "producao" : "local"})`));

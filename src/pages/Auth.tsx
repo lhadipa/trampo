@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
-import { Sparkles, CheckSquare, Square } from "lucide-react";
+import { ArrowLeft, Sparkles, CheckSquare, Square } from "lucide-react";
 import { toast } from "sonner";
 import logo from "@/assets/logo.png";
 
@@ -18,6 +18,10 @@ const Auth = () => {
   const [signupEmail, setSignupEmail] = useState("");
   const [signupPassword, setSignupPassword] = useState("");
   const [userType, setUserType] = useState<"empresa" | "freelancer">("freelancer");
+  const [contractorType, setContractorType] = useState<"company" | "pessoa_fisica">("company");
+  const [corporateName, setCorporateName] = useState("");
+  const [cnpj, setCnpj] = useState("");
+  const [cpf, setCpf] = useState("");
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [tab, setTab] = useState("login");
 
@@ -51,6 +55,14 @@ const Auth = () => {
       toast.error("Por favor, leia e aceite os Termos de Uso e Autonomia.");
       return;
     }
+    if (userType === "empresa" && contractorType === "company" && (!corporateName.trim() || !cnpj.trim())) {
+      toast.error("Informe a razão social/nome corporativo e o CNPJ.");
+      return;
+    }
+    if (userType === "empresa" && contractorType === "pessoa_fisica" && !cpf.trim()) {
+      toast.error("Informe o CPF do contratante.");
+      return;
+    }
     setLoading(true);
 
     try {
@@ -59,7 +71,7 @@ const Auth = () => {
         password: signupPassword,
         options: {
           emailRedirectTo: window.location.origin,
-          data: { name: signupName, user_type: userType },
+          data: { name: signupName, user_type: userType, contractor_type: contractorType, corporate_name: corporateName, cnpj, cpf },
         },
       });
       setLoading(false);
@@ -85,6 +97,10 @@ const Auth = () => {
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4 py-8">
       <div className="w-full max-w-md space-y-4">
+        <Button variant="ghost" size="sm" onClick={() => navigate("/")} className="-ml-2 text-muted-foreground">
+          <ArrowLeft className="mr-1 h-4 w-4" /> Voltar para início
+        </Button>
+
         {/* VIP Launch Banner */}
         <div className="flex items-center gap-2 p-3 rounded-2xl bg-primary/10 border border-primary/20 text-xs text-primary font-medium shadow-sm animate-in fade-in slide-in-from-top-2 duration-300">
           <Sparkles className="h-4 w-4 shrink-0 text-primary" />
@@ -142,6 +158,18 @@ const Auth = () => {
                       required
                     />
                   </div>
+
+                  {false && userType === "empresa" && <div className="space-y-3 rounded-xl border border-border bg-muted/20 p-3">
+                    <Label>Quem vai contratar?</Label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <Button type="button" variant={contractorType === "company" ? "default" : "outline"} onClick={() => setContractorType("company")} className="w-full text-xs font-semibold">Empresa</Button>
+                      <Button type="button" variant={contractorType === "pessoa_fisica" ? "default" : "outline"} onClick={() => setContractorType("pessoa_fisica")} className="w-full text-xs font-semibold">Pessoa física</Button>
+                    </div>
+                    {contractorType === "company" ? <>
+                      <div className="space-y-2"><Label htmlFor="corporateName">Nome corporativo / razão social</Label><Input id="corporateName" placeholder="Ex: Restaurante Mineiro Ltda." value={corporateName} onChange={e => setCorporateName(e.target.value)} required /></div>
+                      <div className="space-y-2"><Label htmlFor="cnpj">CNPJ</Label><Input id="cnpj" placeholder="00.000.000/0001-00" value={cnpj} onChange={e => setCnpj(e.target.value)} required /></div>
+                    </> : <div className="space-y-2"><Label htmlFor="cpf">CPF do contratante</Label><Input id="cpf" placeholder="000.000.000-00" value={cpf} onChange={e => setCpf(e.target.value)} required /></div>}
+                  </div>}
                   <div className="space-y-2">
                     <Label>Senha</Label>
                     <Input
@@ -209,6 +237,18 @@ const Auth = () => {
                       </Button>
                     </div>
                   </div>
+
+                  {userType === "empresa" && <div className="space-y-3 rounded-xl border border-border bg-muted/20 p-3">
+                    <Label>Quem vai contratar?</Label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <Button type="button" variant={contractorType === "company" ? "default" : "outline"} onClick={() => setContractorType("company")} className="w-full text-xs font-semibold">Empresa</Button>
+                      <Button type="button" variant={contractorType === "pessoa_fisica" ? "default" : "outline"} onClick={() => setContractorType("pessoa_fisica")} className="w-full text-xs font-semibold">Pessoa física</Button>
+                    </div>
+                    {contractorType === "company" ? <>
+                      <div className="space-y-2"><Label htmlFor="corporateName">Nome corporativo / razão social</Label><Input id="corporateName" placeholder="Ex: Restaurante Mineiro Ltda." value={corporateName} onChange={e => setCorporateName(e.target.value)} required /></div>
+                      <div className="space-y-2"><Label htmlFor="cnpj">CNPJ</Label><Input id="cnpj" placeholder="00.000.000/0001-00" value={cnpj} onChange={e => setCnpj(e.target.value)} required /></div>
+                    </> : <div className="space-y-2"><Label htmlFor="cpf">CPF do contratante</Label><Input id="cpf" placeholder="000.000.000-00" value={cpf} onChange={e => setCpf(e.target.value)} required /></div>}
+                  </div>}
 
                   {/* Terms Checkbox */}
                   <div

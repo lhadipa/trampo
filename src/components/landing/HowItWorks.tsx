@@ -1,26 +1,33 @@
-import { ShieldCheck, UserPlus, Zap, FileCheck, CheckCircle2 } from "lucide-react";
+import { BadgeCheck, CircleDollarSign, Search, UserPlus } from "lucide-react";
 
 const steps = [
   {
     icon: UserPlus,
-    title: "1. Publique ou Peça SOS",
-    subtitle: "Em menos de 2 minutos",
+    title: "1. Publique a oportunidade",
+    subtitle: "Conte o local, horário e valor",
     description:
-      "Descreva o serviço (seja pintura, piscina, garçom, faxina ou elétrica) ou dispare o radar urgente para profissionais disponíveis agora.",
+      "Escolha a categoria e explique a diária. Tudo fica identificado como simulação neste piloto.",
   },
   {
-    icon: ShieldCheck,
-    title: "2. Pagamento Protegido (Escrow)",
-    subtitle: "Segurança total bilateral",
+    icon: Search,
+    title: "2. Compare profissionais",
+    subtitle: "Veja interesse e disponibilidade",
     description:
-      "O valor da diária fica reservado em custódia segura. O prestador trabalha com a certeza do recebimento e o contratante só libera após o serviço concluído.",
+      "Consulte perfis, especialidades e avaliações demonstrativas para escolher quem combina com a necessidade.",
   },
   {
-    icon: FileCheck,
-    title: "3. Check-in & Recibo Digital",
-    subtitle: "Zero risco de vínculo CLT",
+    icon: CircleDollarSign,
+    title: "3. Confirme a seleção",
+    subtitle: "Taxa avulsa de R$ 7,90",
     description:
-      "Comprovação de horário no local e emissão automática de Recibo de Prestação Autônoma (RPA) pronto para contabilidade e proteção jurídica.",
+      "Somente o profissional selecionado confirma a reserva da diária. A cobrança exibida é simulada e não movimenta dinheiro.",
+  },
+  {
+    icon: BadgeCheck,
+    title: "4. Registre a conclusão",
+    subtitle: "Check-in e recibo demonstrativos",
+    description:
+      "As partes acompanham o combinado e geram um comprovante de demonstração, sem custódia ou pagamento pela plataforma.",
   },
 ];
 
@@ -30,17 +37,17 @@ const HowItWorks = () => {
       <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-3xl text-center">
           <p className="text-sm font-semibold uppercase tracking-widest text-primary">
-            Arquitetura Operacional
+            Fluxo do piloto
           </p>
           <h2 className="mt-3 text-balance text-3xl font-bold tracking-tight sm:text-4xl text-foreground">
             Como o Trampô funciona na prática
           </h2>
           <p className="mt-4 text-muted-foreground text-base leading-relaxed">
-            Eliminamos intermediários caros, o risco de calotes e a burocracia trabalhista através de tecnologia sob demanda.
+            Um caminho simples para conectar contratantes e profissionais locais, com expectativas claras em cada etapa.
           </p>
         </div>
 
-        <div className="mt-16 grid gap-8 md:grid-cols-3">
+        <div className="mt-16 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           {steps.map((step, index) => (
             <div
               key={step.title}

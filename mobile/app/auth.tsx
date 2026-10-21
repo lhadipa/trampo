@@ -1,5 +1,6 @@
 import { useRouter } from "expo-router";
 import {
+  ArrowLeft,
   ArrowRight,
   Building2,
   CheckSquare,
@@ -93,6 +94,15 @@ export default function Auth() {
         keyboardShouldPersistTaps="handled"
       >
         <View className="gap-4">
+          <Pressable
+            onPress={() => router.replace("/")}
+            className="-ml-1 flex-row items-center gap-1 self-start"
+            hitSlop={8}
+          >
+            <ArrowLeft size={20} color="#57534e" />
+            <Text className="text-sm font-semibold text-muted-foreground">Voltar para início</Text>
+          </Pressable>
+
           {/* Banner de lançamento VIP */}
           <View className="flex-row items-center gap-2 rounded-2xl border border-primary/20 bg-primary/10 p-3">
             <Sparkles size={16} color="#e85d04" />

@@ -9,17 +9,20 @@ import {
   Truck,
   ArrowRight,
   CheckCircle2,
+  Megaphone,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SERVICE_CATEGORIES } from "@/lib/categories";
 
-const iconMap: Record<string, any> = {
+const iconMap: Record<string, LucideIcon> = {
   Paintbrush,
   Waves,
   Utensils,
   PartyPopper,
   Scissors,
   Truck,
+  Megaphone,
 };
 
 const Categories = () => {
@@ -35,13 +38,13 @@ const Categories = () => {
       <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-3xl text-center">
           <div className="text-primary text-xs font-semibold uppercase tracking-wider">
-            Ecossistema Multi-Serviços
+            Serviços do piloto
           </div>
           <h2 className="mt-3 text-balance text-3xl font-bold tracking-tight sm:text-4xl text-foreground">
             Encontre especialistas para qualquer necessidade
           </h2>
           <p className="mt-4 text-muted-foreground text-base leading-relaxed">
-            De residências e condomínios a bares, obras e eventos. Uma plataforma única com prestadores avaliados e diárias transparentes.
+            De ações de panfletagem e vendas porta a porta a eventos, manutenção e serviços gerais na região.
           </p>
         </div>
 
@@ -108,7 +111,7 @@ const Categories = () => {
                   Especialidades em {activeCategory.name}
                 </h4>
                 <p className="text-sm text-muted-foreground">
-                  Profissionais prontos para atender você com garantia de serviço e Pix protegido.
+                  Perfis demonstrativos para você conhecer o fluxo antes da operação real.
                 </p>
               </div>
             </div>
@@ -116,7 +119,7 @@ const Categories = () => {
               className="rounded-lg shadow-none"
               onClick={() => navigate("/auth")}
             >
-              Chamar Profissional Agora
+              Publicar oportunidade
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </div>

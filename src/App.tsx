@@ -15,6 +15,8 @@ import Chat from "./pages/Chat.tsx";
 import Conversations from "./pages/Conversations.tsx";
 import Terms from "./pages/Terms.tsx";
 import Contracts from "./pages/Contracts.tsx";
+import Profile from "./pages/Profile.tsx";
+import ContractorProfile from "./pages/ContractorProfile.tsx";
 
 const queryClient = new QueryClient();
 
@@ -30,7 +32,10 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/termos" element={<Terms />} />
             <Route path="/painel" element={<Dashboard />} />
+            <Route path="/equipe" element={<Dashboard />} />
             <Route path="/disponibilidade" element={<Availability />} />
+            <Route path="/perfil" element={<Profile />} />
+            <Route path="/perfil-contratante" element={<ContractorProfile />} />
             <Route path="/criar-vaga" element={<CreateJob />} />
             <Route path="/urgente" element={<UrgentRequest />} />
             <Route path="/conversas" element={<Conversations />} />

@@ -10,6 +10,7 @@ import {
   Star,
   Wallet,
   Zap,
+  ArrowLeft,
 } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
@@ -96,8 +97,14 @@ export const DashboardFreelancer = () => {
   return (
     <View className="flex-1 bg-background">
       <View style={{ paddingTop: insets.top }} className="bg-secondary">
-        <View className="h-14 flex-row items-center justify-between px-4">
-          <Text className="font-bold text-secondary-foreground">Painel do Profissional</Text>
+        <View className="h-14 flex-row items-center justify-between gap-2 px-4">
+          <View className="min-w-0 flex-1 flex-row items-center gap-2">
+            <Pressable onPress={() => router.replace("/")} className="flex-row items-center gap-1">
+              <ArrowLeft size={16} color="#ffffff" />
+              <Text className="text-sm text-secondary-foreground/70">Início</Text>
+            </Pressable>
+            <Text className="flex-1 font-bold text-secondary-foreground" numberOfLines={1}>Painel do Profissional</Text>
+          </View>
           <Pressable
             onPress={async () => {
               await signOut();

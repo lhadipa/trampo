@@ -111,6 +111,21 @@ export const SERVICE_CATEGORIES: ServiceCategory[] = [
       "Cuidador(a) de Idosos / Acompanhante",
     ],
   },
+  {
+    id: "promocao-vendas",
+    name: "Promoção & Vendas",
+    description: "Panfletagem, abordagem promocional e vendas porta a porta para campanhas locais.",
+    iconName: "Megaphone",
+    badge: "Ação Local",
+    avgDailyRate: "R$ 90 - R$ 180",
+    subservices: [
+      "Panfletista",
+      "Promotor(a) de Rua",
+      "Vendedor(a) Porta a Porta",
+      "Divulgador(a) de Eventos",
+      "Captador(a) de Clientes",
+    ],
+  },
 ];
 
 // Lista linear completa para selects e pesquisas rápidas

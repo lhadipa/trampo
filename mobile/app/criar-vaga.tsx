@@ -21,6 +21,7 @@ export default function CriarVaga() {
   const [region, setRegion] = useState(BRAZILIAN_REGIONS_PRESET[0]);
   const [customLocation, setCustomLocation] = useState("");
   const [price, setPrice] = useState("150");
+  const [paymentType, setPaymentType] = useState<"service" | "hourly">("service");
   const [time, setTime] = useState("08:00");
   const [description, setDescription] = useState("");
   const [urgent, setUrgent] = useState(false);
@@ -28,7 +29,8 @@ export default function CriarVaga() {
   const [loading, setLoading] = useState(false);
 
   const submit = async () => {
-    if (!service || !price) {
+    const amount = Number(price);
+    if (!service || !price || !Number.isFinite(amount) || amount <= 0) {
       toast.error("Por favor, preencha o tipo de serviço, horário e valor.");
       return;
     }
@@ -60,7 +62,10 @@ export default function CriarVaga() {
         title: service,
         description,
         date: new Date().toISOString(),
-        price: Number(price) || 150,
+        price: amount,
+        payment_type: paymentType,
+        service_price: paymentType === "service" ? amount : null,
+        hourly_rate: paymentType === "hourly" ? amount : null,
         location: customLocation || region,
         category: service,
         urgent,
@@ -176,7 +181,7 @@ export default function CriarVaga() {
                   </Field>
                 </View>
                 <View className="flex-1">
-                  <Field label="Valor da diária (R$) *">
+                  <Field label={paymentType === "service" ? "Valor total (R$) *" : "Valor por hora (R$) *"}>
                     <Input
                       value={price}
                       onChangeText={setPrice}
@@ -186,6 +191,24 @@ export default function CriarVaga() {
                   </Field>
                 </View>
               </View>
+              <Field label="Forma de pagamento *">
+                <View className="flex-row gap-2">
+                  {(["service", "hourly"] as const).map((type) => (
+                    <Pressable
+                      key={type}
+                      onPress={() => setPaymentType(type)}
+                      className={`flex-1 rounded-xl border px-3 py-3 ${paymentType === type ? "border-primary bg-primary/10" : "border-border"}`}
+                    >
+                      <Text className="text-center text-xs font-semibold">
+                        {type === "service" ? "Por serviço / fechado" : "Por hora"}
+                      </Text>
+                    </Pressable>
+                  ))}
+                </View>
+                <Text className="mt-1 text-xs text-muted-foreground">
+                  Baseie o valor no mercado. Valores abaixo do aprovado pela comunidade podem ser bloqueados.
+                </Text>
+              </Field>
             </CardContent>
           </Card>
 

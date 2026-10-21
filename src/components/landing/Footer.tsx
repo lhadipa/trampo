@@ -23,7 +23,7 @@ const footerGroups = [
     links: [
       { label: "Painel do Profissional", href: "/painel" },
       { label: "Agenda & Disponibilidade", href: "/disponibilidade" },
-      { label: "Garantia Pix Anti-Calote", href: "/termos" },
+      { label: "Como funciona o piloto", href: "/termos" },
     ],
   },
 ];
@@ -38,7 +38,7 @@ const Footer = () => {
           <div className="max-w-sm space-y-4">
             <Logo />
             <p className="text-sm leading-relaxed text-muted-foreground">
-              A infraestrutura digital de contratação rápida para pintores, piscineiros, garçons, eletricistas, diaristas e dezenas de especialidades. Conectando pessoas e negócios em todo o Brasil.
+              Piloto local para conectar contratantes e profissionais de panfletagem, vendas porta a porta, eventos, manutenção e serviços gerais em São João del-Rei.
             </p>
           </div>
 
@@ -81,7 +81,7 @@ const Footer = () => {
               onClick={() => navigate("/termos")}
               className="text-muted-foreground hover:text-foreground transition-colors"
             >
-              Privacidade & Garantia Escrow
+              Privacidade & pagamentos demonstrativos
             </button>
           </div>
         </div>
