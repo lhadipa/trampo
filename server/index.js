@@ -96,7 +96,9 @@ const appendReadScope = async (table, user, privilegedRead, clauses, values) => 
   if (privilegedRead || ["jobs", "freelancers", "companies", "public_profiles"].includes(table)) return;
   const bind = (value) => { values.push(value); return `$${values.length}`; };
   if (table === "users" || table === "user_roles" || table === "preferences" || table === "payments") {
-    const column = table === "user_roles" ? "user_id" : "user_id";
+    // `users` identifica o registro pelo próprio `id`; as demais tabelas
+    // relacionadas ao usuário usam a coluna `user_id`.
+    const column = table === "users" ? "id" : "user_id";
     clauses.push(`${column} = ${bind(user.id)}`);
   } else if (table === "individual_contractors") {
     clauses.push(`user_id = ${bind(user.id)}`);
