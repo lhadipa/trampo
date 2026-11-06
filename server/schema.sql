@@ -18,6 +18,16 @@ ALTER TABLE freelancers ADD COLUMN IF NOT EXISTS service_types text[] NOT NULL D
 ALTER TABLE freelancers ADD COLUMN IF NOT EXISTS work_types text[] NOT NULL DEFAULT '{}';
 ALTER TABLE freelancers ADD COLUMN IF NOT EXISTS experience_years integer NOT NULL DEFAULT 0;
 ALTER TABLE freelancers ADD COLUMN IF NOT EXISTS bio text NOT NULL DEFAULT '';
+CREATE TABLE IF NOT EXISTS preferences (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  location_id text NOT NULL,
+  category_id text NOT NULL,
+  active boolean NOT NULL DEFAULT true,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  removed_at timestamptz,
+  UNIQUE(user_id, location_id, category_id)
+);
 CREATE TABLE IF NOT EXISTS jobs (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(), company_id uuid NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
   title text NOT NULL DEFAULT '', description text, date timestamptz NOT NULL, price numeric(10,2),
@@ -65,3 +75,4 @@ CREATE TABLE IF NOT EXISTS checkins (id uuid PRIMARY KEY DEFAULT gen_random_uuid
 
 CREATE INDEX IF NOT EXISTS jobs_company_id_idx ON jobs(company_id);
 CREATE INDEX IF NOT EXISTS jobs_status_idx ON jobs(status);
+CREATE INDEX IF NOT EXISTS preferences_user_active_idx ON preferences(user_id) WHERE active;

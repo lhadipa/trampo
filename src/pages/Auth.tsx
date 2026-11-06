@@ -81,7 +81,7 @@ const Auth = () => {
         // O cadastro ja devolve sessao valida -- nao ha confirmacao por email
         // neste backend. Antes a tela pedia para "verificar o email" e deixava
         // o usuario parado no login, com a conta criada.
-        toast.success("Conta criada com sucesso! 60 Dias VIP liberados 🎉");
+        toast.success("Conta criada com sucesso! Seu acesso ao piloto está liberado.");
         navigate("/painel");
       }
     } catch {
@@ -101,11 +101,11 @@ const Auth = () => {
           <ArrowLeft className="mr-1 h-4 w-4" /> Voltar para início
         </Button>
 
-        {/* VIP Launch Banner */}
+        {/* Aviso do piloto */}
         <div className="flex items-center gap-2 p-3 rounded-2xl bg-primary/10 border border-primary/20 text-xs text-primary font-medium shadow-sm animate-in fade-in slide-in-from-top-2 duration-300">
           <Sparkles className="h-4 w-4 shrink-0 text-primary" />
           <span>
-            <strong>Lançamento SJDR:</strong> Cadastre-se hoje e ganhe <strong>60 Dias Grátis de Membro Fundador VIP</strong>.
+            <strong>Piloto local:</strong> use dados demonstrativos para conhecer o fluxo em São João del-Rei.
           </span>
         </div>
 
@@ -159,7 +159,7 @@ const Auth = () => {
                     />
                   </div>
 
-                  {false && userType === "empresa" && <div className="space-y-3 rounded-xl border border-border bg-muted/20 p-3">
+                  {userType === "empresa" && <div className="space-y-3 rounded-xl border border-border bg-muted/20 p-3">
                     <Label>Quem vai contratar?</Label>
                     <div className="grid grid-cols-2 gap-2">
                       <Button type="button" variant={contractorType === "company" ? "default" : "outline"} onClick={() => setContractorType("company")} className="w-full text-xs font-semibold">Empresa</Button>
@@ -273,7 +273,7 @@ const Auth = () => {
                   </div>
 
                   <Button type="submit" variant="hero" className="w-full shadow-warm" disabled={loading}>
-                    {loading ? "Criando conta..." : "Criar Conta com 60 Dias Grátis"}
+                    {loading ? "Criando conta..." : "Criar conta no piloto"}
                   </Button>
                 </form>
               )}

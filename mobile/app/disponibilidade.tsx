@@ -7,6 +7,7 @@ import { Card, CardContent } from "../src/components/ui/Card";
 import { Field, Input } from "../src/components/ui/Input";
 import { ScreenHeader } from "../src/components/ui/ScreenHeader";
 import { toast } from "../src/components/ui/Toast";
+import { recordPilotProgress } from "../src/lib/pilotProgress";
 
 /** Porte de src/pages/Availability.tsx. */
 const weekdays = [
@@ -141,11 +142,12 @@ export default function Disponibilidade() {
 
         <Button
           size="lg"
-          onPress={() =>
+          onPress={async () => {
+            await recordPilotProgress("availability-set", 15, "agenda-clara");
             toast.success("Agenda atualizada!", {
               description: `${activeDays.length} dias, ${activeShifts.length} turnos, raio de ${radius}.`,
-            })
-          }
+            });
+          }}
         >
           Salvar Disponibilidade
         </Button>

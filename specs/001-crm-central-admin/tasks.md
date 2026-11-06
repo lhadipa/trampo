@@ -25,8 +25,8 @@
 
 **⚠️ CRITICAL**: Nenhuma história deve ser implementada antes desta fase.
 
-- [ ] T005 [P] Adicionar testes de autorização para leituras globais, sessão ausente, usuário comum e usuário bloqueado em `server/crm-admin.test.js`
-- [ ] T006 [P] Adicionar testes de contrato para remoção de `password_hash` e atualização exclusiva de `blocked` em `server/crm-admin.test.js`
+- [x] T005 [P] Adicionar testes de autorização para leituras globais, sessão ausente, usuário comum e usuário bloqueado em `server/crm-admin.test.js`
+- [x] T006 [P] Adicionar testes de contrato para remoção de `password_hash` e atualização exclusiva de `blocked` em `server/crm-admin.test.js`
 - [X] T007 Definir no `server/index.js` a guarda administrativa para consultas globais do CRM sem alterar as regras de ownership das consultas comuns
 - [X] T008 Garantir no `server/index.js` que toda resposta administrativa continue passando por sanitização e nunca contenha `password_hash`
 - [X] T009 Criar a projeção e normalização de `ClienteCRM` em `src/pages/DashboardAdmin.tsx`, deduplicando `users` e associando perfis sem alterar tabelas
@@ -46,8 +46,8 @@
 ### Tests for User Story 1
 
 - [ ] T012 [P] [US1] Criar testes de indicadores e estados loading/erro/vazio em `src/test/crm-admin-list.test.tsx`
-- [ ] T013 [P] [US1] Criar testes de busca, filtros por tipo/status/período e ordenação em `src/test/crm-admin-list.test.tsx`
-- [ ] T014 [P] [US1] Criar teste de contrato para limite, `select`, `eq` e `order` usados pela lista em `server/crm-admin.test.js`
+- [x] T013 [P] [US1] Criar testes de busca, filtros por tipo/status/período e ordenação em `src/test/crm-admin-list.test.tsx`
+- [x] T014 [P] [US1] Criar teste de contrato para limite, `select`, `eq` e `order` usados pela lista em `server/crm-admin.test.js`
 
 ### Implementation for User Story 1
 
@@ -71,8 +71,8 @@
 
 ### Tests for User Story 2
 
-- [ ] T022 [P] [US2] Criar testes de abertura/fechamento do detalhe e estados vazios por seção em `src/test/crm-admin-detail.test.tsx`
-- [ ] T023 [P] [US2] Criar testes de consolidação de relações e ausência de vazamento entre clientes em `src/test/crm-admin-detail.test.tsx`
+- [x] T022 [P] [US2] Criar testes de abertura/fechamento do detalhe e estados vazios por seção em `src/test/crm-admin-detail.test.tsx`
+- [x] T023 [P] [US2] Criar testes de consolidação de relações e ausência de vazamento entre clientes em `src/test/crm-admin-detail.test.tsx`
 - [ ] T024 [P] [US2] Criar teste de contrato para consultas relacionadas e hidratações permitidas em `server/crm-admin.test.js`
 
 ### Implementation for User Story 2
@@ -97,14 +97,14 @@
 ### Tests for User Story 3
 
 - [ ] T031 [P] [US3] Criar testes de bloqueio/desbloqueio, confirmação visual, erro e recarregamento em `src/test/crm-admin-blocking.test.tsx`
-- [ ] T032 [P] [US3] Criar teste de contrato para impedir atualização de qualquer coluna além de `blocked` em `server/crm-admin.test.js`
+- [x] T032 [P] [US3] Criar teste de contrato para impedir atualização de qualquer coluna além de `blocked` em `server/crm-admin.test.js`
 - [ ] T033 [P] [US3] Criar teste de regressão para preservar as rotas operacionais de contratos e pagamentos em `server/crm-admin.test.js`
 
 ### Implementation for User Story 3
 
 - [X] T034 [US3] Reutilizar a ação existente de atualização de `users` e restringir o fluxo visual ao campo `blocked` em `src/pages/DashboardAdmin.tsx`
 - [X] T035 [US3] Adicionar confirmação, estado pendente, mensagem de sucesso/erro e atualização local da lista/detalhe em `src/pages/DashboardAdmin.tsx`
-- [ ] T036 [US3] Impedir no `src/pages/DashboardAdmin.tsx` a ação de bloquear/desbloquear a própria conta administrativa sem confirmação e regra explícita
+- [X] T036 [US3] Impedir no `src/pages/DashboardAdmin.tsx` a ação de bloquear/desbloquear a própria conta administrativa sem confirmação e regra explícita
 - [X] T037 [US3] Validar no `server/index.js` que autorização administrativa é reavaliada no backend para cada `PATCH users`, sem confiar em `isAdmin` do frontend
 - [X] T038 [US3] Validar no `server/index.js` que usuário comum não consegue consultar dados globais nem alterar bloqueio, preservando respostas de erro seguras
 
@@ -120,14 +120,14 @@
 
 ### Tests for User Story 4
 
-- [ ] T039 [P] [US4] Criar testes de ordenação, origem e ausência de eventos inventados na timeline em `src/test/crm-admin-timeline.test.tsx`
-- [ ] T040 [P] [US4] Criar testes de indicadores derivados por cliente e de datas nulas/inválidas em `src/test/crm-admin-timeline.test.tsx`
+- [X] T039 [P] [US4] Criar testes de ordenação, origem e ausência de eventos inventados na timeline em `src/test/crm-admin-timeline.test.tsx`
+- [X] T040 [P] [US4] Criar testes de indicadores derivados por cliente e de datas nulas/inválidas em `src/test/crm-admin-timeline.test.tsx`
 
 ### Implementation for User Story 4
 
-- [ ] T041 [US4] Criar normalizador de eventos derivados de `created_at` e datas operacionais em `src/pages/DashboardAdmin.tsx`, identificando tabela/origem
-- [ ] T042 [US4] Renderizar timeline P2 nas abas do detalhe usando componentes existentes em `src/pages/DashboardAdmin.tsx`, com fallback para ausência de eventos
-- [ ] T043 [US4] Adicionar indicadores derivados por cliente em `src/pages/DashboardAdmin.tsx`, sem inferir auditoria de bloqueio/desbloqueio
+- [X] T041 [US4] Criar normalizador de eventos derivados de `created_at` e datas operacionais em `src/pages/DashboardAdmin.tsx`, identificando tabela/origem
+- [X] T042 [US4] Renderizar timeline P2 nas abas do detalhe usando componentes existentes em `src/pages/DashboardAdmin.tsx`, com fallback para ausência de eventos
+- [x] T043 [US4] Adicionar indicadores derivados por cliente em `src/pages/DashboardAdmin.tsx`, sem inferir auditoria de bloqueio/desbloqueio
 
 **Checkpoint**: P2 deve ser opcionalmente entregável após P1 e não pode introduzir auditoria fictícia ou mudar regras de negócio.
 
@@ -140,9 +140,9 @@
 - [ ] T044 [P] Atualizar `src/test/dashboards.test.tsx` e testes relacionados para cobrir o painel administrativo evoluído sem quebrar empresa/profissional
 - [ ] T045 [P] Revisar acessibilidade de tabela, filtros, drawer/dialog, abas, confirmações e mensagens em `src/pages/DashboardAdmin.tsx`
 - [ ] T046 [P] Revisar responsividade em `src/pages/DashboardAdmin.tsx` para desktop, tablet e mobile conforme `specs/001-crm-central-admin/quickstart.md`
-- [ ] T047 Executar `npm test` e corrigir regressões relacionadas ao CRM sem alterar testes de fluxos não relacionados
-- [ ] T048 Executar `npm run build` e corrigir falhas de compilação do CRM sem alterar contratos não relacionados
-- [ ] T049 Executar `npm run lint` e corrigir erros introduzidos pelo CRM em `src/pages/DashboardAdmin.tsx`, `server/index.js` e testes
+- [X] T047 Executar `npm test` e corrigir regressões relacionadas ao CRM sem alterar testes de fluxos não relacionados
+- [X] T048 Executar `npm run build` e corrigir falhas de compilação do CRM sem alterar contratos não relacionados
+- [X] T049 Executar `npm run lint` e corrigir erros introduzidos pelo CRM em `src/pages/DashboardAdmin.tsx`, `server/index.js` e testes
 - [ ] T050 Executar todos os cenários de `specs/001-crm-central-admin/quickstart.md` com base real e registrar resultados sem fazer merge
 
 ---

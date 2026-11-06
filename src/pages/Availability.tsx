@@ -6,6 +6,7 @@ import { ArrowLeft, Zap, Clock, CalendarDays, CheckCircle2 } from "lucide-react"
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { toast } from "sonner";
+import { recordProgressMock } from "@/lib/pilotMockService";
 
 const days = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"];
 const periods = ["Indisponível", "Manhã", "Tarde", "Noite", "Dia inteiro"];
@@ -19,6 +20,7 @@ const Availability = () => {
   );
 
   const handleSave = () => {
+    recordProgressMock("mock-professional-1", "mock-goal-availability", "availability-set:mock-professional-1", 1);
     toast.success("Disponibilidade atualizada!", {
       description: "Empresas podem ver quando você está livre.",
     });

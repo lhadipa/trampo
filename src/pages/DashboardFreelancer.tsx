@@ -1,6 +1,11 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { contracts as contracts_api, supabase } from "@/integrations/supabase/client";
+import {
+  contracts as contracts_api,
+  preferences,
+  supabase,
+} from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -41,21 +46,61 @@ import logo from "@/assets/logo.png";
 import { SERVICE_CATEGORIES } from "@/lib/categories";
 import { getContractState } from "@/lib/contractState";
 import { ShieldCheck as PhosphorShieldCheck } from "@phosphor-icons/react";
-import { expressInterestMock, getProfessionalDashboard } from "@/lib/pilotMockService";
+import {
+  expressInterestMock,
+  getProfessionalDashboard,
+  getRewardProfile,
+  recordProgressMock,
+} from "@/lib/pilotMockService";
 import { formatBRL } from "@/lib/pilotPricing";
-import { MapContainer, Marker, Popup, TileLayer, useMap, useMapEvents } from "react-leaflet";
+import {
+  MapContainer,
+  Marker,
+  Popup,
+  TileLayer,
+  useMap,
+  useMapEvents,
+} from "react-leaflet";
 import MarkerClusterGroup from "react-leaflet-cluster";
 import { divIcon } from "leaflet";
-import { getMarketplaceJobs, getPilotSnapshot, getProfessionalPreferences, togglePreferenceMock } from "@/lib/pilotMockService";
+import { getMarketplaceJobs, getPilotSnapshot } from "@/lib/pilotMockService";
 import { PILOT_CENTER, PILOT_ZOOM } from "@/lib/marketplaceGeo";
 import type { GeoBounds, MarketplaceJob } from "@/lib/pilotTypes";
+import { ProfessionalPreferencesPanel } from "@/components/marketplace/ProfessionalPreferencesPanel";
 
-const jobIcon = divIcon({ className: "", html: '<span class="grid h-9 w-9 place-items-center rounded-full border-2 border-white bg-primary text-sm font-bold text-primary-foreground shadow">R$</span>', iconSize: [36, 36], iconAnchor: [18, 18] });
+const jobIcon = divIcon({
+  className: "",
+  html: '<span class="grid h-9 w-9 place-items-center rounded-full border-2 border-white bg-primary text-sm font-bold text-primary-foreground shadow">R$</span>',
+  iconSize: [36, 36],
+  iconAnchor: [18, 18],
+});
 
-const MarketplaceMapEvents = ({ onBounds, selectedJob }: { onBounds: (bounds: GeoBounds) => void; selectedJob?: MarketplaceJob }) => {
+const MarketplaceMapEvents = ({
+  onBounds,
+  selectedJob,
+}: {
+  onBounds: (bounds: GeoBounds) => void;
+  selectedJob?: MarketplaceJob;
+}) => {
   const map = useMap();
-  useMapEvents({ moveend: (event) => { const bounds = event.target.getBounds(); onBounds({ south: bounds.getSouth(), west: bounds.getWest(), north: bounds.getNorth(), east: bounds.getEast() }); } });
-  useEffect(() => { if (selectedJob) map.flyTo([selectedJob.approximateLatitude, selectedJob.approximateLongitude], Math.max(map.getZoom(), 15)); }, [map, selectedJob]);
+  useMapEvents({
+    moveend: (event) => {
+      const bounds = event.target.getBounds();
+      onBounds({
+        south: bounds.getSouth(),
+        west: bounds.getWest(),
+        north: bounds.getNorth(),
+        east: bounds.getEast(),
+      });
+    },
+  });
+  useEffect(() => {
+    if (selectedJob)
+      map.flyTo(
+        [selectedJob.approximateLatitude, selectedJob.approximateLongitude],
+        Math.max(map.getZoom(), 15),
+      );
+  }, [map, selectedJob]);
   return null;
 };
 
@@ -76,7 +121,13 @@ const DashboardFreelancer = () => {
   const [appliedBounds, setAppliedBounds] = useState<GeoBounds>();
   const [selectedMarketJobId, setSelectedMarketJobId] = useState<string>();
   const [mapFailed, setMapFailed] = useState(false);
-  const [marketOrigin, setMarketOrigin] = useState<{ latitude: number; longitude: number }>();
+  const [marketOrigin, setMarketOrigin] = useState<{
+    latitude: number;
+    longitude: number;
+  }>();
+  const [activePreferences, setActivePreferences] = useState<
+    Array<{ id: string; location_id: string; category_id: string }>
+  >([]);
 
   const load = async () => {
     if (!profile) return;
@@ -111,14 +162,14 @@ const DashboardFreelancer = () => {
         .select("*, companies(name)")
         .eq("status", "open")
         .order("created_at", { ascending: false });
-      
+
       setJobs(openJobs || []);
 
       const { data: eData } = await supabase
         .from("escrow")
         .select("*, users!escrow_company_user_id_fkey(name)")
         .order("created_at", { ascending: false });
-      
+
       setEscrows(eData || []);
 
       if (freelancer) {
@@ -128,13 +179,33 @@ const DashboardFreelancer = () => {
           .select("*")
           .eq("freelancer_id", freelancer.id);
         setMyContracts(cData || []);
-        setCheckedInJobIds((cData || []).filter((c: any) => c.status !== "FUNDS_SECURED").map((c: any) => c.job_id));
+        setCheckedInJobIds(
+          (cData || [])
+            .filter((c: any) => c.status !== "FUNDS_SECURED")
+            .map((c: any) => c.job_id),
+        );
       }
     }
   };
 
   useEffect(() => {
-    // Nenhum endpoint real é consultado no piloto.
+    if (!profile) {
+      setActivePreferences([]);
+      return;
+    }
+    preferences.list().then(({ data, error }) => {
+      if (error) {
+        toast.error("Não foi possível carregar suas preferências privadas.");
+        return;
+      }
+      setActivePreferences(data || []);
+    });
+    recordProgressMock(
+      "mock-professional-1",
+      "mock-goal-profile",
+      "profile-completed:mock-professional-1",
+      1,
+    );
     setPilotRevision((value) => value + 1);
   }, [profile]);
 
@@ -171,7 +242,9 @@ const DashboardFreelancer = () => {
   const handleCheckIn = async (jobId: string, jobTitle: string) => {
     const contrato = myContracts.find((c: any) => c.job_id === jobId);
     if (!contrato) {
-      toast.error("Este trabalho ainda não possui um contrato ativo para check-in.");
+      toast.error(
+        "Este trabalho ainda não possui um contrato ativo para check-in.",
+      );
       return;
     }
 
@@ -193,16 +266,32 @@ const DashboardFreelancer = () => {
   const appliedJobIds = myApplications.map((a: any) => a.job_id);
 
   const escrowStatusLabel = (s: string) => {
-    if (s === "held") return { label: "Depósito Seguro em Custódia 🔒", class: "bg-amber-500/10 text-amber-600 border-amber-500/20" };
-    if (s === "released") return { label: "Liberado no seu Saldo Pix ✅", class: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20" };
-    if (s === "refunded") return { label: "Reembolsado", class: "bg-destructive/10 text-destructive border-destructive/20" };
+    if (s === "held")
+      return {
+        label: "Depósito Seguro em Custódia 🔒",
+        class: "bg-amber-500/10 text-amber-600 border-amber-500/20",
+      };
+    if (s === "released")
+      return {
+        label: "Liberado no seu Saldo Pix ✅",
+        class: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
+      };
+    if (s === "refunded")
+      return {
+        label: "Reembolsado",
+        class: "bg-destructive/10 text-destructive border-destructive/20",
+      };
     return { label: s, class: "bg-muted text-muted-foreground" };
   };
 
   // Filtragem de vagas
   const filteredJobs = jobs.filter((job) => {
-    const titleMatch = (job.title || "").toLowerCase().includes(searchTerm.toLowerCase());
-    const descMatch = (job.description || "").toLowerCase().includes(searchTerm.toLowerCase());
+    const titleMatch = (job.title || "")
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
+    const descMatch = (job.description || "")
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
     const matchesSearch = titleMatch || descMatch;
 
     if (selectedCategory === "all") return matchesSearch;
@@ -210,53 +299,529 @@ const DashboardFreelancer = () => {
     if (!catObj) return matchesSearch;
 
     const matchesCategory = catObj.subservices.some(
-      (sub) => (job.title || "").toLowerCase().includes(sub.toLowerCase()) || sub.toLowerCase().includes((job.title || "").toLowerCase())
+      (sub) =>
+        (job.title || "").toLowerCase().includes(sub.toLowerCase()) ||
+        sub.toLowerCase().includes((job.title || "").toLowerCase()),
     );
-    return matchesSearch && (matchesCategory || job.category === selectedCategory);
+    return (
+      matchesSearch && (matchesCategory || job.category === selectedCategory)
+    );
   });
 
   void pilotRevision;
   const pilotDashboard = getProfessionalDashboard();
-  const marketplaceJobs = getMarketplaceJobs({ search: searchTerm, categoryId: selectedCategory, bounds: appliedBounds, origin: marketOrigin });
-  const selectedMarketJob = marketplaceJobs.find((job) => job.id === selectedMarketJobId);
-  const marketplaceSnapshot = getPilotSnapshot();
-  const activePreferences = getProfessionalPreferences(pilotDashboard.professional.id);
-  const pilotInterestJobIds = pilotDashboard.interests.map((interest) => interest.jobId);
-  const pilotApply = (jobId: string) => {
-    const result = expressInterestMock(jobId, pilotDashboard.professional.id);
-    if (result.success) { setPilotRevision((value) => value + 1); toast.success(result.message); }
-    else toast.error(result.message);
-  };
-  const locateMarketplace = () => navigator.geolocation?.getCurrentPosition(
-    (position) => setMarketOrigin({ latitude: position.coords.latitude, longitude: position.coords.longitude }),
-    () => toast.info("Localização não autorizada. Mantivemos o mapa na região-piloto."),
-    { enableHighAccuracy: false, timeout: 8000, maximumAge: 60000 },
+  const rewardProfile = getRewardProfile(pilotDashboard.professional.id);
+  const marketplaceJobs = getMarketplaceJobs({
+    search: searchTerm,
+    categoryId: selectedCategory,
+    bounds: appliedBounds,
+    origin: marketOrigin,
+  });
+  const selectedMarketJob = marketplaceJobs.find(
+    (job) => job.id === selectedMarketJobId,
   );
-  const toggleMarketplacePreference = (job: MarketplaceJob) => {
-    const location = marketplaceSnapshot.interestLocations.find((item) => item.contractorId === job.contractorId);
-    if (!location) return toast.error("Este local ainda não aceita currículos de interesse.");
-    const result = togglePreferenceMock(pilotDashboard.professional.id, location.id, job.categoryId);
-    if (result.success) { setPilotRevision((value) => value + 1); toast.success(result.message); }
-    else toast.error(result.message);
+  const marketplaceSnapshot = getPilotSnapshot();
+  const pilotInterestJobIds = pilotDashboard.interests.map(
+    (interest) => interest.jobId,
+  );
+  const pilotApply = (jobId: string) => {
+    recordProgressMock(
+      pilotDashboard.professional.id,
+      "mock-goal-explore",
+      `jobs_viewed:${jobId}`,
+      1,
+    );
+    const result = expressInterestMock(jobId, pilotDashboard.professional.id);
+    if (result.success) {
+      setPilotRevision((value) => value + 1);
+      toast.success(result.message);
+    } else toast.error(result.message);
+  };
+  const locateMarketplace = () =>
+    navigator.geolocation?.getCurrentPosition(
+      (position) =>
+        setMarketOrigin({
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+        }),
+      () =>
+        toast.info(
+          "Localização não autorizada. Mantivemos o mapa na região-piloto.",
+        ),
+      { enableHighAccuracy: false, timeout: 8000, maximumAge: 60000 },
+    );
+  const toggleMarketplacePreference = async (job: MarketplaceJob) => {
+    const location = marketplaceSnapshot.interestLocations.find(
+      (item) => item.contractorId === job.contractorId,
+    );
+    if (!location)
+      return toast.error(
+        "Este local ainda não aceita currículos de interesse.",
+      );
+    const existing = activePreferences.find(
+      (item) =>
+        item.location_id === location.id && item.category_id === job.categoryId,
+    );
+    if (existing) return removeMarketplacePreference(existing.id);
+    const { data, error } = await preferences.save(location.id, job.categoryId);
+    if (error) return toast.error(error.message);
+    setActivePreferences((items) => [
+      data,
+      ...items.filter((item) => item.id !== data.id),
+    ]);
+    toast.success(
+      "Currículo de interesse enviado. O contratante verá somente a contagem agregada.",
+    );
+  };
+  const removeMarketplacePreference = async (preferenceId: string) => {
+    const { error } = await preferences.remove(preferenceId);
+    if (error) return toast.error(error.message);
+    setActivePreferences((items) =>
+      items.filter((item) => item.id !== preferenceId),
+    );
+    toast.success("Preferência removida. Sua identidade continuou privada.");
   };
 
   return (
     <div className="min-h-screen bg-background pb-12">
-      <header className="sticky top-0 z-50 border-b bg-secondary/95"><div className="container mx-auto flex h-14 max-w-4xl items-center justify-between px-4"><div className="flex items-center gap-2"><Button variant="ghost" size="sm" onClick={() => navigate("/")} className="text-secondary-foreground/70"><ArrowLeft className="mr-1 h-4 w-4" />Início</Button><img src={logo} alt="Trampô" className="h-7 w-7" /><span className="font-bold text-secondary-foreground">Painel profissional</span></div><Button variant="ghost" size="sm" onClick={() => { signOut(); navigate("/"); }} className="text-secondary-foreground/70"><LogOut className="mr-1 h-4 w-4" />Sair</Button></div></header>
+      <header className="sticky top-0 z-50 border-b bg-secondary/95">
+        <div className="container mx-auto flex h-14 max-w-4xl items-center justify-between px-4">
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate("/")}
+              className="text-secondary-foreground/70"
+            >
+              <ArrowLeft className="mr-1 h-4 w-4" />
+              Início
+            </Button>
+            <img src={logo} alt="Trampô" className="h-7 w-7" />
+            <span className="font-bold text-secondary-foreground">
+              Painel profissional
+            </span>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              signOut();
+              navigate("/");
+            }}
+            className="text-secondary-foreground/70"
+          >
+            <LogOut className="mr-1 h-4 w-4" />
+            Sair
+          </Button>
+        </div>
+      </header>
       <main className="container mx-auto max-w-4xl space-y-6 px-4 py-6">
-        <p className="pilot-demo-notice">Demonstração: vagas, seleções, taxa de confirmação, check-in e recibos são fictícios.</p>
-        <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center"><div><h1 className="text-2xl font-bold">Olá, {profile?.name || "Ana Exemplo"}</h1><p className="mt-1 text-sm text-muted-foreground">{pilotDashboard.professional.roleLabel} · sem assinatura mensal</p></div><Button variant="outline" onClick={() => navigate("/meus-trampos")}>Ver trabalho selecionado</Button></div>
-        <div className="grid gap-3 sm:grid-cols-3"><Card className="pilot-surface"><CardContent className="p-5"><p className="text-sm text-muted-foreground">Oportunidades abertas</p><p className="mt-1 text-xl font-bold">{pilotDashboard.openJobs.length}</p></CardContent></Card><Card className="pilot-surface"><CardContent className="p-5"><p className="text-sm text-muted-foreground">Diárias concluídas</p><p className="mt-1 text-xl font-bold">{pilotDashboard.professional.completedShifts}</p></CardContent></Card><Card className="pilot-surface"><CardContent className="p-5"><p className="text-sm text-muted-foreground">Taxa após seleção</p><p className="mt-1 text-xl font-bold">R$ 7,90</p><p className="text-xs text-muted-foreground">Nunca para demonstrar interesse</p></CardContent></Card></div>
-        <Tabs defaultValue="oportunidades"><TabsList className="grid h-auto w-full grid-cols-3"><TabsTrigger value="oportunidades">Oportunidades</TabsTrigger><TabsTrigger value="interesses">Meus interesses</TabsTrigger><TabsTrigger value="selecionado">Selecionado</TabsTrigger></TabsList>
+        <p className="pilot-demo-notice">
+          Demonstração: vagas, seleções, taxa de confirmação, check-in e recibos
+          são fictícios.
+        </p>
+        <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+          <div>
+            <h1 className="text-2xl font-bold">
+              Olá, {profile?.name || "Ana Exemplo"}
+            </h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {pilotDashboard.professional.roleLabel} · sem assinatura mensal
+            </p>
+          </div>
+          <Button variant="outline" onClick={() => navigate("/meus-trampos")}>
+            Ver trabalho selecionado
+          </Button>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-4">
+          <Card className="pilot-surface">
+            <CardContent className="p-5">
+              <p className="text-sm text-muted-foreground">
+                Oportunidades abertas
+              </p>
+              <p className="mt-1 text-xl font-bold">
+                {pilotDashboard.openJobs.length}
+              </p>
+            </CardContent>
+          </Card>
+          <Card className="pilot-surface">
+            <CardContent className="p-5">
+              <p className="text-sm text-muted-foreground">
+                Diárias concluídas
+              </p>
+              <p className="mt-1 text-xl font-bold">
+                {pilotDashboard.professional.completedShifts}
+              </p>
+            </CardContent>
+          </Card>
+          <Card className="pilot-surface">
+            <CardContent className="p-5">
+              <p className="text-sm text-muted-foreground">
+                Nível de progresso
+              </p>
+              <p className="mt-1 text-xl font-bold">
+                Nível {rewardProfile.level}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {rewardProfile.points}/{rewardProfile.nextLevelAt} pontos
+              </p>
+            </CardContent>
+          </Card>
+          <Card className="pilot-surface">
+            <CardContent className="p-5">
+              <p className="text-sm text-muted-foreground">Taxa após seleção</p>
+              <p className="mt-1 text-xl font-bold">R$ 7,90</p>
+              <p className="text-xs text-muted-foreground">
+                Nunca para demonstrar interesse
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+        <Tabs defaultValue="oportunidades">
+          <TabsList className="grid h-auto w-full grid-cols-3">
+            <TabsTrigger value="oportunidades">Oportunidades</TabsTrigger>
+            <TabsTrigger value="interesses">Meus interesses</TabsTrigger>
+            <TabsTrigger value="selecionado">Selecionado</TabsTrigger>
+          </TabsList>
           <TabsContent value="oportunidades" className="space-y-3">
-            <div className="grid gap-3 sm:grid-cols-[1fr_auto]"><div className="relative"><Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><Input aria-label="Buscar oportunidades" placeholder="Buscar por função ou bairro" value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} className="pl-10" /></div><select aria-label="Filtrar categoria" value={selectedCategory} onChange={(event) => setSelectedCategory(event.target.value)} className="min-h-11 rounded-md border bg-background px-3 text-sm"><option value="all">Todas as categorias</option>{SERVICE_CATEGORIES.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}</select></div>
-            <div className="flex flex-wrap gap-2"><Button size="sm" variant="outline" onClick={locateMarketplace}><MapPin className="mr-1 h-4 w-4" />Perto de mim</Button><Button size="sm" variant="outline" onClick={() => { setAppliedBounds(undefined); setMarketOrigin(undefined); setSelectedMarketJobId(undefined); }}>Região-piloto</Button>{marketBounds && <Button size="sm" onClick={() => setAppliedBounds(marketBounds)}>Buscar nesta área</Button>}</div>
-            {mapFailed ? <div className="rounded-xl border border-dashed p-6 text-center"><p className="font-semibold">O mapa não carregou</p><p className="mt-1 text-sm text-muted-foreground">A lista continua disponível com todas as ações.</p><Button className="mt-3" variant="outline" onClick={() => setMapFailed(false)}>Tentar mapa novamente</Button></div> : <div className="overflow-hidden rounded-xl border" aria-label="Mapa interativo de oportunidades"><MapContainer center={marketOrigin ? [marketOrigin.latitude, marketOrigin.longitude] : PILOT_CENTER} zoom={PILOT_ZOOM} scrollWheelZoom className="h-[22rem]"><TileLayer attribution='&copy; OpenStreetMap contributors' url="https://tile.openstreetmap.org/{z}/{x}/{y}.png" eventHandlers={{ tileerror: () => setMapFailed(true) }} /><MarkerClusterGroup chunkedLoading><>{marketplaceJobs.map((job) => <Marker key={job.id} position={[job.approximateLatitude, job.approximateLongitude]} icon={jobIcon} eventHandlers={{ click: () => setSelectedMarketJobId(job.id) }}><Popup><div className="space-y-1"><strong>{job.title}</strong><p>{job.neighborhood} · local aproximado</p><p>{formatBRL(job.dailyRate)} · {job.quantity} posição(ões)</p><button className="font-semibold text-primary" onClick={() => setSelectedMarketJobId(job.id)}>Ver na lista</button></div></Popup></Marker>)}</></MarkerClusterGroup><MarketplaceMapEvents onBounds={setMarketBounds} selectedJob={selectedMarketJob} /></MapContainer></div>}
-            <p className="text-xs text-muted-foreground">Os marcadores indicam o bairro aproximado. O endereço exato não é exibido nesta etapa.</p>
-            <div className="space-y-3" aria-live="polite">{marketplaceJobs.length ? marketplaceJobs.map((job) => { const location = marketplaceSnapshot.interestLocations.find((item) => item.contractorId === job.contractorId); const hasPreference = Boolean(location && activePreferences.some((item) => item.locationId === location.id && item.categoryId === job.categoryId)); return <Card id={`market-job-${job.id}`} key={job.id} className={`pilot-surface ${selectedMarketJobId === job.id ? "ring-2 ring-primary" : ""}`}><CardContent className="space-y-3 p-5"><div className="flex flex-wrap items-start justify-between gap-3"><button className="text-left" onClick={() => { setSelectedMarketJobId(job.id); document.getElementById(`market-job-${job.id}`)?.scrollIntoView({ behavior: "smooth", block: "nearest" }); }}><p className="font-bold">{job.title}</p><p className="text-sm text-muted-foreground">{job.roleLabel} · {job.neighborhood} · {new Date(job.startsAt).toLocaleDateString("pt-BR")}</p></button><div className="text-right"><strong className="block text-primary">{formatBRL(job.dailyRate)}</strong><span className="text-xs text-muted-foreground">valor da diária</span></div></div><p className="text-xs text-muted-foreground">{job.quantity} posição(ões). Local mostrado de forma aproximada.</p><div className="rounded-xl border border-dashed bg-muted/30 p-4"><p className="font-semibold">Gostaria de fazer freelas neste local?</p><p className="mt-1 text-xs text-muted-foreground">Envie seu currículo de interesse. O contratante verá apenas quantas pessoas têm preferência — nunca seu nome ou perfil.</p><Button size="sm" variant={hasPreference ? "outline" : "default"} className="mt-3" onClick={() => toggleMarketplacePreference(job)}>{hasPreference ? "Preferência enviada · remover" : "Enviar currículo de interesse"}</Button></div>{pilotInterestJobIds.includes(job.id) ? <Badge variant="outline"><CheckCircle className="mr-1 h-3.5 w-3.5" />Interesse registrado</Badge> : <Button size="sm" variant="outline" onClick={() => pilotApply(job.id)}>Candidatar-se a esta vaga</Button>}</CardContent></Card>; }) : <div className="rounded-xl border border-dashed p-8 text-center text-sm text-muted-foreground">Nenhuma oportunidade nesta área. Remova filtros ou volte à região-piloto.</div>}</div>
+            <Card className="pilot-surface">
+              <CardContent className="space-y-2 p-5">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="font-semibold">Meta atual</p>
+                    <p className="text-sm text-muted-foreground">
+                      {pilotDashboard.goals.find(
+                        (goal) => goal.status === "active",
+                      )?.description ||
+                        "Meta concluída. Novos objetivos serão liberados em breve."}
+                    </p>
+                  </div>
+                  <Badge variant="outline">{rewardProfile.points} pontos</Badge>
+                </div>
+                <div className="h-2 overflow-hidden rounded-full bg-muted">
+                  <div
+                    className="h-full rounded-full bg-primary"
+                    style={{
+                      width: `${Math.min(100, (rewardProfile.points / rewardProfile.nextLevelAt) * 100)}%`,
+                    }}
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Próximo nível em{" "}
+                  {Math.max(
+                    0,
+                    rewardProfile.nextLevelAt - rewardProfile.points,
+                  )}{" "}
+                  pontos
+                </p>
+              </CardContent>
+            </Card>
+            <div className="grid gap-3 sm:grid-cols-[1fr_auto]">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  aria-label="Buscar oportunidades"
+                  placeholder="Buscar por função ou bairro"
+                  value={searchTerm}
+                  onChange={(event) => setSearchTerm(event.target.value)}
+                  className="pl-10"
+                />
+              </div>
+              <select
+                aria-label="Filtrar categoria"
+                value={selectedCategory}
+                onChange={(event) => setSelectedCategory(event.target.value)}
+                className="min-h-11 rounded-md border bg-background px-3 text-sm"
+              >
+                <option value="all">Todas as categorias</option>
+                {SERVICE_CATEGORIES.map((category) => (
+                  <option key={category.id} value={category.id}>
+                    {category.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Button size="sm" variant="outline" onClick={locateMarketplace}>
+                <MapPin className="mr-1 h-4 w-4" />
+                Perto de mim
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => {
+                  setAppliedBounds(undefined);
+                  setMarketOrigin(undefined);
+                  setSelectedMarketJobId(undefined);
+                }}
+              >
+                Região-piloto
+              </Button>
+              {marketBounds && (
+                <Button
+                  size="sm"
+                  onClick={() => setAppliedBounds(marketBounds)}
+                >
+                  Buscar nesta área
+                </Button>
+              )}
+            </div>
+            {mapFailed ? (
+              <div className="rounded-xl border border-dashed p-6 text-center">
+                <p className="font-semibold">O mapa não carregou</p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  A lista continua disponível com todas as ações.
+                </p>
+                <Button
+                  className="mt-3"
+                  variant="outline"
+                  onClick={() => setMapFailed(false)}
+                >
+                  Tentar mapa novamente
+                </Button>
+              </div>
+            ) : (
+              <div
+                className="overflow-hidden rounded-xl border"
+                aria-label="Mapa interativo de oportunidades"
+              >
+                <MapContainer
+                  center={
+                    marketOrigin
+                      ? [marketOrigin.latitude, marketOrigin.longitude]
+                      : PILOT_CENTER
+                  }
+                  zoom={PILOT_ZOOM}
+                  scrollWheelZoom
+                  className="h-[22rem]"
+                >
+                  <TileLayer
+                    attribution="&copy; OpenStreetMap contributors"
+                    url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    eventHandlers={{ tileerror: () => setMapFailed(true) }}
+                  />
+                  <MarkerClusterGroup chunkedLoading>
+                    <>
+                      {marketplaceJobs.map((job) => (
+                        <Marker
+                          key={job.id}
+                          position={[
+                            job.approximateLatitude,
+                            job.approximateLongitude,
+                          ]}
+                          icon={jobIcon}
+                          eventHandlers={{
+                            click: () => setSelectedMarketJobId(job.id),
+                          }}
+                        >
+                          <Popup>
+                            <div className="space-y-1">
+                              <strong>{job.title}</strong>
+                              <p>{job.neighborhood} · local aproximado</p>
+                              <p>
+                                {formatBRL(job.dailyRate)} · {job.quantity}{" "}
+                                posição(ões)
+                              </p>
+                              <button
+                                className="font-semibold text-primary"
+                                onClick={() => setSelectedMarketJobId(job.id)}
+                              >
+                                Ver na lista
+                              </button>
+                            </div>
+                          </Popup>
+                        </Marker>
+                      ))}
+                    </>
+                  </MarkerClusterGroup>
+                  <MarketplaceMapEvents
+                    onBounds={setMarketBounds}
+                    selectedJob={selectedMarketJob}
+                  />
+                </MapContainer>
+              </div>
+            )}
+            <p className="text-xs text-muted-foreground">
+              Os marcadores indicam o bairro aproximado. O endereço exato não é
+              exibido nesta etapa.
+            </p>
+            <div className="space-y-3" aria-live="polite">
+              {marketplaceJobs.length ? (
+                marketplaceJobs.map((job) => {
+                  const location = marketplaceSnapshot.interestLocations.find(
+                    (item) => item.contractorId === job.contractorId,
+                  );
+                  const hasPreference = Boolean(
+                    location &&
+                      activePreferences.some(
+                        (item) =>
+                          item.location_id === location.id &&
+                          item.category_id === job.categoryId,
+                      ),
+                  );
+                  return (
+                    <Card
+                      id={`market-job-${job.id}`}
+                      key={job.id}
+                      className={`pilot-surface ${selectedMarketJobId === job.id ? "ring-2 ring-primary" : ""}`}
+                    >
+                      <CardContent className="space-y-3 p-5">
+                        <div className="flex flex-wrap items-start justify-between gap-3">
+                          <button
+                            className="text-left"
+                            onClick={() => {
+                              setSelectedMarketJobId(job.id);
+                              document
+                                .getElementById(`market-job-${job.id}`)
+                                ?.scrollIntoView({
+                                  behavior: "smooth",
+                                  block: "nearest",
+                                });
+                            }}
+                          >
+                            <p className="font-bold">{job.title}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {job.roleLabel} · {job.neighborhood} ·{" "}
+                              {new Date(job.startsAt).toLocaleDateString(
+                                "pt-BR",
+                              )}
+                            </p>
+                          </button>
+                          <div className="text-right">
+                            <strong className="block text-primary">
+                              {formatBRL(job.dailyRate)}
+                            </strong>
+                            <span className="text-xs text-muted-foreground">
+                              valor da diária
+                            </span>
+                          </div>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          {job.quantity} posição(ões). Local mostrado de forma
+                          aproximada.
+                        </p>
+                        <div className="rounded-xl border border-dashed bg-muted/30 p-4">
+                          <p className="font-semibold">
+                            Gostaria de fazer freelas neste local?
+                          </p>
+                          <p className="mt-1 text-xs text-muted-foreground">
+                            Envie seu currículo de interesse. O contratante verá
+                            apenas quantas pessoas têm preferência — nunca seu
+                            nome ou perfil.
+                          </p>
+                          <Button
+                            size="sm"
+                            variant={hasPreference ? "outline" : "default"}
+                            className="mt-3"
+                            onClick={() => toggleMarketplacePreference(job)}
+                          >
+                            {hasPreference
+                              ? "Preferência enviada · remover"
+                              : "Enviar currículo de interesse"}
+                          </Button>
+                        </div>
+                        {pilotInterestJobIds.includes(job.id) ? (
+                          <Badge variant="outline">
+                            <CheckCircle className="mr-1 h-3.5 w-3.5" />
+                            Interesse registrado
+                          </Badge>
+                        ) : (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => pilotApply(job.id)}
+                          >
+                            Candidatar-se a esta vaga
+                          </Button>
+                        )}
+                      </CardContent>
+                    </Card>
+                  );
+                })
+              ) : (
+                <div className="rounded-xl border border-dashed p-8 text-center text-sm text-muted-foreground">
+                  Nenhuma oportunidade nesta área. Remova filtros ou volte à
+                  região-piloto.
+                </div>
+              )}
+            </div>
           </TabsContent>
-          <TabsContent value="interesses" className="space-y-3">{pilotDashboard.interests.length ? pilotDashboard.interests.map((interest) => { const job = pilotDashboard.jobs.find((item) => item.id === interest.jobId); return <Card key={interest.id} className="pilot-surface"><CardContent className="flex items-center justify-between gap-3 p-5"><div><p className="font-bold">{job?.title}</p><p className="text-sm text-muted-foreground">Nenhuma taxa é cobrada enquanto o interesse está em análise.</p></div><Badge variant="outline">{interest.status}</Badge></CardContent></Card>; }) : <div className="rounded-xl border border-dashed p-8 text-center text-sm text-muted-foreground">Você ainda não demonstrou interesse.</div>}</TabsContent>
-          <TabsContent value="selecionado" className="space-y-3">{pilotDashboard.assignments.length ? pilotDashboard.assignments.map((assignment) => { const job = pilotDashboard.jobs.find((item) => item.id === assignment.jobId); return <Card key={assignment.id} className="pilot-surface"><CardContent className="space-y-3 p-5"><div className="flex items-center justify-between gap-3"><div><p className="font-bold">{job?.title}</p><p className="text-sm text-muted-foreground">Você foi selecionado. A taxa só aparece agora.</p></div><Badge variant="outline">{assignment.status}</Badge></div><div className="rounded-xl border border-primary/20 bg-primary/5 p-4 text-sm">Confirmação avulsa: <strong>{formatBRL(assignment.professionalFee)}</strong>. Nenhuma cobrança real será feita.</div><Button onClick={() => navigate("/meus-trampos")}>Continuar confirmação demonstrativa</Button></CardContent></Card>; }) : <div className="rounded-xl border border-dashed p-8 text-center text-sm text-muted-foreground">Nenhuma seleção no momento.</div>}</TabsContent>
+          <TabsContent value="interesses" className="space-y-3">
+            <ProfessionalPreferencesPanel
+              preferences={activePreferences}
+              locations={marketplaceSnapshot.interestLocations}
+              onRemove={removeMarketplacePreference}
+            />
+            <section
+              className="space-y-3"
+              aria-labelledby="job-interests-title"
+            >
+              <h2 id="job-interests-title" className="font-bold">
+                Interesses em vagas
+              </h2>
+              {pilotDashboard.interests.length ? (
+                pilotDashboard.interests.map((interest) => {
+                  const job = pilotDashboard.jobs.find(
+                    (item) => item.id === interest.jobId,
+                  );
+                  return (
+                    <Card key={interest.id} className="pilot-surface">
+                      <CardContent className="flex items-center justify-between gap-3 p-5">
+                        <div>
+                          <p className="font-bold">{job?.title}</p>
+                          <p className="text-sm text-muted-foreground">
+                            Nenhuma taxa é cobrada enquanto o interesse está em
+                            análise.
+                          </p>
+                        </div>
+                        <Badge variant="outline">{interest.status}</Badge>
+                      </CardContent>
+                    </Card>
+                  );
+                })
+              ) : (
+                <div className="rounded-xl border border-dashed p-8 text-center text-sm text-muted-foreground">
+                  Você ainda não demonstrou interesse em uma vaga.
+                </div>
+              )}
+            </section>
+          </TabsContent>
+          <TabsContent value="selecionado" className="space-y-3">
+            {pilotDashboard.assignments.length ? (
+              pilotDashboard.assignments.map((assignment) => {
+                const job = pilotDashboard.jobs.find(
+                  (item) => item.id === assignment.jobId,
+                );
+                return (
+                  <Card key={assignment.id} className="pilot-surface">
+                    <CardContent className="space-y-3 p-5">
+                      <div className="flex items-center justify-between gap-3">
+                        <div>
+                          <p className="font-bold">{job?.title}</p>
+                          <p className="text-sm text-muted-foreground">
+                            Você foi selecionado. A taxa só aparece agora.
+                          </p>
+                        </div>
+                        <Badge variant="outline">{assignment.status}</Badge>
+                      </div>
+                      <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 text-sm">
+                        Confirmação avulsa:{" "}
+                        <strong>{formatBRL(assignment.professionalFee)}</strong>
+                        . Nenhuma cobrança real será feita.
+                      </div>
+                      <Button onClick={() => navigate("/meus-trampos")}>
+                        Continuar confirmação demonstrativa
+                      </Button>
+                    </CardContent>
+                  </Card>
+                );
+              })
+            ) : (
+              <div className="rounded-xl border border-dashed p-8 text-center text-sm text-muted-foreground">
+                Nenhuma seleção no momento.
+              </div>
+            )}
+          </TabsContent>
         </Tabs>
       </main>
     </div>
@@ -269,11 +834,18 @@ const DashboardFreelancer = () => {
       <header className="sticky top-0 z-50 bg-secondary/90 backdrop-blur-md border-b border-secondary-foreground/5">
         <div className="container flex items-center justify-between h-14 max-w-4xl mx-auto px-4">
           <div className="flex min-w-0 items-center gap-2">
-            <Button variant="ghost" size="sm" onClick={() => navigate("/")} className="shrink-0 text-secondary-foreground/70">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate("/")}
+              className="shrink-0 text-secondary-foreground/70"
+            >
               <ArrowLeft className="mr-1 h-4 w-4" /> Início
             </Button>
             <img src={logo} alt="Trampô" className="w-7 h-7" />
-            <span className="font-bold text-secondary-foreground">Painel do Prestador Autônomo</span>
+            <span className="font-bold text-secondary-foreground">
+              Painel do Prestador Autônomo
+            </span>
           </div>
           <Button
             variant="ghost"
@@ -294,17 +866,28 @@ const DashboardFreelancer = () => {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-bold text-foreground">Olá, {profile?.name || "Profissional"}</h1>
+              <h1 className="text-2xl font-bold text-foreground">
+                Olá, {profile?.name || "Profissional"}
+              </h1>
             </div>
             <p className="text-xs text-muted-foreground mt-0.5">
-              Diárias em Pintura, Piscinas, Elétrica, Gastronomia, Limpeza e Eventos
+              Diárias em Pintura, Piscinas, Elétrica, Gastronomia, Limpeza e
+              Eventos
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <Button variant="outline" size="sm" onClick={() => navigate("/perfil")}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate("/perfil")}
+            >
               <UserRound className="h-4 w-4 mr-1" /> Perfil
             </Button>
-            <Button variant="outline" size="sm" onClick={() => navigate("/conversas")}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate("/conversas")}
+            >
               <MessageSquare className="h-4 w-4 mr-1" /> Chat
             </Button>
             <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20">
@@ -320,9 +903,15 @@ const DashboardFreelancer = () => {
         <Card className="border-border bg-card shadow-none rounded-3xl">
           <CardContent className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
             <div className="flex items-center gap-2.5">
-              <PhosphorShieldCheck size={20} weight="regular" className="text-emerald-600 shrink-0" />
+              <PhosphorShieldCheck
+                size={20}
+                weight="regular"
+                className="text-emerald-600 shrink-0"
+              />
               <span className="text-foreground leading-relaxed">
-                <strong>Garantia Anti-Calote:</strong> O valor do serviço já fica bloqueado na conta da plataforma antes de você iniciar e é transferido para sua chave Pix assim que concluir.
+                <strong>Proteção do piloto:</strong> valores, taxas e recibos
+                exibidos nesta demonstração não representam cobrança ou garantia
+                financeira real.
               </span>
             </div>
             <Button
@@ -339,16 +928,31 @@ const DashboardFreelancer = () => {
         {/* Tabs */}
         <Tabs defaultValue="vagas">
           <TabsList className="grid w-full grid-cols-4 h-12 rounded-2xl p-1 bg-muted/60">
-            <TabsTrigger value="vagas" className="text-xs sm:text-sm font-semibold rounded-xl">
-              <Briefcase className="h-4 w-4 mr-1.5" /> Oportunidades ({filteredJobs.length})
+            <TabsTrigger
+              value="vagas"
+              className="text-xs sm:text-sm font-semibold rounded-xl"
+            >
+              <Briefcase className="h-4 w-4 mr-1.5" /> Oportunidades (
+              {filteredJobs.length})
             </TabsTrigger>
-            <TabsTrigger value="historico" className="text-xs sm:text-sm font-semibold rounded-xl">
-              <History className="h-4 w-4 mr-1.5" /> Minhas Diárias ({myApplications.length})
+            <TabsTrigger
+              value="historico"
+              className="text-xs sm:text-sm font-semibold rounded-xl"
+            >
+              <History className="h-4 w-4 mr-1.5" /> Minhas Diárias (
+              {myApplications.length})
             </TabsTrigger>
-            <TabsTrigger value="escrow" className="text-xs sm:text-sm font-semibold rounded-xl">
-              <ShieldCheck className="h-4 w-4 mr-1.5 text-emerald-600" /> Custódia Segura
+            <TabsTrigger
+              value="escrow"
+              className="text-xs sm:text-sm font-semibold rounded-xl"
+            >
+              <ShieldCheck className="h-4 w-4 mr-1.5 text-emerald-600" />{" "}
+              Custódia Segura
             </TabsTrigger>
-            <TabsTrigger value="saldo" className="text-xs sm:text-sm font-semibold rounded-xl">
+            <TabsTrigger
+              value="saldo"
+              className="text-xs sm:text-sm font-semibold rounded-xl"
+            >
               <Wallet className="h-4 w-4 mr-1.5" /> Saque Pix
             </TabsTrigger>
           </TabsList>
@@ -383,9 +987,9 @@ const DashboardFreelancer = () => {
                   <button
                     key={cat.id}
                     onClick={() => setSelectedCategory(cat.id)}
-                  className={`px-1 py-1.5 border-b-2 border-transparent font-semibold whitespace-nowrap transition-all ${
-                    selectedCategory === cat.id
-                      ? "border-primary text-primary"
+                    className={`px-1 py-1.5 border-b-2 border-transparent font-semibold whitespace-nowrap transition-all ${
+                      selectedCategory === cat.id
+                        ? "border-primary text-primary"
                         : "text-muted-foreground hover:text-foreground"
                     }`}
                   >
@@ -398,7 +1002,8 @@ const DashboardFreelancer = () => {
             {filteredJobs.length === 0 ? (
               <Card className="rounded-3xl">
                 <CardContent className="py-12 text-center text-muted-foreground text-sm">
-                  Nenhuma vaga aberta encontrada para esta categoria no momento. Fique atento às notificações no celular!
+                  Nenhuma vaga aberta encontrada para esta categoria no momento.
+                  Fique atento às notificações no celular!
                 </CardContent>
               </Card>
             ) : (
@@ -411,9 +1016,14 @@ const DashboardFreelancer = () => {
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
                       <div>
                         <div className="flex items-center gap-2">
-                          <p className="font-bold text-foreground text-base">{job.title || "Sem título"}</p>
+                          <p className="font-bold text-foreground text-base">
+                            {job.title || "Sem título"}
+                          </p>
                           {job.urgent && (
-                            <Badge variant="destructive" className="text-[10px] animate-pulse">
+                            <Badge
+                              variant="destructive"
+                              className="text-[10px] animate-pulse"
+                            >
                               🚨 SOS Urgente
                             </Badge>
                           )}
@@ -439,7 +1049,11 @@ const DashboardFreelancer = () => {
 
                       <div className="flex items-center gap-2">
                         <span className="text-lg font-extrabold text-primary">
-                          R$ {Number(job.price || 150).toFixed(2).replace(".", ",")}{job.payment_type === "hourly" ? "/hora" : ""}
+                          R${" "}
+                          {Number(job.price || 150)
+                            .toFixed(2)
+                            .replace(".", ",")}
+                          {job.payment_type === "hourly" ? "/hora" : ""}
                         </span>
                       </div>
                     </div>
@@ -452,11 +1066,13 @@ const DashboardFreelancer = () => {
 
                     <div className="flex items-center justify-between pt-3 border-t border-border/60">
                       <span className="text-[11px] text-muted-foreground flex items-center gap-1">
-                        <Lock className="h-3.5 w-3.5 text-emerald-600" /> Valor garantido em custódia (Escrow)
+                        <Lock className="h-3.5 w-3.5 text-emerald-600" /> Valor
+                        garantido em custódia (Escrow)
                       </span>
                       {appliedJobIds.includes(job.id) ? (
                         <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20 text-xs py-1 px-3">
-                          <CheckCircle className="h-3.5 w-3.5 mr-1" /> Candidatado
+                          <CheckCircle className="h-3.5 w-3.5 mr-1" />{" "}
+                          Candidatado
                         </Badge>
                       ) : (
                         <Button
@@ -479,18 +1095,26 @@ const DashboardFreelancer = () => {
             {myApplications.length === 0 ? (
               <Card className="rounded-3xl">
                 <CardContent className="py-12 text-center text-muted-foreground text-sm">
-                  Você ainda não aceitou nenhuma demanda. Veja a aba "Oportunidades"!
+                  Você ainda não aceitou nenhuma demanda. Veja a aba
+                  "Oportunidades"!
                 </CardContent>
               </Card>
             ) : (
               myApplications.map((app: any) => {
                 const isCheckedIn = checkedInJobIds.includes(app.job_id);
                 const isAccepted = app.status === "accepted";
-                const contrato = myContracts.find((c: any) => c.job_id === app.job_id);
-                const estado = contrato ? getContractState(contrato.status) : null;
+                const contrato = myContracts.find(
+                  (c: any) => c.job_id === app.job_id,
+                );
+                const estado = contrato
+                  ? getContractState(contrato.status)
+                  : null;
 
                 return (
-                  <Card key={app.id} className="border-border shadow-2xs rounded-2xl">
+                  <Card
+                    key={app.id}
+                    className="border-border shadow-2xs rounded-2xl"
+                  >
                     <CardContent className="p-4 space-y-3">
                       <div className="flex items-center justify-between">
                         <div>
@@ -498,7 +1122,9 @@ const DashboardFreelancer = () => {
                             {app.jobs?.title || "Serviço Autônomo"}
                           </p>
                           <p className="text-xs text-muted-foreground">
-                            {new Date(app.created_at).toLocaleDateString("pt-BR")}
+                            {new Date(app.created_at).toLocaleDateString(
+                              "pt-BR",
+                            )}
                           </p>
                         </div>
                         <Badge
@@ -506,15 +1132,15 @@ const DashboardFreelancer = () => {
                             estado
                               ? estado.tone
                               : app.status === "rejected"
-                              ? "bg-destructive/10 text-destructive border-destructive/20"
-                              : "bg-amber-500/10 text-amber-600 border-amber-500/20"
+                                ? "bg-destructive/10 text-destructive border-destructive/20"
+                                : "bg-amber-500/10 text-amber-600 border-amber-500/20"
                           }
                         >
                           {estado
                             ? estado.label
                             : app.status === "rejected"
-                            ? "Não selecionado"
-                            : "Em análise pelo contratante"}
+                              ? "Não selecionado"
+                              : "Em análise pelo contratante"}
                         </Badge>
                       </div>
 
@@ -524,7 +1150,9 @@ const DashboardFreelancer = () => {
                           <div>
                             <p className="text-xs font-bold text-foreground flex items-center gap-1.5">
                               <CalendarCheck className="h-4 w-4 text-primary" />
-                              {isCheckedIn ? "Presença Confirmada no Local" : "Confirmação de Presença no Local"}
+                              {isCheckedIn
+                                ? "Presença Confirmada no Local"
+                                : "Confirmação de Presença no Local"}
                             </p>
                             <p className="text-[11px] text-muted-foreground mt-0.5">
                               {isCheckedIn
@@ -535,15 +1163,22 @@ const DashboardFreelancer = () => {
 
                           {isCheckedIn ? (
                             <Badge className="bg-emerald-600 text-white font-bold text-xs py-1 px-3">
-                              <CheckCircle className="h-3.5 w-3.5 mr-1" /> Check-in Realizado
+                              <CheckCircle className="h-3.5 w-3.5 mr-1" />{" "}
+                              Check-in Realizado
                             </Badge>
                           ) : (
                             <Button
                               size="sm"
                               className="font-bold rounded-xl"
-                              onClick={() => handleCheckIn(app.job_id, app.jobs?.title || "Trabalho")}
+                              onClick={() =>
+                                handleCheckIn(
+                                  app.job_id,
+                                  app.jobs?.title || "Trabalho",
+                                )
+                              }
                             >
-                              <MapPin className="h-3.5 w-3.5 mr-1" /> Fazer Check-in no Local
+                              <MapPin className="h-3.5 w-3.5 mr-1" /> Fazer
+                              Check-in no Local
                             </Button>
                           )}
                         </div>
@@ -560,9 +1195,12 @@ const DashboardFreelancer = () => {
             <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs flex items-center gap-3">
               <ShieldCheck className="h-6 w-6 text-emerald-600 shrink-0" />
               <div>
-                <p className="font-bold text-sm">Garantia Financeira dos Seus Serviços</p>
+                <p className="font-bold text-sm">
+                  Garantia Financeira dos Seus Serviços
+                </p>
                 <p className="text-emerald-700 mt-0.5">
-                  Estes valores já foram pré-pagos pelos contratantes e estão garantidos para liberação imediata ao concluir.
+                  Estes valores já foram pré-pagos pelos contratantes e estão
+                  garantidos para liberação imediata ao concluir.
                 </p>
               </div>
             </div>
@@ -574,11 +1212,19 @@ const DashboardFreelancer = () => {
                   <CardContent className="p-4 flex items-center justify-between">
                     <div>
                       <div className="flex items-center gap-2">
-                        <p className="font-bold text-base text-foreground">R$ {Number(escrow.amount).toFixed(2).replace(".", ",")}</p>
-                        <Badge className={`text-xs ${statusInfo.class}`}>{statusInfo.label}</Badge>
+                        <p className="font-bold text-base text-foreground">
+                          R${" "}
+                          {Number(escrow.amount).toFixed(2).replace(".", ",")}
+                        </p>
+                        <Badge className={`text-xs ${statusInfo.class}`}>
+                          {statusInfo.label}
+                        </Badge>
                       </div>
                       <p className="text-xs text-muted-foreground mt-1">
-                        Contratante: <strong>{escrow.users?.name || "Empresa / Imóvel"}</strong>
+                        Contratante:{" "}
+                        <strong>
+                          {escrow.users?.name || "Empresa / Imóvel"}
+                        </strong>
                       </p>
                     </div>
                   </CardContent>
@@ -599,7 +1245,8 @@ const DashboardFreelancer = () => {
                     R$ {(profile?.balance ?? 0).toFixed(2)}
                   </p>
                   <p className="text-xs text-emerald-400 mt-2 flex items-center gap-1">
-                    <CheckCircle className="h-3.5 w-3.5" /> Transferência instantânea 24/7 sem taxa
+                    <CheckCircle className="h-3.5 w-3.5" /> Transferência
+                    instantânea 24/7 sem taxa
                   </p>
                 </div>
 
@@ -608,7 +1255,8 @@ const DashboardFreelancer = () => {
                   className="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold rounded-2xl shadow-lg"
                   onClick={() => {
                     toast.success("Solicitação de Saque Pix Recebida! ⚡", {
-                      description: "R$ 380,00 transferidos para sua chave Pix cadastrada.",
+                      description:
+                        "R$ 380,00 transferidos para sua chave Pix cadastrada.",
                     });
                   }}
                 >
@@ -630,7 +1278,9 @@ const DashboardFreelancer = () => {
           {selectedJob && (
             <>
               <DialogHeader className="pr-6 text-left">
-                <DialogTitle className="text-xl">{selectedJob.title || "Sem título"}</DialogTitle>
+                <DialogTitle className="text-xl">
+                  {selectedJob.title || "Sem título"}
+                </DialogTitle>
                 <DialogDescription>
                   Publicada por {selectedJob.companies?.name || "Contratante"}
                 </DialogDescription>
@@ -641,22 +1291,36 @@ const DashboardFreelancer = () => {
                   <div className="flex items-center gap-2">
                     <DollarSign className="h-4 w-4 text-primary" />
                     <span>
-                      <span className="block text-xs text-muted-foreground">Pagamento</span>
-                      <strong>R$ {Number(selectedJob.price || 150).toFixed(2).replace(".", ",")}{selectedJob.payment_type === "hourly" ? "/hora" : ""}</strong>
+                      <span className="block text-xs text-muted-foreground">
+                        Pagamento
+                      </span>
+                      <strong>
+                        R${" "}
+                        {Number(selectedJob.price || 150)
+                          .toFixed(2)
+                          .replace(".", ",")}
+                        {selectedJob.payment_type === "hourly" ? "/hora" : ""}
+                      </strong>
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Clock className="h-4 w-4 text-primary" />
                     <span>
-                      <span className="block text-xs text-muted-foreground">Data</span>
-                      <strong>{new Date(selectedJob.date).toLocaleDateString("pt-BR")}</strong>
+                      <span className="block text-xs text-muted-foreground">
+                        Data
+                      </span>
+                      <strong>
+                        {new Date(selectedJob.date).toLocaleDateString("pt-BR")}
+                      </strong>
                     </span>
                   </div>
                   {selectedJob.location && (
                     <div className="flex items-center gap-2 sm:col-span-2">
                       <MapPin className="h-4 w-4 text-emerald-600" />
                       <span>
-                        <span className="block text-xs text-muted-foreground">Local</span>
+                        <span className="block text-xs text-muted-foreground">
+                          Local
+                        </span>
                         <strong>{selectedJob.location}</strong>
                       </span>
                     </div>
@@ -666,13 +1330,15 @@ const DashboardFreelancer = () => {
                 <div>
                   <h3 className="mb-1 text-sm font-bold">Descrição da vaga</h3>
                   <p className="whitespace-pre-wrap text-sm leading-relaxed text-muted-foreground">
-                    {selectedJob.description || "O contratante ainda não adicionou uma descrição para esta vaga."}
+                    {selectedJob.description ||
+                      "O contratante ainda não adicionou uma descrição para esta vaga."}
                   </p>
                 </div>
 
                 <div className="flex items-start gap-2 rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-3 text-xs text-muted-foreground">
-                  <Lock className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
-                  O valor do serviço fica garantido em custódia antes do início do trabalho.
+                  <Lock className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />O
+                  valor do serviço fica garantido em custódia antes do início do
+                  trabalho.
                 </div>
               </div>
 
@@ -680,7 +1346,10 @@ const DashboardFreelancer = () => {
                 <Button variant="outline" onClick={() => setSelectedJob(null)}>
                   Voltar
                 </Button>
-                <Button className="font-bold" onClick={() => handleApply(selectedJob.id)}>
+                <Button
+                  className="font-bold"
+                  onClick={() => handleApply(selectedJob.id)}
+                >
                   Candidatar-se à vaga
                 </Button>
               </DialogFooter>

@@ -47,6 +47,9 @@ export const createPilotMockData = (): PilotSnapshot => ({
   professionalPreferences: [],
   goals: [
     { id: "mock-goal-explore", title: "Explore oportunidades", description: "Abra três oportunidades no marketplace.", metric: "jobs_viewed", target: 3, rewardPoints: 20, badgeId: "explorador-local", status: "active" },
+    { id: "mock-goal-profile", title: "Perfil pronto", description: "Mantenha seu perfil profissional completo.", metric: "profile_completed", target: 1, rewardPoints: 25, badgeId: "perfil-pronto", status: "active" },
+    { id: "mock-goal-availability", title: "Disponibilidade clara", description: "Informe sua disponibilidade para receber oportunidades adequadas.", metric: "availability_set", target: 1, rewardPoints: 15, badgeId: "agenda-clara", status: "active" },
+    { id: "mock-goal-completed", title: "Trabalho concluído", description: "Conclua uma diária com check-in registrado.", metric: "shift_completed", target: 1, rewardPoints: 30, badgeId: "trabalho-concluido", status: "active" },
   ],
   progressEvents: [],
   rewardProfiles: [

@@ -1,12 +1,22 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-expressions */
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { contracts as contracts_api, supabase } from "@/integrations/supabase/client";
+import {
+  contracts as contracts_api,
+  supabase,
+} from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import {
   Plus,
@@ -39,7 +49,15 @@ import { toast } from "sonner";
 import logo from "@/assets/logo.png";
 import { SERVICE_CATEGORIES } from "@/lib/categories";
 import { getContractState } from "@/lib/contractState";
-import { confirmContractorFeeMock, getContractorDashboard, getPilotSnapshot, selectProfessionalMock, toggleFavoriteMock } from "@/lib/pilotMockService";
+import {
+  confirmContractorFeeMock,
+  getContractorDashboard,
+  getPilotSnapshot,
+  getPreferenceAggregates,
+  selectProfessionalMock,
+  setContractorStatusMock,
+  toggleFavoriteMock,
+} from "@/lib/pilotMockService";
 import { formatBRL } from "@/lib/pilotPricing";
 
 // Seed de profissionais caso o banco esteja em estágio inicial
@@ -76,7 +94,10 @@ const DashboardCompany = () => {
       if (!company) {
         const { data: newCompany } = await supabase
           .from("companies")
-          .insert({ user_id: profile.id, name: profile.name || "Minha Empresa / Residência" })
+          .insert({
+            user_id: profile.id,
+            name: profile.name || "Minha Empresa / Residência",
+          })
           .select()
           .single();
         company = newCompany;
@@ -95,7 +116,7 @@ const DashboardCompany = () => {
       const { data: fData } = await supabase
         .from("freelancers")
         .select("*, users!freelancers_user_id_fkey(name, email)");
-      
+
       setFreelancers(fData || []);
 
       const { data: pData } = await supabase
@@ -108,7 +129,7 @@ const DashboardCompany = () => {
         .from("escrow")
         .select("*, users!escrow_freelancer_user_id_fkey(name)")
         .order("created_at", { ascending: false });
-      
+
       setEscrows(eData || []);
 
       // Candidaturas e contratos das vagas desta empresa, para o fluxo de aceite.
@@ -138,7 +159,8 @@ const DashboardCompany = () => {
       return;
     }
     toast.success(`${nome} contratado! 🎉`, {
-      description: "O valor ficou retido em custódia até a conclusão do serviço.",
+      description:
+        "O valor ficou retido em custódia até a conclusão do serviço.",
     });
     load();
   };
@@ -163,24 +185,41 @@ const DashboardCompany = () => {
       } else {
         updated = [...prev, fUserId];
         toast.success(`⭐ ${fName} adicionado à sua Equipe Favorita!`, {
-          description: "Você pode chamá-lo diretamente com 1 clique para novas diárias.",
+          description:
+            "Você pode chamá-lo diretamente com 1 clique para novas diárias.",
         });
       }
-      localStorage.setItem("trampo_favorite_freelancers", JSON.stringify(updated));
+      localStorage.setItem(
+        "trampo_favorite_freelancers",
+        JSON.stringify(updated),
+      );
       return updated;
     });
   };
 
   const statusColor = (s: string) => {
-    if (s === "open") return "bg-emerald-500/10 text-emerald-600 border-emerald-500/20";
+    if (s === "open")
+      return "bg-emerald-500/10 text-emerald-600 border-emerald-500/20";
     if (s === "closed") return "bg-muted text-muted-foreground";
     return "bg-amber-500/10 text-amber-600 border-amber-500/20";
   };
 
   const escrowStatusLabel = (s: string) => {
-    if (s === "held") return { label: "Retido em Custódia Segura 🔒", class: "bg-amber-500/10 text-amber-600 border-amber-500/20" };
-    if (s === "released") return { label: "Liberado ao Profissional ✅", class: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20" };
-    if (s === "refunded") return { label: "Reembolsado", class: "bg-destructive/10 text-destructive border-destructive/20" };
+    if (s === "held")
+      return {
+        label: "Retido em Custódia Segura 🔒",
+        class: "bg-amber-500/10 text-amber-600 border-amber-500/20",
+      };
+    if (s === "released")
+      return {
+        label: "Liberado ao Profissional ✅",
+        class: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
+      };
+    if (s === "refunded")
+      return {
+        label: "Reembolsado",
+        class: "bg-destructive/10 text-destructive border-destructive/20",
+      };
     return { label: s, class: "bg-muted text-muted-foreground" };
   };
 
@@ -193,16 +232,33 @@ const DashboardCompany = () => {
     if (error) {
       // Local fallback para demo
       setEscrows((prev) =>
-        prev.map((e) => (e.id === escrowId ? { ...e, status: "released", released_at: new Date().toISOString() } : e))
+        prev.map((e) =>
+          e.id === escrowId
+            ? {
+                ...e,
+                status: "released",
+                released_at: new Date().toISOString(),
+              }
+            : e,
+        ),
       );
     } else {
       setEscrows((prev) =>
-        prev.map((e) => (e.id === escrowId ? { ...e, status: "released", released_at: new Date().toISOString() } : e))
+        prev.map((e) =>
+          e.id === escrowId
+            ? {
+                ...e,
+                status: "released",
+                released_at: new Date().toISOString(),
+              }
+            : e,
+        ),
       );
     }
 
     toast.success("Pagamento liberado com sucesso! ✅", {
-      description: "O valor foi repassado instantaneamente via Pix para o profissional.",
+      description:
+        "O valor foi repassado instantaneamente via Pix para o profissional.",
     });
   };
 
@@ -212,40 +268,72 @@ const DashboardCompany = () => {
       amount: item.amount,
       freelancerName: item.users?.name || "Prestador Autônomo",
       companyName: profile?.name || "Contratante / Imóvel",
-      date: item.created_at ? new Date(item.created_at).toLocaleDateString("pt-BR") : new Date().toLocaleDateString("pt-BR"),
-      service: item.service || "Prestação de Serviços Autônomos Eventuais (Art. 442-B da CLT - Sem Vínculo Empregatício)",
+      date: item.created_at
+        ? new Date(item.created_at).toLocaleDateString("pt-BR")
+        : new Date().toLocaleDateString("pt-BR"),
+      service:
+        item.service ||
+        "Prestação de Serviços Autônomos Eventuais (Art. 442-B da CLT - Sem Vínculo Empregatício)",
     });
     setReceiptModalOpen(true);
   };
 
   // Filtragem de freelancers
   const filteredFreelancers = freelancers.filter((f) => {
-    const nameMatch = (f.users?.name || "").toLowerCase().includes(searchTerm.toLowerCase());
-    const catMatch = (f.category || "").toLowerCase().includes(searchTerm.toLowerCase());
+    const nameMatch = (f.users?.name || "")
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
+    const catMatch = (f.category || "")
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
     const matchesSearch = nameMatch || catMatch;
 
     if (selectedCategoryFilter === "all") return matchesSearch;
-    const catObj = SERVICE_CATEGORIES.find((c) => c.id === selectedCategoryFilter);
+    const catObj = SERVICE_CATEGORIES.find(
+      (c) => c.id === selectedCategoryFilter,
+    );
     if (!catObj) return matchesSearch;
 
     const matchesCategory = catObj.subservices.some(
-      (sub) => f.category?.toLowerCase().includes(sub.toLowerCase()) || sub.toLowerCase().includes((f.category || "").toLowerCase())
+      (sub) =>
+        f.category?.toLowerCase().includes(sub.toLowerCase()) ||
+        sub.toLowerCase().includes((f.category || "").toLowerCase()),
     );
     return matchesSearch && matchesCategory;
   });
 
-  const favoriteFreelancers = freelancers.filter((f) => favoriteIds.includes(f.user_id));
+  const favoriteFreelancers = freelancers.filter((f) =>
+    favoriteIds.includes(f.user_id),
+  );
 
   void pilotRevision;
   const pilotDashboard = getContractorDashboard();
   const pilotSnapshot = getPilotSnapshot();
-  const pilotProfessionals = pilotSnapshot.professionals.map((professional) => ({
-    ...professional,
-    user: pilotSnapshot.users.find((user) => user.id === professional.userId)!,
-  }));
-  const pilotFavorites = pilotProfessionals.filter((professional) => pilotDashboard.contractor.favoriteProfessionalIds.includes(professional.id));
-  const pilotInterests = pilotSnapshot.interests.filter((interest) => pilotDashboard.jobs.some((job) => job.id === interest.jobId));
-  const refreshPilot = (message: string) => { setPilotRevision((value) => value + 1); toast.success(message); };
+  const pilotAccount = pilotSnapshot.users.find(
+    (user) => user.id === pilotDashboard.contractor.userId,
+  );
+  const pilotProfessionals = pilotSnapshot.professionals.map(
+    (professional) => ({
+      ...professional,
+      user: pilotSnapshot.users.find(
+        (user) => user.id === professional.userId,
+      )!,
+    }),
+  );
+  const pilotFavorites = pilotProfessionals.filter((professional) =>
+    pilotDashboard.contractor.favoriteProfessionalIds.includes(professional.id),
+  );
+  const pilotInterests = pilotSnapshot.interests.filter((interest) =>
+    pilotDashboard.jobs.some((job) => job.id === interest.jobId),
+  );
+  const pilotDemand = getPreferenceAggregates(pilotDashboard.contractor.id);
+  const pilotLocations = new Map(
+    pilotSnapshot.interestLocations.map((location) => [location.id, location]),
+  );
+  const refreshPilot = (message: string) => {
+    setPilotRevision((value) => value + 1);
+    toast.success(message);
+  };
 
   const confirmPilotFee = (jobId: string) => {
     const result = confirmContractorFeeMock(jobId);
@@ -258,7 +346,10 @@ const DashboardCompany = () => {
   };
 
   const togglePilotFavorite = (professionalId: string) => {
-    const result = toggleFavoriteMock(pilotDashboard.contractor.id, professionalId);
+    const result = toggleFavoriteMock(
+      pilotDashboard.contractor.id,
+      professionalId,
+    );
     result.success ? refreshPilot(result.message) : toast.error(result.message);
   };
 
@@ -266,28 +357,324 @@ const DashboardCompany = () => {
     <div className="min-h-screen bg-background pb-12">
       <header className="sticky top-0 z-50 border-b bg-secondary/95">
         <div className="container mx-auto flex h-14 max-w-5xl items-center justify-between px-4">
-          <div className="flex items-center gap-2"><Button variant="ghost" size="sm" onClick={() => navigate("/")} className="text-secondary-foreground/70"><ArrowLeft className="mr-1 h-4 w-4" />Início</Button><img src={logo} alt="Trampô" className="h-7 w-7" /><span className="font-bold text-secondary-foreground">Painel do contratante</span></div>
-          <Button variant="ghost" size="sm" onClick={() => { signOut(); navigate("/"); }} className="text-secondary-foreground/70"><LogOut className="mr-1 h-4 w-4" />Sair</Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate("/")}
+              className="text-secondary-foreground/70"
+            >
+              <ArrowLeft className="mr-1 h-4 w-4" />
+              Início
+            </Button>
+            <img src={logo} alt="Trampô" className="h-7 w-7" />
+            <span className="font-bold text-secondary-foreground">
+              Painel do contratante
+            </span>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              signOut();
+              navigate("/");
+            }}
+            className="text-secondary-foreground/70"
+          >
+            <LogOut className="mr-1 h-4 w-4" />
+            Sair
+          </Button>
         </div>
       </header>
       <main className="container mx-auto max-w-5xl space-y-6 px-4 py-6">
-        <p className="pilot-demo-notice">Demonstração do piloto: vagas, profissionais, taxas e confirmações abaixo são fictícios.</p>
+        <p className="pilot-demo-notice">
+          Demonstração do piloto: vagas, profissionais, taxas e confirmações
+          abaixo são fictícios.
+        </p>
         <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-          <div><div className="flex items-center gap-2"><h1 className="text-2xl font-bold">Olá, {profile?.name || pilotDashboard.contractor.displayName}</h1><Badge variant="outline">Plano {pilotDashboard.plan.name}</Badge></div><p className="mt-1 text-sm text-muted-foreground">Operação local em São João del-Rei</p></div>
-          <Button onClick={() => navigate("/criar-vaga")}><Plus className="mr-2 h-4 w-4" />Publicar oportunidade</Button>
+          <div>
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl font-bold">
+                Olá, {profile?.name || pilotDashboard.contractor.displayName}
+              </h1>
+              <Badge variant="outline">Plano {pilotDashboard.plan.name}</Badge>
+            </div>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Operação local em São João del-Rei
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              onClick={() => navigate("/criar-vaga")}
+              disabled={pilotAccount?.accountStatus === "suspended_mock"}
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              Publicar oportunidade
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => {
+                const result = setContractorStatusMock(
+                  pilotDashboard.contractor.id,
+                  pilotAccount?.accountStatus === "suspended_mock"
+                    ? "active"
+                    : "suspended_mock",
+                );
+                toast.info(result.message);
+                window.location.reload();
+              }}
+            >
+              {pilotAccount?.accountStatus === "suspended_mock"
+                ? "Reativar conta demonstrativa"
+                : "Suspender conta demonstrativa"}
+            </Button>
+          </div>
         </div>
         <div className="grid gap-3 sm:grid-cols-3">
-          <Card className="pilot-surface"><CardContent className="p-5"><p className="text-sm text-muted-foreground">Plano</p><p className="mt-1 text-xl font-bold">{pilotDashboard.plan.name}</p><p className="mt-1 text-xs text-muted-foreground">{pilotDashboard.plan.id === "pro" ? `${formatBRL(pilotDashboard.plan.monthlyPrice)}/mês · 14 dias grátis` : "12% por diária"}</p></CardContent></Card>
-          <Card className="pilot-surface"><CardContent className="p-5"><p className="text-sm text-muted-foreground">Vagas abertas</p><p className="mt-1 text-xl font-bold">{pilotDashboard.jobs.filter((job) => ["open", "partially_filled"].includes(job.status)).length}</p></CardContent></Card>
-          <Card className="pilot-surface"><CardContent className="p-5"><p className="text-sm text-muted-foreground">Equipe favorita</p><p className="mt-1 text-xl font-bold">{pilotFavorites.length}</p></CardContent></Card>
+          <Card className="pilot-surface">
+            <CardContent className="p-5">
+              <p className="text-sm text-muted-foreground">Plano</p>
+              <p className="mt-1 text-xl font-bold">
+                {pilotDashboard.plan.name}
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                {pilotDashboard.plan.id === "pro"
+                  ? `${formatBRL(pilotDashboard.plan.monthlyPrice)}/mês · 14 dias grátis`
+                  : "12% por diária"}
+              </p>
+            </CardContent>
+          </Card>
+          <Card className="pilot-surface">
+            <CardContent className="p-5">
+              <p className="text-sm text-muted-foreground">Vagas abertas</p>
+              <p className="mt-1 text-xl font-bold">
+                {
+                  pilotDashboard.jobs.filter((job) =>
+                    ["open", "partially_filled"].includes(job.status),
+                  ).length
+                }
+              </p>
+            </CardContent>
+          </Card>
+          <Card className="pilot-surface">
+            <CardContent className="p-5">
+              <p className="text-sm text-muted-foreground">Equipe favorita</p>
+              <p className="mt-1 text-xl font-bold">{pilotFavorites.length}</p>
+            </CardContent>
+          </Card>
         </div>
         <Tabs defaultValue="vagas">
-          <TabsList className="grid h-auto w-full grid-cols-3"><TabsTrigger value="vagas">Vagas</TabsTrigger><TabsTrigger value="profissionais">Profissionais</TabsTrigger><TabsTrigger value="equipe">Minha equipe</TabsTrigger></TabsList>
+          <TabsList className="grid h-auto w-full grid-cols-4">
+            <TabsTrigger value="vagas">Vagas</TabsTrigger>
+            <TabsTrigger value="profissionais">Profissionais</TabsTrigger>
+            <TabsTrigger value="equipe">Minha equipe</TabsTrigger>
+            <TabsTrigger value="demanda">Demanda</TabsTrigger>
+          </TabsList>
           <TabsContent value="vagas" className="space-y-3">
-            {pilotDashboard.jobs.map((job) => <Card key={job.id} className="pilot-surface"><CardContent className="space-y-3 p-5"><div className="flex flex-wrap items-start justify-between gap-3"><div><p className="font-bold">{job.title}</p><p className="text-sm text-muted-foreground">{job.quantity} posição(ões) · {job.neighborhood} · {new Date(job.startsAt).toLocaleDateString("pt-BR")}</p></div><Badge variant="outline">{job.status}</Badge></div><div className="grid gap-2 text-sm sm:grid-cols-3"><span>Diárias: <strong>{formatBRL(job.dailyRate * job.quantity)}</strong></span><span>Taxa: <strong>{formatBRL(job.contractorFee)}</strong></span><span>Plano: <strong>{job.planId}</strong></span></div>{job.status === "awaiting_fee_mock" && <Button size="sm" onClick={() => confirmPilotFee(job.id)}>Simular confirmação da taxa</Button>}{pilotInterests.filter((interest) => interest.jobId === job.id && interest.status === "interested").map((interest) => { const professional = pilotProfessionals.find((item) => item.id === interest.professionalId); return <div key={interest.id} className="flex items-center justify-between border-t pt-3 text-sm"><span>{professional?.user.name} · {professional?.roleLabel}</span><Button size="sm" variant="outline" onClick={() => selectPilotProfessional(interest.id)}>Selecionar</Button></div>; })}</CardContent></Card>)}
+            {pilotDashboard.jobs.map((job) => (
+              <Card key={job.id} className="pilot-surface">
+                <CardContent className="space-y-3 p-5">
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                      <p className="font-bold">{job.title}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {job.quantity} posição(ões) · {job.neighborhood} ·{" "}
+                        {new Date(job.startsAt).toLocaleDateString("pt-BR")}
+                      </p>
+                    </div>
+                    <Badge variant="outline">{job.status}</Badge>
+                  </div>
+                  <div className="grid gap-2 text-sm sm:grid-cols-3">
+                    <span>
+                      Diárias:{" "}
+                      <strong>{formatBRL(job.dailyRate * job.quantity)}</strong>
+                    </span>
+                    <span>
+                      Taxa: <strong>{formatBRL(job.contractorFee)}</strong>
+                    </span>
+                    <span>
+                      Plano: <strong>{job.planId}</strong>
+                    </span>
+                  </div>
+                  {job.status === "awaiting_fee_mock" && (
+                    <Button size="sm" onClick={() => confirmPilotFee(job.id)}>
+                      Simular confirmação da taxa
+                    </Button>
+                  )}
+                  {pilotInterests
+                    .filter(
+                      (interest) =>
+                        interest.jobId === job.id &&
+                        interest.status === "interested",
+                    )
+                    .map((interest) => {
+                      const professional = pilotProfessionals.find(
+                        (item) => item.id === interest.professionalId,
+                      );
+                      return (
+                        <div
+                          key={interest.id}
+                          className="flex items-center justify-between border-t pt-3 text-sm"
+                        >
+                          <span>
+                            {professional?.user.name} ·{" "}
+                            {professional?.roleLabel}
+                          </span>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => selectPilotProfessional(interest.id)}
+                          >
+                            Selecionar
+                          </Button>
+                        </div>
+                      );
+                    })}
+                </CardContent>
+              </Card>
+            ))}
           </TabsContent>
-          <TabsContent value="profissionais" className="grid gap-3 sm:grid-cols-2">{pilotProfessionals.map((professional) => <Card key={professional.id} className="pilot-surface"><CardContent className="p-5"><div className="flex justify-between gap-3"><div><p className="font-bold">{professional.user.name}</p><p className="text-sm text-muted-foreground">{professional.roleLabel} · {professional.user.neighborhood}</p><p className="mt-2 text-sm"><Star className="mr-1 inline h-4 w-4 text-primary" />{professional.rating} · {professional.completedShifts} diárias</p></div><Button size="icon" variant="outline" aria-label="Alternar favorito" onClick={() => togglePilotFavorite(professional.id)}><Heart className={pilotDashboard.contractor.favoriteProfessionalIds.includes(professional.id) ? "fill-primary text-primary" : ""} /></Button></div></CardContent></Card>)}</TabsContent>
-          <TabsContent value="equipe" className="space-y-3">{pilotFavorites.length ? pilotFavorites.map((professional) => <Card key={professional.id} className="pilot-surface"><CardContent className="flex items-center justify-between gap-3 p-5"><div><p className="font-bold">{professional.user.name}</p><p className="text-sm text-muted-foreground">{professional.roleLabel} · {professional.user.neighborhood} · nota {professional.rating}</p></div><Button variant="outline" onClick={() => navigate("/criar-vaga", { state: { professionalId: professional.id, roleLabel: professional.roleLabel } })}>Convocar</Button></CardContent></Card>) : <div className="rounded-xl border border-dashed p-8 text-center text-sm text-muted-foreground">Favorite profissionais para montar sua equipe.</div>}</TabsContent>
+          <TabsContent
+            value="profissionais"
+            className="grid gap-3 sm:grid-cols-2"
+          >
+            {pilotProfessionals.map((professional) => (
+              <Card key={professional.id} className="pilot-surface">
+                <CardContent className="p-5">
+                  <div className="flex justify-between gap-3">
+                    <div>
+                      <p className="font-bold">{professional.user.name}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {professional.roleLabel} ·{" "}
+                        {professional.user.neighborhood}
+                      </p>
+                      <p className="mt-2 text-sm">
+                        <Star className="mr-1 inline h-4 w-4 text-primary" />
+                        {professional.rating} · {professional.completedShifts}{" "}
+                        diárias
+                      </p>
+                    </div>
+                    <Button
+                      size="icon"
+                      variant="outline"
+                      aria-label="Alternar favorito"
+                      onClick={() => togglePilotFavorite(professional.id)}
+                    >
+                      <Heart
+                        className={
+                          pilotDashboard.contractor.favoriteProfessionalIds.includes(
+                            professional.id,
+                          )
+                            ? "fill-primary text-primary"
+                            : ""
+                        }
+                      />
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </TabsContent>
+          <TabsContent value="equipe" className="space-y-3">
+            {pilotFavorites.length ? (
+              pilotFavorites.map((professional) => (
+                <Card key={professional.id} className="pilot-surface">
+                  <CardContent className="flex items-center justify-between gap-3 p-5">
+                    <div>
+                      <p className="font-bold">{professional.user.name}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {professional.roleLabel} ·{" "}
+                        {professional.user.neighborhood} · nota{" "}
+                        {professional.rating}
+                      </p>
+                    </div>
+                    <Button
+                      variant="outline"
+                      onClick={() =>
+                        navigate("/criar-vaga", {
+                          state: {
+                            professionalId: professional.id,
+                            roleLabel: professional.roleLabel,
+                          },
+                        })
+                      }
+                    >
+                      Convocar
+                    </Button>
+                  </CardContent>
+                </Card>
+              ))
+            ) : (
+              <div className="rounded-xl border border-dashed p-8 text-center text-sm text-muted-foreground">
+                Favorite profissionais para montar sua equipe.
+              </div>
+            )}
+          </TabsContent>
+          <TabsContent
+            value="demanda"
+            className="space-y-3"
+            aria-label="Demanda agregada"
+          >
+            <Card className="pilot-surface">
+              <CardContent className="space-y-2 p-5">
+                <p className="font-semibold">Sinal de demanda da sua região</p>
+                <p className="text-sm text-muted-foreground">
+                  Você vê somente contagens agregadas. Nomes, contatos, perfis,
+                  horários e posições individuais nunca são compartilhados.
+                </p>
+              </CardContent>
+            </Card>
+            {pilotDemand.length ? (
+              pilotDemand.map((aggregate) => {
+                const location = pilotLocations.get(aggregate.locationId);
+                const category = SERVICE_CATEGORIES.find(
+                  (item) => item.id === aggregate.categoryId,
+                );
+                return (
+                  <Card
+                    key={`${aggregate.locationId}-${aggregate.categoryId}`}
+                    className="pilot-surface"
+                  >
+                    <CardContent className="flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between">
+                      <div>
+                        <p className="font-bold">
+                          {location?.displayName || "Local da região"}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          {location?.neighborhood} ·{" "}
+                          {category?.name || aggregate.categoryId}
+                        </p>
+                        <p className="mt-1 text-sm">
+                          <strong>{aggregate.count}</strong> pessoa(s)
+                          demonstraram interesse
+                        </p>
+                      </div>
+                      <Button
+                        variant="outline"
+                        onClick={() =>
+                          navigate("/criar-vaga", {
+                            state: {
+                              locationId: aggregate.locationId,
+                              locationDisplayName: location?.displayName,
+                              categoryId: aggregate.categoryId,
+                            },
+                          })
+                        }
+                      >
+                        Publicar nesta demanda
+                      </Button>
+                    </CardContent>
+                  </Card>
+                );
+              })
+            ) : (
+              <div className="rounded-xl border border-dashed p-8 text-center text-sm text-muted-foreground">
+                Nenhuma preferência registrada ainda. Quando profissionais
+                demonstrarem interesse, você verá apenas a contagem por local e
+                categoria.
+              </div>
+            )}
+          </TabsContent>
         </Tabs>
       </main>
     </div>
@@ -300,11 +687,18 @@ const DashboardCompany = () => {
       <header className="sticky top-0 z-50 bg-secondary/90 backdrop-blur-md border-b border-secondary-foreground/5">
         <div className="container flex items-center justify-between h-14 max-w-5xl mx-auto px-4">
           <div className="flex min-w-0 items-center gap-2">
-            <Button variant="ghost" size="sm" onClick={() => navigate("/")} className="shrink-0 text-secondary-foreground/70">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate("/")}
+              className="shrink-0 text-secondary-foreground/70"
+            >
               <ArrowLeft className="mr-1 h-4 w-4" /> Início
             </Button>
             <img src={logo} alt="Trampô" className="w-7 h-7" />
-            <span className="font-bold text-secondary-foreground">Painel Contratante & Empresa</span>
+            <span className="font-bold text-secondary-foreground">
+              Painel Contratante & Empresa
+            </span>
           </div>
           <Button
             variant="ghost"
@@ -317,7 +711,12 @@ const DashboardCompany = () => {
           >
             <LogOut className="h-4 w-4 mr-1" /> Sair
           </Button>
-          <Button variant="ghost" size="sm" onClick={() => navigate("/perfil-contratante")} className="text-secondary-foreground/70">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate("/perfil-contratante")}
+            className="text-secondary-foreground/70"
+          >
             <Building2 className="h-4 w-4 mr-1" /> Perfil
           </Button>
         </div>
@@ -328,9 +727,11 @@ const DashboardCompany = () => {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-bold text-foreground">Olá, {profile?.name || "Contratante"}</h1>
+              <h1 className="text-2xl font-bold text-foreground">
+                Olá, {profile?.name || "Contratante"}
+              </h1>
               <Badge className="bg-primary/10 text-primary border-primary/20 font-semibold text-xs">
-                Membro Fundador VIP
+                Piloto local
               </Badge>
             </div>
             <p className="text-xs text-muted-foreground mt-0.5">
@@ -338,7 +739,11 @@ const DashboardCompany = () => {
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <Button variant="outline" size="sm" onClick={() => navigate("/conversas")}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate("/conversas")}
+            >
               <MessageSquare className="h-4 w-4 mr-1" /> Conversas
             </Button>
             <Button
@@ -349,7 +754,11 @@ const DashboardCompany = () => {
             >
               <BellRing className="h-4 w-4 mr-1 text-primary" /> Chamada urgente
             </Button>
-            <Button size="sm" className="font-bold" onClick={() => navigate("/criar-vaga")}>
+            <Button
+              size="sm"
+              className="font-bold"
+              onClick={() => navigate("/criar-vaga")}
+            >
               <Plus className="h-4 w-4 mr-1" /> Criar Vaga
             </Button>
           </div>
@@ -362,11 +771,12 @@ const DashboardCompany = () => {
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-bold text-foreground">
-                    Período VIP Ativo: Acesso Completo Liberado (São João del-Rei & Brasil)
+                    Acesso demonstrativo ativo na região-piloto
                   </span>
                 </div>
                 <p className="text-xs text-muted-foreground leading-relaxed">
-                  Contrate pintores, piscineiros, garçons e diaristas sem intermediários e com recibo digital automático.
+                  Explore publicação, seleção e recibos demonstrativos sem
+                  cobrança real.
                 </p>
               </div>
 
@@ -375,9 +785,13 @@ const DashboardCompany = () => {
                 <div className="text-center px-2">
                   <div className="flex items-center justify-center gap-1 text-primary font-bold text-base">
                     <Clock className="h-4 w-4" />
-                    <span>{jobs.filter((j) => j.status === "open").length}</span>
+                    <span>
+                      {jobs.filter((j) => j.status === "open").length}
+                    </span>
                   </div>
-                  <p className="text-[10px] text-muted-foreground">Vagas abertas</p>
+                  <p className="text-[10px] text-muted-foreground">
+                    Vagas abertas
+                  </p>
                 </div>
                 <div className="h-7 w-px bg-border" />
                 <div className="text-center px-2">
@@ -392,7 +806,9 @@ const DashboardCompany = () => {
                         .replace(".", ",")}
                     </span>
                   </div>
-                  <p className="text-[10px] text-muted-foreground">Em custódia</p>
+                  <p className="text-[10px] text-muted-foreground">
+                    Em custódia
+                  </p>
                 </div>
               </div>
             </div>
@@ -402,19 +818,37 @@ const DashboardCompany = () => {
         {/* Tabs */}
         <Tabs defaultValue="freelancers">
           <TabsList className="grid w-full grid-cols-5 h-12 rounded-2xl p-1 bg-muted/60">
-            <TabsTrigger value="freelancers" className="text-xs sm:text-sm font-semibold rounded-xl">
-              <Users className="h-4 w-4 mr-1.5" /> Explorar ({freelancers.length})
+            <TabsTrigger
+              value="freelancers"
+              className="text-xs sm:text-sm font-semibold rounded-xl"
+            >
+              <Users className="h-4 w-4 mr-1.5" /> Explorar (
+              {freelancers.length})
             </TabsTrigger>
-            <TabsTrigger value="equipe" className="text-xs sm:text-sm font-semibold rounded-xl">
-              <Heart className="h-4 w-4 mr-1.5 text-primary" /> Favoritos ({favoriteFreelancers.length})
+            <TabsTrigger
+              value="equipe"
+              className="text-xs sm:text-sm font-semibold rounded-xl"
+            >
+              <Heart className="h-4 w-4 mr-1.5 text-primary" /> Favoritos (
+              {favoriteFreelancers.length})
             </TabsTrigger>
-            <TabsTrigger value="vagas" className="text-xs sm:text-sm font-semibold rounded-xl">
+            <TabsTrigger
+              value="vagas"
+              className="text-xs sm:text-sm font-semibold rounded-xl"
+            >
               <Briefcase className="h-4 w-4 mr-1.5" /> Vagas ({jobs.length})
             </TabsTrigger>
-            <TabsTrigger value="escrow" className="text-xs sm:text-sm font-semibold rounded-xl">
-              <ShieldCheck className="h-4 w-4 mr-1.5 text-emerald-600" /> Custódia ({escrows.length})
+            <TabsTrigger
+              value="escrow"
+              className="text-xs sm:text-sm font-semibold rounded-xl"
+            >
+              <ShieldCheck className="h-4 w-4 mr-1.5 text-emerald-600" />{" "}
+              Custódia ({escrows.length})
             </TabsTrigger>
-            <TabsTrigger value="pagamentos" className="text-xs sm:text-sm font-semibold rounded-xl">
+            <TabsTrigger
+              value="pagamentos"
+              className="text-xs sm:text-sm font-semibold rounded-xl"
+            >
               <CreditCard className="h-4 w-4 mr-1.5" /> Recibos (RPA)
             </TabsTrigger>
           </TabsList>
@@ -449,9 +883,9 @@ const DashboardCompany = () => {
                   <button
                     key={cat.id}
                     onClick={() => setSelectedCategoryFilter(cat.id)}
-                  className={`px-1 py-1.5 border-b-2 border-transparent font-semibold whitespace-nowrap transition-all ${
-                    selectedCategoryFilter === cat.id
-                      ? "border-primary text-primary"
+                    className={`px-1 py-1.5 border-b-2 border-transparent font-semibold whitespace-nowrap transition-all ${
+                      selectedCategoryFilter === cat.id
+                        ? "border-primary text-primary"
                         : "text-muted-foreground hover:text-foreground"
                     }`}
                   >
@@ -486,11 +920,16 @@ const DashboardCompany = () => {
                     }
                     const { data: newConv, error } = await supabase
                       .from("conversations")
-                      .insert({ company_user_id: profile.id, freelancer_user_id: f.user_id })
+                      .insert({
+                        company_user_id: profile.id,
+                        freelancer_user_id: f.user_id,
+                      })
                       .select()
                       .single();
                     if (error) {
-                      toast.info(`Iniciando contato direto com ${f.users?.name}...`);
+                      toast.info(
+                        `Iniciando contato direto com ${f.users?.name}...`,
+                      );
                       navigate(`/conversas`);
                       return;
                     }
@@ -518,13 +957,33 @@ const DashboardCompany = () => {
                           <Button
                             variant="ghost"
                             size="icon"
-                            onClick={() => toggleFavorite(f.user_id, f.users?.name || "Profissional")}
-                            className={isFav ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-primary"}
-                            title={isFav ? "Remover da equipe" : "Adicionar à equipe favorita"}
+                            onClick={() =>
+                              toggleFavorite(
+                                f.user_id,
+                                f.users?.name || "Profissional",
+                              )
+                            }
+                            className={
+                              isFav
+                                ? "text-primary bg-primary/10"
+                                : "text-muted-foreground hover:text-primary"
+                            }
+                            title={
+                              isFav
+                                ? "Remover da equipe"
+                                : "Adicionar à equipe favorita"
+                            }
                           >
-                            <Heart className={`h-4 w-4 ${isFav ? "fill-primary" : ""}`} />
+                            <Heart
+                              className={`h-4 w-4 ${isFav ? "fill-primary" : ""}`}
+                            />
                           </Button>
-                          <Button size="sm" variant="outline" onClick={startChat} className="text-xs">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={startChat}
+                            className="text-xs"
+                          >
                             <MessageSquare className="h-3.5 w-3.5 mr-1" /> Chat
                           </Button>
                         </div>
@@ -540,7 +999,8 @@ const DashboardCompany = () => {
           <TabsContent value="equipe" className="space-y-3 mt-4">
             <div className="flex items-center justify-between">
               <p className="text-xs text-muted-foreground">
-                Seus prestadores de confiança favoritos. Chame com 1 clique quando precisar.
+                Seus prestadores de confiança favoritos. Chame com 1 clique
+                quando precisar.
               </p>
             </div>
 
@@ -550,29 +1010,45 @@ const DashboardCompany = () => {
                   <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto text-primary">
                     <Heart className="h-6 w-6" />
                   </div>
-                  <h3 className="text-base font-bold text-foreground">Sua equipe favorita está vazia</h3>
+                  <h3 className="text-base font-bold text-foreground">
+                    Sua equipe favorita está vazia
+                  </h3>
                   <p className="text-xs text-muted-foreground max-w-sm mx-auto">
-                    Navegue na aba <strong>"Explorar"</strong> e clique no coração dos pintores, piscineiros, garçons ou diaristas de sua preferência.
+                    Navegue na aba <strong>"Explorar"</strong> e clique no
+                    coração dos pintores, piscineiros, garçons ou diaristas de
+                    sua preferência.
                   </p>
                 </CardContent>
               </Card>
             ) : (
               <div className="grid gap-3 sm:grid-cols-2">
                 {favoriteFreelancers.map((f: any) => (
-                  <Card key={f.id} className="border-border hover:border-primary/40 transition-all shadow-2xs rounded-2xl">
+                  <Card
+                    key={f.id}
+                    className="border-border hover:border-primary/40 transition-all shadow-2xs rounded-2xl"
+                  >
                     <CardContent className="p-4 flex items-center justify-between">
                       <div className="space-y-1">
                         <div className="flex items-center gap-1.5">
-                          <p className="font-bold text-sm text-foreground">{f.users?.name || "Profissional"}</p>
+                          <p className="font-bold text-sm text-foreground">
+                            {f.users?.name || "Profissional"}
+                          </p>
                           <Badge className="bg-emerald-500/10 text-emerald-600 text-[10px] py-0 border-emerald-500/20">
                             Disponível
                           </Badge>
                         </div>
-                        <p className="text-xs text-muted-foreground">{f.category || "Geral"}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {f.category || "Geral"}
+                        </p>
                       </div>
                       <div className="flex items-center gap-2">
                         <button
-                          onClick={() => toggleFavorite(f.user_id, f.users?.name || "Profissional")}
+                          onClick={() =>
+                            toggleFavorite(
+                              f.user_id,
+                              f.users?.name || "Profissional",
+                            )
+                          }
                           className="p-2 text-primary hover:bg-primary/10 rounded-lg transition-colors"
                           title="Remover dos favoritos"
                         >
@@ -581,9 +1057,21 @@ const DashboardCompany = () => {
                         <Button
                           size="sm"
                           onClick={() => {
-                            toast.success(`Convite prioritário enviado para ${f.users?.name}! 🚀`, {
-                              description: "O prestador receberá notificação imediata.",
+                            navigate("/criar-vaga", {
+                              state: {
+                                preferredProfessionalId: f.user_id,
+                                preferredProfessionalName:
+                                  f.users?.name || "Profissional",
+                              },
                             });
+                            /*
+                            toast.success(
+                              `Convite prioritário enviado para ${f.users?.name}! 🚀`,
+                              {
+                                description:
+                                  "O prestador receberá notificação imediata.",
+                              },
+                            ); */
                           }}
                         >
                           Convidar
@@ -610,27 +1098,46 @@ const DashboardCompany = () => {
             ) : (
               jobs.map((job) => {
                 const contrato = contracts.find((c) => c.job_id === job.id);
-                const candidatos = applications.filter((a) => a.job_id === job.id);
-                const estado = contrato ? getContractState(contrato.status) : null;
+                const candidatos = applications.filter(
+                  (a) => a.job_id === job.id,
+                );
+                const estado = contrato
+                  ? getContractState(contrato.status)
+                  : null;
 
                 return (
                   <Card key={job.id} className="border-border rounded-2xl">
                     <CardContent className="p-4 space-y-3">
                       <div className="flex items-center justify-between gap-3">
                         <div>
-                          <p className="font-bold text-foreground text-sm">{job.title || "Sem título"}</p>
+                          <p className="font-bold text-foreground text-sm">
+                            {job.title || "Sem título"}
+                          </p>
                           <p className="text-xs text-muted-foreground mt-0.5">
-                            {new Date(job.date).toLocaleDateString("pt-BR")} • Diária: R${" "}
-                            {Number(job.price || 0).toFixed(2).replace(".", ",")} {job.payment_type === "hourly" ? "/hora" : "(fechado)"}
+                            {new Date(job.date).toLocaleDateString("pt-BR")} •
+                            Diária: R${" "}
+                            {Number(job.price || 0)
+                              .toFixed(2)
+                              .replace(".", ",")}{" "}
+                            {job.payment_type === "hourly"
+                              ? "/hora"
+                              : "(fechado)"}
                           </p>
                         </div>
                         <div className="flex items-center gap-2 shrink-0">
                           {job.urgent && (
-                            <Badge variant="destructive" className="text-[11px]">
+                            <Badge
+                              variant="destructive"
+                              className="text-[11px]"
+                            >
                               Urgente
                             </Badge>
                           )}
-                          <Badge className={estado ? estado.tone : statusColor(job.status)}>
+                          <Badge
+                            className={
+                              estado ? estado.tone : statusColor(job.status)
+                            }
+                          >
                             {estado ? estado.label : job.status}
                           </Badge>
                         </div>
@@ -643,10 +1150,15 @@ const DashboardCompany = () => {
                               "Profissional contratado. Aguardando o check-in dele no local."}
                             {contrato.status === "IN_PROGRESS" &&
                               "O profissional confirmou presença — trabalho em execução agora."}
-                            {contrato.status === "RELEASED" && "Serviço concluído e pagamento liberado."}
+                            {contrato.status === "RELEASED" &&
+                              "Serviço concluído e pagamento liberado."}
                           </p>
                           {contrato.status === "IN_PROGRESS" && (
-                            <Button size="sm" className="w-full sm:w-auto" onClick={() => handleComplete(contrato.id)}>
+                            <Button
+                              size="sm"
+                              className="w-full sm:w-auto"
+                              onClick={() => handleComplete(contrato.id)}
+                            >
                               <CheckCircle className="h-4 w-4 mr-1.5" />
                               Confirmar conclusão e liberar pagamento
                             </Button>
@@ -659,7 +1171,8 @@ const DashboardCompany = () => {
                       ) : (
                         <div className="border-t pt-3 space-y-2">
                           <p className="text-xs font-semibold text-foreground">
-                            {candidatos.length} candidatura(s) aguardando sua escolha
+                            {candidatos.length} candidatura(s) aguardando sua
+                            escolha
                           </p>
                           {candidatos.map((candidatura) => (
                             <div
@@ -668,20 +1181,28 @@ const DashboardCompany = () => {
                             >
                               <div className="min-w-0">
                                 <p className="text-sm font-medium text-foreground truncate">
-                                  {candidatura.freelancers?.name || "Profissional"}
+                                  {candidatura.freelancers?.name ||
+                                    "Profissional"}
                                 </p>
                                 <p className="text-[11px] text-muted-foreground truncate">
-                                  {candidatura.freelancers?.category || "Serviços gerais"}
+                                  {candidatura.freelancers?.category ||
+                                    "Serviços gerais"}
                                 </p>
                               </div>
                               <Button
                                 size="sm"
                                 disabled={acceptingId === candidatura.id}
                                 onClick={() =>
-                                  handleAccept(candidatura.id, candidatura.freelancers?.name || "Profissional")
+                                  handleAccept(
+                                    candidatura.id,
+                                    candidatura.freelancers?.name ||
+                                      "Profissional",
+                                  )
                                 }
                               >
-                                {acceptingId === candidatura.id ? "Contratando..." : "Contratar"}
+                                {acceptingId === candidatura.id
+                                  ? "Contratando..."
+                                  : "Contratar"}
                               </Button>
                             </div>
                           ))}
@@ -701,7 +1222,8 @@ const DashboardCompany = () => {
               <div>
                 <p className="font-bold text-sm">Garantia Escrow Antifraude</p>
                 <p className="text-emerald-700 mt-0.5">
-                  Os valores ficam retidos com segurança e só são repassados ao profissional após a conclusão confirmada da diária.
+                  Os valores ficam retidos com segurança e só são repassados ao
+                  profissional após a conclusão confirmada da diária.
                 </p>
               </div>
             </div>
@@ -713,11 +1235,18 @@ const DashboardCompany = () => {
                   <CardContent className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
                       <div className="flex items-center gap-2">
-                        <p className="font-bold text-base text-foreground">R$ {Number(escrow.amount).toFixed(2).replace(".", ",")}</p>
-                        <Badge className={`text-xs ${statusInfo.class}`}>{statusInfo.label}</Badge>
+                        <p className="font-bold text-base text-foreground">
+                          R${" "}
+                          {Number(escrow.amount).toFixed(2).replace(".", ",")}
+                        </p>
+                        <Badge className={`text-xs ${statusInfo.class}`}>
+                          {statusInfo.label}
+                        </Badge>
                       </div>
                       <p className="text-xs text-muted-foreground mt-1">
-                        Profissional: <strong>{escrow.users?.name || "Prestador"}</strong> • {escrow.service || "Serviço Autônomo"}
+                        Profissional:{" "}
+                        <strong>{escrow.users?.name || "Prestador"}</strong> •{" "}
+                        {escrow.service || "Serviço Autônomo"}
                       </p>
                     </div>
 
@@ -728,7 +1257,8 @@ const DashboardCompany = () => {
                           className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
                           onClick={() => handleReleaseEscrow(escrow.id)}
                         >
-                          <CheckCircle className="h-4 w-4 mr-1" /> Liberar Pagamento Pix
+                          <CheckCircle className="h-4 w-4 mr-1" /> Liberar
+                          Pagamento Pix
                         </Button>
                       )}
                       <Button
@@ -751,10 +1281,14 @@ const DashboardCompany = () => {
             <div className="p-4 rounded-2xl bg-primary/5 border border-primary/20 text-xs text-foreground space-y-1">
               <div className="flex items-center gap-2 font-bold text-primary text-sm">
                 <Scale className="h-4 w-4" />
-                <span>Emissão de Recibos Digitais e Conformidade Trabalhista</span>
+                <span>
+                  Emissão de Recibos Digitais e Conformidade Trabalhista
+                </span>
               </div>
               <p className="text-muted-foreground text-xs leading-relaxed">
-                Todos os comprovantes emitidos pelo Trampô possuem respaldo legal (Art. 442-B da CLT) declarando a autonomia do prestador e isentando vínculo empregatício.
+                Todos os comprovantes emitidos pelo Trampô possuem respaldo
+                legal (Art. 442-B da CLT) declarando a autonomia do prestador e
+                isentando vínculo empregatício.
               </p>
             </div>
 
@@ -763,10 +1297,12 @@ const DashboardCompany = () => {
                 <CardContent className="p-4 flex items-center justify-between">
                   <div>
                     <p className="font-bold text-foreground text-sm">
-                      Recibo #{escrow.id.slice(0, 8)} • R$ {Number(escrow.amount).toFixed(2).replace(".", ",")}
+                      Recibo #{escrow.id.slice(0, 8)} • R${" "}
+                      {Number(escrow.amount).toFixed(2).replace(".", ",")}
                     </p>
                     <p className="text-xs text-muted-foreground mt-0.5">
-                      {escrow.users?.name} • {new Date(escrow.created_at).toLocaleDateString("pt-BR")}
+                      {escrow.users?.name} •{" "}
+                      {new Date(escrow.created_at).toLocaleDateString("pt-BR")}
                     </p>
                   </div>
                   <Button
@@ -801,29 +1337,53 @@ const DashboardCompany = () => {
             <div className="space-y-4 text-xs pt-2">
               <div className="p-4 rounded-2xl bg-muted/60 border border-border space-y-2">
                 <div className="flex justify-between border-b border-border/60 pb-2">
-                  <span className="text-muted-foreground">Número do Recibo:</span>
-                  <span className="font-mono font-bold text-foreground">{receiptData.id}</span>
+                  <span className="text-muted-foreground">
+                    Número do Recibo:
+                  </span>
+                  <span className="font-mono font-bold text-foreground">
+                    {receiptData.id}
+                  </span>
                 </div>
                 <div className="flex justify-between border-b border-border/60 pb-2">
-                  <span className="text-muted-foreground">Contratante / Tomador:</span>
-                  <span className="font-bold text-foreground">{receiptData.companyName}</span>
+                  <span className="text-muted-foreground">
+                    Contratante / Tomador:
+                  </span>
+                  <span className="font-bold text-foreground">
+                    {receiptData.companyName}
+                  </span>
                 </div>
                 <div className="flex justify-between border-b border-border/60 pb-2">
-                  <span className="text-muted-foreground">Prestador Autônomo:</span>
-                  <span className="font-bold text-foreground">{receiptData.freelancerName}</span>
+                  <span className="text-muted-foreground">
+                    Prestador Autônomo:
+                  </span>
+                  <span className="font-bold text-foreground">
+                    {receiptData.freelancerName}
+                  </span>
                 </div>
                 <div className="flex justify-between border-b border-border/60 pb-2">
-                  <span className="text-muted-foreground">Data da Execução:</span>
-                  <span className="font-bold text-foreground">{receiptData.date}</span>
+                  <span className="text-muted-foreground">
+                    Data da Execução:
+                  </span>
+                  <span className="font-bold text-foreground">
+                    {receiptData.date}
+                  </span>
                 </div>
                 <div className="flex justify-between pt-1">
-                  <span className="font-bold text-sm text-foreground">Valor Líquido Quitado:</span>
-                  <span className="font-bold text-base text-emerald-600">R$ {receiptData.amount},00</span>
+                  <span className="font-bold text-sm text-foreground">
+                    Valor Líquido Quitado:
+                  </span>
+                  <span className="font-bold text-base text-emerald-600">
+                    R$ {receiptData.amount},00
+                  </span>
                 </div>
               </div>
 
               <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-[11px] text-muted-foreground leading-relaxed">
-                <strong>Declaração de Inexistência de Vínculo:</strong> Declaramos para os devidos fins legais que a presente contratação decorreu de demanda eventual e autônoma, sem subordinação ou habitualidade, nos termos do Art. 442-B da Consolidação das Leis do Trabalho (CLT).
+                <strong>Declaração de Inexistência de Vínculo:</strong>{" "}
+                Declaramos para os devidos fins legais que a presente
+                contratação decorreu de demanda eventual e autônoma, sem
+                subordinação ou habitualidade, nos termos do Art. 442-B da
+                Consolidação das Leis do Trabalho (CLT).
               </div>
 
               <div className="flex justify-end gap-2 pt-2">

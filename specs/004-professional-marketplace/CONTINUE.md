@@ -1,9 +1,9 @@
 # Checkpoint de continuação
 
 **Feature ativa**: `004-professional-marketplace`  
-**Registrado em**: 2026-09-30  
-**Estado**: implementação em andamento  
-**Progresso**: 22 tarefas concluídas, 33 pendentes
+**Registrado em**: 2026-10-26  
+**Estado**: pausado por solicitação  
+**Progresso**: 33 tarefas concluídas, 22 pendentes
 
 ## Onde parou
 
@@ -32,16 +32,35 @@ O formulário de vaga também possui endereço obrigatório e busca por CEP:
 - fallback manual sem apagar o formulário;
 - T055 concluída.
 
+A área existente "Meus interesses" agora também apresenta as preferências privadas:
+
+- cada item mostra local, categoria e bairro aproximado;
+- explica que o contratante só vê a contagem agregada;
+- permite remover a preferência sem afetar candidaturas/interesses em vagas;
+- T029 concluída.
+
+As preferências privadas agora são persistidas em `preferences`:
+
+- cada escolha possui um `id` próprio e pertence ao `user_id` autenticado;
+- `location_id` e `category_id` formam uma chave única por usuário;
+- remoção é lógica e reativação reutiliza o mesmo registro;
+- a API expõe apenas as preferências do próprio usuário e não usa o CRUD genérico;
+- migration local aplicada com sucesso no PostgreSQL da porta `55433`;
+
+O painel de preferências foi extraído do dashboard existente para um componente testável, sem duplicar o fluxo:
+
+- `src/components/marketplace/ProfessionalPreferencesPanel.tsx`;
+- T025 validado com teste de privacidade, estado ativo e remoção.
+- T030 validado no lado profissional do Cenário 2; os 3 testes de US2 passaram.
+
 ## Retomar exatamente daqui
+
+Pausa registrada ao final da US4. Não iniciar trabalho adicional até a retomada.
 
 Executar nesta ordem:
 
-1. **T025** — teste de UI do currículo de interesse em `src/test/marketplace-preference-flow.test.tsx`.
-2. **T029** — área privada para listar e remover locais/categorias preferidos em `src/pages/DashboardFreelancer.tsx`.
-3. **T030** — executar testes US2 e validar o Cenário 2 do `quickstart.md`.
-4. **T038 e T039** — preparar testes de privacidade e demanda agregada.
-5. **T040–T045** — mostrar ao contratante somente `locationId`, `categoryId` e `count` e integrar publicação por categoria/local.
-6. Depois iniciar **T031–T037** — metas, pontos, níveis e selos.
+1. **T031–T037** — metas, pontos, níveis e selos.
+2. Depois executar **T046–T054** — auditoria de privacidade, acessibilidade, regressões e validação final.
 
 ## Validação mais recente
 
@@ -54,6 +73,6 @@ Executar nesta ordem:
 
 - Nunca fazer merge.
 - Não recriar dashboards ou primitivas existentes.
-- Não persistir localização real, preferências ou recompensas no banco neste MVP.
+- Não persistir localização real ou recompensas no banco neste MVP. Preferências privadas são persistidas por usuário em `preferences`.
 - Nunca fornecer identidade, contato, horário ou posição individual ao contratante.
 - Preferência privada não é candidatura.

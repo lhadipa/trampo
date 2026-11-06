@@ -8,6 +8,8 @@ import {
   Search,
   ShieldCheck,
   Star,
+  Award,
+  Heart,
   Wallet,
   Zap,
   ArrowLeft,
@@ -26,6 +28,7 @@ import { useAuth } from "../hooks/useAuth";
 import { api } from "../lib/api";
 import { SERVICE_CATEGORIES } from "../lib/categories";
 import { escrowStatusLabel } from "../lib/escrow";
+import { readPilotProgress, recordPilotProgress } from "../lib/pilotProgress";
 
 /** Porte de src/pages/DashboardFreelancer.tsx. */
 export const DashboardFreelancer = () => {
@@ -41,6 +44,8 @@ export const DashboardFreelancer = () => {
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [appliedJobIds, setAppliedJobIds] = useState<string[]>([]);
   const [checkedInJobIds, setCheckedInJobIds] = useState<string[]>([]);
+  const [preferences, setPreferences] = useState<any[]>([]);
+  const [reward, setReward] = useState({ points: 0, level: 1, nextLevelAt: 100, earnedBadgeIds: [] as string[] });
 
   useEffect(() => {
     (async () => {
@@ -55,6 +60,10 @@ export const DashboardFreelancer = () => {
         .select("*,users(name)")
         .order("created_at", { ascending: false });
       setEscrows(escrowData || []);
+      const { data: preferenceData } = await api.from("preferences").select("*").eq("active", true);
+      setPreferences(preferenceData || []);
+      await recordPilotProgress("profile-completed", 25, "perfil-pronto");
+      setReward(await readPilotProgress());
     })();
   }, [profile]);
 
@@ -62,6 +71,7 @@ export const DashboardFreelancer = () => {
     if (appliedJobIds.includes(job.id)) return;
     setAppliedJobIds((prev) => [...prev, job.id]);
     setApplications((prev) => [...prev, { ...job, status: "pending" }]);
+    recordPilotProgress(`jobs-viewed:${job.id}`, 0).then(setReward);
     toast.success("Candidatura enviada com sucesso! 🚀", {
       description: "O contratante será notificado e pode abrir o chat com você.",
     });
@@ -89,6 +99,8 @@ export const DashboardFreelancer = () => {
 
   const tabItems = [
     { value: "vagas", label: `Oportunidades (${filteredJobs.length})`, Icon: Briefcase },
+    { value: "interesses", label: "Meus interesses", Icon: Heart },
+    { value: "progresso", label: "Progresso", Icon: Award },
     { value: "historico", label: `Minhas Diárias (${applications.length})`, Icon: History },
     { value: "escrow", label: "Custódia Segura", Icon: ShieldCheck },
     { value: "saldo", label: "Saque Pix", Icon: Wallet },
@@ -282,6 +294,10 @@ export const DashboardFreelancer = () => {
             )}
           </View>
         ) : null}
+
+        {tab === "interesses" ? <View className="gap-3"><Card className="border-primary/20 bg-primary/5"><CardContent><Text className="text-sm font-bold text-foreground">Preferências privadas</Text><Text className="mt-1 text-xs leading-relaxed text-muted-foreground">O contratante vê somente a contagem agregada por local e categoria, nunca seu nome ou contato.</Text></CardContent></Card>{preferences.length ? preferences.map((item) => <Card key={item.id}><CardContent><Text className="text-sm font-bold text-foreground">{item.location_id}</Text><Text className="text-xs text-muted-foreground">{item.category_id}</Text></CardContent></Card>) : <EmptyState title="Nenhuma preferência enviada" description="Envie seu interesse por uma oportunidade para aparecer apenas na demanda agregada." icon={<Heart size={24} color="#e85d04" />} />}</View> : null}
+
+        {tab === "progresso" ? <Card><CardContent className="gap-3"><View className="flex-row items-center gap-2"><Award size={20} color="#e85d04" /><Text className="text-base font-bold text-foreground">Progresso profissional</Text></View><Text className="text-sm text-muted-foreground">Nível {reward.level} · {reward.points}/{reward.nextLevelAt} pontos</Text><View className="h-2 overflow-hidden rounded-full bg-muted"><View className="h-full rounded-full bg-primary" style={{ width: `${Math.min(100, reward.points / reward.nextLevelAt * 100)}%` }} /></View><Text className="text-xs text-muted-foreground">Selos: {reward.earnedBadgeIds.length ? reward.earnedBadgeIds.join(", ") : "nenhum ainda"}</Text></CardContent></Card> : null}
 
         {/* Aba: Minhas diárias */}
         {tab === "historico" ? (

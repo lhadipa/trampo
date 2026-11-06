@@ -23,7 +23,7 @@
 - [X] T001 Instalar Leaflet, React Leaflet, tipos TypeScript e plugin de clustering compatível em package.json e package-lock.json
 - [X] T002 [P] Documentar configuração de tiles, atribuição, limites de uso e troca de provedor em docs/DESIGN.md
 - [X] T003 [P] Criar estrutura E2E do marketplace em e2e/professional-marketplace.spec.ts
-- [ ] T004 Registrar comandos e matriz de validação da feature em specs/004-professional-marketplace/quickstart.md
+- [X] T004 Registrar comandos e matriz de validação da feature em specs/004-professional-marketplace/quickstart.md
 
 ---
 
@@ -51,9 +51,9 @@
 
 ### Tests
 
-- [ ] T012 [P] [US1] Escrever testes de sincronização mapa/lista, filtros, bounds, seleção e fallback em src/test/marketplace-map.test.tsx
-- [ ] T013 [P] [US1] Escrever cenário E2E de pan, zoom, clustering, “Buscar nesta área”, localização negada e falha de tiles em e2e/professional-marketplace.spec.ts
-- [ ] T014 [P] [US1] Escrever testes de teclado, nomes acessíveis e alternativa equivalente em src/test/marketplace-accessibility.test.tsx
+- [X] T012 [P] [US1] Escrever testes de sincronização mapa/lista, filtros, bounds, seleção e fallback em src/test/marketplace-map.test.tsx
+- [x] T013 [P] [US1] Escrever cenário E2E de pan, zoom, clustering, “Buscar nesta área”, localização negada e falha de tiles em e2e/professional-marketplace.spec.ts
+- [X] T014 [P] [US1] Escrever testes de teclado, nomes acessíveis e alternativa equivalente em src/test/marketplace-accessibility.test.tsx
 
 ### Implementation
 
@@ -63,7 +63,7 @@
 - [X] T018 [US1] Integrar clustering com quantidade e comportamento por zoom em src/pages/DashboardFreelancer.tsx
 - [X] T019 [US1] Sincronizar seleção de marcador com destaque/rolagem da lista e seleção da lista com centralização do mapa em src/pages/DashboardFreelancer.tsx
 - [X] T020 [US1] Implementar “Buscar nesta área”, centralizar em mim e retornar à região-piloto em src/pages/DashboardFreelancer.tsx
-- [ ] T021 [US1] Reutilizar filtros existentes para categoria, data, valor, distância e disponibilidade em src/pages/DashboardFreelancer.tsx
+- [X] T021 [US1] Reutilizar filtros existentes para categoria, data, valor, distância e disponibilidade em src/pages/DashboardFreelancer.tsx
 - [X] T022 [US1] Implementar carregamento, mapa indisponível, retry e fallback completo em lista em src/pages/DashboardFreelancer.tsx
 - [ ] T023 [US1] Executar testes US1 e validar Cenário 1 de specs/004-professional-marketplace/quickstart.md
 
@@ -80,15 +80,15 @@
 ### Tests
 
 - [X] T024 [P] [US2] Escrever testes inicialmente falhos de unicidade, criação, remoção e reativação em src/test/marketplace-preferences.test.ts
-- [ ] T025 [P] [US2] Escrever teste de UI para explicação de privacidade, confirmação e estado ativo em src/test/marketplace-preference-flow.test.tsx
+- [X] T025 [P] [US2] Escrever teste de UI para explicação de privacidade, confirmação e estado ativo em src/test/marketplace-preference-flow.test.tsx
 
 ### Implementation
 
 - [X] T026 [US2] Implementar togglePreferenceMock idempotente e consulta privada por profissional em src/lib/pilotMockService.ts
 - [X] T027 [US2] Adaptar detalhes de local/vaga para ação “Tenho preferência por trabalhar aqui” em src/pages/DashboardFreelancer.tsx
 - [X] T028 [US2] Exibir claramente que preferência não é candidatura e que identidade não será mostrada em src/pages/DashboardFreelancer.tsx
-- [ ] T029 [US2] Adaptar área existente do profissional para listar e remover seus locais/categorias preferidos em src/pages/DashboardFreelancer.tsx
-- [ ] T030 [US2] Executar testes US2 e validar lado profissional do Cenário 2 de specs/004-professional-marketplace/quickstart.md
+- [X] T029 [US2] Adaptar área existente do profissional para listar e remover seus locais/categorias preferidos em src/pages/DashboardFreelancer.tsx
+- [X] T030 [US2] Executar testes US2 e validar lado profissional do Cenário 2 de specs/004-professional-marketplace/quickstart.md
 
 **Checkpoint**: a preferência privada funciona sem criar candidatura, chat ou contato.
 
@@ -102,16 +102,16 @@
 
 ### Tests
 
-- [ ] T031 [P] [US3] Escrever testes inicialmente falhos de evento idempotente, pontos, nível e selo em src/test/marketplace-rewards.test.ts
-- [ ] T032 [P] [US3] Escrever teste de UI para meta atual, progresso, recompensa e próximo objetivo em src/test/marketplace-goals-flow.test.tsx
+- [X] T031 [P] [US3] Escrever testes inicialmente falhos de evento idempotente, pontos, nível e selo em src/test/marketplace-rewards.test.ts
+- [X] T032 [P] [US3] Escrever teste de UI para meta atual, progresso, recompensa e próximo objetivo em src/test/marketplace-goals-flow.test.tsx
 
 ### Implementation
 
-- [ ] T033 [US3] Implementar recordProgressMock com chave idempotente e cálculo de recompensas em src/lib/pilotMockService.ts
-- [ ] T034 [US3] Integrar eventos saudáveis de perfil, disponibilidade, exploração e conclusão nos fluxos existentes em src/pages/DashboardFreelancer.tsx e src/pages/Contracts.tsx
-- [ ] T035 [US3] Adaptar resumo atual do painel para nível, pontos, meta atual e próximo objetivo em src/pages/DashboardFreelancer.tsx
-- [ ] T036 [US3] Reutilizar Badge, Card e Progress existentes para selos e progresso, sem benefício financeiro ou prioridade em src/pages/DashboardFreelancer.tsx
-- [ ] T037 [US3] Executar testes US3 e validar Cenário 3 de specs/004-professional-marketplace/quickstart.md
+- [X] T033 [US3] Implementar recordProgressMock com chave idempotente e cálculo de recompensas em src/lib/pilotMockService.ts
+- [X] T034 [US3] Integrar eventos saudáveis de perfil, disponibilidade, exploração e conclusão nos fluxos existentes em src/pages/DashboardFreelancer.tsx e src/pages/Contracts.tsx
+- [X] T035 [US3] Adaptar resumo atual do painel para nível, pontos, meta atual e próximo objetivo em src/pages/DashboardFreelancer.tsx
+- [X] T036 [US3] Reutilizar Badge, Card e Progress existentes para selos e progresso, sem benefício financeiro ou prioridade em src/pages/DashboardFreelancer.tsx
+- [X] T037 [US3] Executar testes US3 e validar Cenário 3 de specs/004-professional-marketplace/quickstart.md
 
 **Checkpoint**: metas são compreensíveis, idempotentes e não alteram vagas, seleção ou dinheiro.
 
@@ -125,17 +125,17 @@
 
 ### Tests
 
-- [ ] T038 [P] [US4] Escrever contrato de privacidade inicialmente falho garantindo apenas locationId/categoryId/count em src/test/marketplace-privacy.test.ts
-- [ ] T039 [P] [US4] Escrever teste de UI de agregados, estado vazio e ausência de detalhes pessoais em src/test/marketplace-demand-flow.test.tsx
+- [X] T038 [P] [US4] Escrever contrato de privacidade inicialmente falho garantindo apenas locationId/categoryId/count em src/test/marketplace-privacy.test.ts
+- [X] T039 [P] [US4] Escrever teste de UI de agregados, estado vazio e ausência de detalhes pessoais em src/test/marketplace-demand-flow.test.tsx
 
 ### Implementation
 
-- [ ] T040 [US4] Implementar getPreferenceAggregates sem retornar registros individuais em src/lib/pilotMockService.ts
-- [ ] T041 [US4] Adaptar área existente do contratante para contagens totais e por categoria em src/pages/DashboardCompany.tsx
-- [ ] T042 [US4] Implementar estado vazio e explicação de privacidade sem ação de revelar/contatar em src/pages/DashboardCompany.tsx
-- [ ] T043 [US4] Navegar para publicação preenchendo somente local e categoria em src/pages/DashboardCompany.tsx
-- [ ] T044 [US4] Consumir estado de navegação sem candidatos pré-selecionados em src/pages/CreateJob.tsx
-- [ ] T045 [US4] Executar testes US4 e validar lado contratante do Cenário 2 de specs/004-professional-marketplace/quickstart.md
+- [X] T040 [US4] Implementar getPreferenceAggregates sem retornar registros individuais em src/lib/pilotMockService.ts
+- [X] T041 [US4] Adaptar área existente do contratante para contagens totais e por categoria em src/pages/DashboardCompany.tsx
+- [X] T042 [US4] Implementar estado vazio e explicação de privacidade sem ação de revelar/contatar em src/pages/DashboardCompany.tsx
+- [X] T043 [US4] Navegar para publicação preenchendo somente local e categoria em src/pages/DashboardCompany.tsx
+- [X] T044 [US4] Consumir estado de navegação sem candidatos pré-selecionados em src/pages/CreateJob.tsx
+- [X] T045 [US4] Executar testes US4 e validar lado contratante do Cenário 2 de specs/004-professional-marketplace/quickstart.md
 
 **Checkpoint**: contratante usa sinal agregado sem acesso a identidade ou contato.
 
@@ -143,15 +143,15 @@
 
 ## Phase 7: Polish & Cross-Cutting Concerns
 
-- [ ] T046 Auditar ausência de nome, contato, id profissional, timestamp e posição individual na visão agregada em src/pages/DashboardCompany.tsx e src/lib/pilotMockService.ts
-- [ ] T047 [P] Validar atribuição, política de tiles, ausência de prefetch e configuração substituível em src/pages/DashboardFreelancer.tsx e docs/DESIGN.md
-- [ ] T048 Remover textos conflitantes de recompensa financeira, ranking de seleção e currículo público em src e src/test
-- [ ] T049 Executar npm test e corrigir regressões relacionadas à feature nos arquivos alterados
-- [ ] T050 Executar npm run build e corrigir erros de compilação relacionados à feature
-- [ ] T051 Executar npm run lint e separar violações preexistentes das introduzidas pela feature
+- [X] T046 Auditar ausência de nome, contato, id profissional, timestamp e posição individual na visão agregada em src/pages/DashboardCompany.tsx e src/lib/pilotMockService.ts
+- [X] T047 [P] Validar atribuição, política de tiles, ausência de prefetch e configuração substituível em src/pages/DashboardFreelancer.tsx e docs/DESIGN.md
+- [X] T048 Remover textos conflitantes de recompensa financeira, ranking de seleção e currículo público em src e src/test
+- [X] T049 Executar npm test e corrigir regressões relacionadas à feature nos arquivos alterados
+- [X] T050 Executar npm run build e corrigir erros de compilação relacionados à feature
+- [X] T051 Executar npm run lint e separar violações preexistentes das introduzidas pela feature
 - [ ] T052 Executar npx playwright test e validar os três cenários de specs/004-professional-marketplace/quickstart.md
 - [ ] T053 Validar 360, 768 e 1280 px, teclado, leitor de tela, localização negada e movimento reduzido em e2e/professional-marketplace.spec.ts
-- [ ] T054 Revisar implementação contra specs/004-professional-marketplace/spec.md e registrar diferenças no checklist da feature
+- [X] T054 Revisar implementação contra specs/004-professional-marketplace/spec.md e registrar diferenças no checklist da feature
 - [X] T055 Exigir endereço do trabalho e integrar preenchimento por CEP com fallback manual em src/pages/CreateJob.tsx
 
 ---

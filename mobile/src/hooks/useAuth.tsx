@@ -48,9 +48,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (!data) return;
       setProfile(data as Profile);
 
-      // user_roles.user_id referencia users.id, nao o auth_id do token.
-      const { data: roles } = await api.from("user_roles").select("role").eq("user_id", data.id);
-      setIsAdmin(data.type === "admin" || (roles?.some((r: any) => r.role === "admin") ?? false));
+      setIsAdmin(data.type === "admin");
     } catch {
       // API fora do ar: segue sem perfil enriquecido
     }

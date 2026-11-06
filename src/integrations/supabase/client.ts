@@ -39,6 +39,18 @@ const chamar = async (caminho: string, body: any) => {
   return response.ok ? { data: result, error: null } : { data: null, error: new Error(result.error || "Falha na operação") };
 };
 
+const preferenceRequest = async (path: string, method: "GET" | "POST" | "DELETE", body?: any) => {
+  const response = await fetch(`${API_URL}${path}`, { method, headers: headers(), body: body === undefined ? undefined : JSON.stringify(body) });
+  const result = await response.json().catch(() => ({}));
+  return response.ok ? { data: result.data, error: null } : { data: null, error: new Error(result.error || "Falha ao atualizar preferências") };
+};
+
+export const preferences = {
+  list: () => preferenceRequest("/api/preferences", "GET"),
+  save: (locationId: string, categoryId: string) => preferenceRequest("/api/preferences", "POST", { location_id: locationId, category_id: categoryId }),
+  remove: (preferenceId: string) => preferenceRequest(`/api/preferences/${encodeURIComponent(preferenceId)}`, "DELETE"),
+};
+
 /**
  * Fluxo de contratacao. Cada passo mexe em varias tabelas e depende de quem e'
  * o dono da vaga, entao roda no servidor, em transacao.

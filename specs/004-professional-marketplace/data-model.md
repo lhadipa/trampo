@@ -16,10 +16,10 @@ Somente estados `open` e `partially_filled` aparecem no marketplace.
 
 ## ProfessionalPreference
 
-- `id`, `professionalId`, `locationId`, `categoryId`, `status`
+- Persistida em `preferences`: `id`, `userId`, `locationId`, `categoryId`, `active`
 - `createdAt`, `removedAt?`
 
-Restrição única ativa: `professionalId + locationId + categoryId`. Não constitui candidatura.
+Restrição única: `userId + locationId + categoryId`. Remoção é lógica (`active = false`) e reativação reutiliza o mesmo registro. A preferência não constitui candidatura.
 
 ## PreferenceAggregate
 

@@ -7,33 +7,627 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Activity, Ban, Briefcase, CheckCircle, CreditCard, DollarSign, LogOut, RefreshCw, Search, Shield, Users } from "lucide-react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Activity,
+  Ban,
+  Briefcase,
+  CheckCircle,
+  CreditCard,
+  DollarSign,
+  LogOut,
+  RefreshCw,
+  Search,
+  Shield,
+  Users,
+} from "lucide-react";
 import { toast } from "sonner";
 import logo from "@/assets/logo.png";
+import { getPilotSnapshot, updateGoalMock } from "@/lib/pilotMockService";
+import {
+  canToggleAccount,
+  crmListQueryContract,
+  deriveCrmClientIndicators,
+  normalizeCrmTimeline,
+} from "@/lib/crmAdmin";
 
 type Row = Record<string, any>;
-const tables = ["users", "companies", "individual_contractors", "freelancers", "jobs", "applications", "conversations", "messages", "payments", "escrow", "reviews", "proposals", "contracts", "checkins"];
-const money = (v: any) => `R$ ${Number(v || 0).toFixed(2).replace(".", ",")}`;
-const date = (v: any) => v ? new Date(v).toLocaleDateString("pt-BR") : "—";
-const typeLabel = (u: Row) => u.type === "admin" ? "Administrador" : ["empresa", "company"].includes(u.type) ? (u.individual ? "Contratante pessoa física" : "Empresa") : "Freelancer/profissional";
+const tables = [
+  "users",
+  "companies",
+  "individual_contractors",
+  "freelancers",
+  "jobs",
+  "applications",
+  "conversations",
+  "messages",
+  "payments",
+  "escrow",
+  "reviews",
+  "proposals",
+  "contracts",
+  "checkins",
+];
+const money = (v: any) =>
+  `R$ ${Number(v || 0)
+    .toFixed(2)
+    .replace(".", ",")}`;
+const date = (v: any) => (v ? new Date(v).toLocaleDateString("pt-BR") : "—");
+const typeLabel = (u: Row) =>
+  u.type === "admin"
+    ? "Administrador"
+    : ["empresa", "company"].includes(u.type)
+      ? u.individual
+        ? "Contratante pessoa física"
+        : "Empresa"
+      : "Freelancer/profissional";
 
 const DashboardAdmin = () => {
-  const { profile, signOut } = useAuth(); const navigate = useNavigate();
-  const [data, setData] = useState<Record<string, Row[]>>({}); const [loading, setLoading] = useState(true); const [error, setError] = useState("");
-  const [query, setQuery] = useState(""); const [type, setType] = useState("all"); const [status, setStatus] = useState("all"); const [selected, setSelected] = useState<Row | null>(null); const [detail, setDetail] = useState<Record<string, Row[]>>({}); const [detailLoading, setDetailLoading] = useState(false);
-  const load = useCallback(async () => { setLoading(true); setError(""); try { const result = await Promise.all(tables.map(async (table) => { const q: any = supabase.from(table).select("*").adminScope(); q.order("created_at", { ascending: false }); const r = await q.limit(500); if (r.error) throw r.error; return [table, r.data || []] as const; })); setData(Object.fromEntries(result)); } catch (e: any) { setError(e?.message || "Não foi possível carregar o CRM"); } finally { setLoading(false); } }, []);
-  useEffect(() => { load(); }, [load]);
-  const users = data.users || [], companies = data.companies || [], freelancers = data.freelancers || [], jobs = data.jobs || [], contracts = data.contracts || [], payments = data.payments || [], escrow = data.escrow || [];
-  const clients = useMemo(() => users.map((u) => ({ ...u, individual: (data.individual_contractors || []).some((p) => p.user_id === u.id), profile: companies.find((p) => p.user_id === u.id) || (data.individual_contractors || []).find((p) => p.user_id === u.id) || freelancers.find((p) => p.user_id === u.id) })).filter((u) => { const p = u.profile || {}; const hay = [u.id, u.name, u.email, p.cpf, p.cnpj].join(" ").toLowerCase(); const q = query.toLowerCase(); const typeOk = type === "all" || (type === "empresa" && ["empresa", "company"].includes(u.type) && !u.individual) || (type === "pessoa" && u.individual) || (type === "freelancer" && u.type === "freelancer") || (type === "admin" && u.type === "admin"); return (!q || hay.includes(q)) && typeOk && (status === "all" || (status === "blocked" ? u.blocked : !u.blocked)); }), [data, query, type, status, users, companies, freelancers]);
-  const volume = payments.reduce((n, p) => n + Number(p.amount || 0), 0); const held = escrow.filter((e) => e.status === "held").reduce((n, e) => n + Number(e.amount || 0), 0); const activeContracts = contracts.filter((c) => !["RELEASED", "COMPLETED", "CANCELLED", "REFUNDED"].includes(c.status)).length;
-  const toggle = async (u: Row) => { const r = await supabase.from("users").update({ blocked: !u.blocked }).eq("id", u.id); if (r.error) toast.error(r.error.message); else { toast.success(u.blocked ? "Usuário desbloqueado" : "Usuário bloqueado"); load(); setSelected((s) => s?.id === u.id ? { ...s, blocked: !u.blocked } : s); } };
-  const openDetail = (u: Row) => { setSelected(u); setDetailLoading(true); const companyIds = companies.filter((x) => x.user_id === u.id).map((x) => x.id); const freelancerIds = freelancers.filter((x) => x.user_id === u.id).map((x) => x.id); const rows: Record<string, Row[]> = {}; tables.forEach((table) => { const all = data[table] || []; rows[table] = all.filter((x) => table === "users" ? x.id === u.id : table === "companies" ? companyIds.includes(x.id) : table === "individual_contractors" ? x.user_id === u.id : table === "freelancers" ? freelancerIds.includes(x.id) : table === "jobs" ? companyIds.includes(x.company_id) : table === "applications" ? freelancerIds.includes(x.freelancer_id) || jobs.some((j) => j.id === x.job_id && companyIds.includes(j.company_id)) : table === "conversations" ? x.company_user_id === u.id || x.freelancer_user_id === u.id : table === "messages" ? (data.conversations || []).some((c) => c.id === x.conversation_id && (c.company_user_id === u.id || c.freelancer_user_id === u.id)) : table === "reviews" ? x.from_user === u.id || x.to_user === u.id : table === "checkins" ? (data.contracts || []).some((c) => c.id === x.contract_id && freelancerIds.includes(c.freelancer_id)) : ["contracts", "proposals", "payments", "escrow"].includes(table) && ([x.user_id, x.from_user_id, x.to_user_id, x.company_user_id, x.freelancer_user_id].includes(u.id) || companyIds.includes(x.company_id) || freelancerIds.includes(x.freelancer_id) || jobs.some((j) => j.id === x.job_id && companyIds.includes(j.company_id)))); }); setDetail(rows); setDetailLoading(false); };
+  const { profile, signOut } = useAuth();
+  const navigate = useNavigate();
+  const [data, setData] = useState<Record<string, Row[]>>({});
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [query, setQuery] = useState("");
+  const [type, setType] = useState("all");
+  const [status, setStatus] = useState("all");
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
+  const [selected, setSelected] = useState<Row | null>(null);
+  const [detail, setDetail] = useState<Record<string, Row[]>>({});
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [pilotGoals, setPilotGoals] = useState(() => getPilotSnapshot().goals);
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const result = await Promise.all(
+        tables.map(async (table) => {
+          const q: any = supabase
+            .from(table)
+            .select(crmListQueryContract.select)
+            .adminScope();
+          q.order(crmListQueryContract.orderColumn, {
+            ascending: crmListQueryContract.ascending,
+          });
+          const r = await q.limit(crmListQueryContract.limit);
+          if (r.error) throw r.error;
+          return [table, r.data || []] as const;
+        }),
+      );
+      setData(Object.fromEntries(result));
+    } catch (e: any) {
+      setError(e?.message || "Não foi possível carregar o CRM");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+  useEffect(() => {
+    load();
+  }, [load]);
+  const users = data.users || [],
+    companies = data.companies || [],
+    freelancers = data.freelancers || [],
+    jobs = data.jobs || [],
+    contracts = data.contracts || [],
+    payments = data.payments || [],
+    escrow = data.escrow || [];
+  const clients = useMemo(
+    () =>
+      users
+        .map((u) => ({
+          ...u,
+          individual: (data.individual_contractors || []).some(
+            (p) => p.user_id === u.id,
+          ),
+          profile:
+            companies.find((p) => p.user_id === u.id) ||
+            (data.individual_contractors || []).find(
+              (p) => p.user_id === u.id,
+            ) ||
+            freelancers.find((p) => p.user_id === u.id),
+        }))
+        .filter((u) => {
+          const p = u.profile || {};
+          const hay = [u.id, u.name, u.email, p.cpf, p.cnpj]
+            .join(" ")
+            .toLowerCase();
+          const q = query.toLowerCase();
+          const createdAt = u.created_at ? Date.parse(u.created_at) : NaN;
+          const from = fromDate
+            ? Date.parse(fromDate)
+            : Number.NEGATIVE_INFINITY;
+          const to = toDate
+            ? Date.parse(toDate) + 86400000
+            : Number.POSITIVE_INFINITY;
+          const typeOk =
+            type === "all" ||
+            (type === "empresa" &&
+              ["empresa", "company"].includes(u.type) &&
+              !u.individual) ||
+            (type === "pessoa" && u.individual) ||
+            (type === "freelancer" && u.type === "freelancer") ||
+            (type === "admin" && u.type === "admin");
+          return (
+            (!q || hay.includes(q)) &&
+            typeOk &&
+            createdAt >= from &&
+            createdAt < to &&
+            (status === "all" ||
+              (status === "blocked" ? u.blocked : !u.blocked))
+          );
+        }),
+    [
+      data,
+      query,
+      type,
+      status,
+      fromDate,
+      toDate,
+      users,
+      companies,
+      freelancers,
+    ],
+  );
+  const volume = payments.reduce((n, p) => n + Number(p.amount || 0), 0);
+  const held = escrow
+    .filter((e) => e.status === "held")
+    .reduce((n, e) => n + Number(e.amount || 0), 0);
+  const activeContracts = contracts.filter(
+    (c) =>
+      !["RELEASED", "COMPLETED", "CANCELLED", "REFUNDED"].includes(c.status),
+  ).length;
+  const toggle = async (u: Row) => {
+    if (!canToggleAccount(profile?.id, u.id)) {
+      toast.error(
+        "A conta administrativa atual não pode ser bloqueada por este painel.",
+      );
+      return;
+    }
+    const r = await supabase
+      .from("users")
+      .update({ blocked: !u.blocked })
+      .eq("id", u.id);
+    if (r.error) toast.error(r.error.message);
+    else {
+      toast.success(u.blocked ? "Usuário desbloqueado" : "Usuário bloqueado");
+      load();
+      setSelected((s) => (s?.id === u.id ? { ...s, blocked: !u.blocked } : s));
+    }
+  };
+  const openDetail = (u: Row) => {
+    setSelected(u);
+    setDetailLoading(true);
+    const companyIds = companies
+      .filter((x) => x.user_id === u.id)
+      .map((x) => x.id);
+    const freelancerIds = freelancers
+      .filter((x) => x.user_id === u.id)
+      .map((x) => x.id);
+    const rows: Record<string, Row[]> = {};
+    tables.forEach((table) => {
+      const all = data[table] || [];
+      rows[table] = all.filter((x) =>
+        table === "users"
+          ? x.id === u.id
+          : table === "companies"
+            ? companyIds.includes(x.id)
+            : table === "individual_contractors"
+              ? x.user_id === u.id
+              : table === "freelancers"
+                ? freelancerIds.includes(x.id)
+                : table === "jobs"
+                  ? companyIds.includes(x.company_id)
+                  : table === "applications"
+                    ? freelancerIds.includes(x.freelancer_id) ||
+                      jobs.some(
+                        (j) =>
+                          j.id === x.job_id &&
+                          companyIds.includes(j.company_id),
+                      )
+                    : table === "conversations"
+                      ? x.company_user_id === u.id ||
+                        x.freelancer_user_id === u.id
+                      : table === "messages"
+                        ? (data.conversations || []).some(
+                            (c) =>
+                              c.id === x.conversation_id &&
+                              (c.company_user_id === u.id ||
+                                c.freelancer_user_id === u.id),
+                          )
+                        : table === "reviews"
+                          ? x.from_user === u.id || x.to_user === u.id
+                          : table === "checkins"
+                            ? (data.contracts || []).some(
+                                (c) =>
+                                  c.id === x.contract_id &&
+                                  freelancerIds.includes(c.freelancer_id),
+                              )
+                            : [
+                                "contracts",
+                                "proposals",
+                                "payments",
+                                "escrow",
+                              ].includes(table) &&
+                              ([
+                                x.user_id,
+                                x.from_user_id,
+                                x.to_user_id,
+                                x.company_user_id,
+                                x.freelancer_user_id,
+                              ].includes(u.id) ||
+                                companyIds.includes(x.company_id) ||
+                                freelancerIds.includes(x.freelancer_id) ||
+                                jobs.some(
+                                  (j) =>
+                                    j.id === x.job_id &&
+                                    companyIds.includes(j.company_id),
+                                )),
+      );
+    });
+    setDetail(rows);
+    setDetailLoading(false);
+  };
   const count = (name: string) => detail[name]?.length || 0;
-  const cards: [string, any, any][] = [["Usuários", users.length, Users], ["Empresas", companies.length, Briefcase], ["Freelancers", freelancers.length, Users], ["Ativos", users.filter((u) => !u.blocked).length, CheckCircle], ["Bloqueados", users.filter((u) => u.blocked).length, Ban], ["Vagas abertas", jobs.filter((j) => j.status === "open").length, Activity], ["Contratos ativos", activeContracts, CreditCard], ["Volume registrado", money(volume), DollarSign], ["Em custódia", money(held), DollarSign]];
-  return <div className="min-h-screen bg-background pb-12"><header className="sticky top-0 z-40 border-b bg-secondary/95"><div className="container mx-auto flex h-14 max-w-6xl items-center justify-between px-4"><div className="flex items-center gap-2 text-secondary-foreground"><img src={logo} alt="Trampô" className="h-7 w-7" /><Shield className="h-4 w-4 text-primary" /><span className="font-bold">CRM Central</span></div><div className="flex items-center gap-2"><span className="hidden text-xs text-secondary-foreground/70 sm:inline">{profile?.name || profile?.email}</span><Button variant="ghost" size="sm" onClick={() => { signOut(); navigate("/"); }} className="text-secondary-foreground/80"><LogOut className="mr-1 h-4 w-4" /> Sair</Button></div></div></header><main className="container mx-auto max-w-6xl space-y-6 px-4 py-7"><div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center"><div><h1 className="text-2xl font-bold">CRM Central</h1><p className="text-sm text-muted-foreground">Gestão centralizada de clientes e operações.</p></div><Button variant="outline" onClick={load} disabled={loading}><RefreshCw className="mr-2 h-4 w-4" /> Atualizar</Button></div>{error && <Card><CardContent className="flex items-center justify-between p-4 text-sm text-destructive"><span>{error}</span><Button size="sm" variant="outline" onClick={load}>Tentar novamente</Button></CardContent></Card>}<div className="grid grid-cols-2 gap-3 md:grid-cols-4 lg:grid-cols-5">{cards.map(([label, value, Icon]) => <Card key={label}><CardContent className="p-4"><div className="flex items-center justify-between text-xs text-muted-foreground"><span>{label}</span><Icon className="h-4 w-4 text-primary" /></div><p className="mt-2 text-xl font-bold">{value}</p></CardContent></Card>)}</div><Card><CardContent className="space-y-4 p-4"><div className="flex flex-col gap-2 md:flex-row"><div className="relative flex-1"><Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" /><Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Buscar nome, e-mail, CPF, CNPJ ou ID" className="pl-9" /></div><Select value={type} onValueChange={setType}><SelectTrigger className="md:w-48"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Todos os tipos</SelectItem><SelectItem value="empresa">Empresa</SelectItem><SelectItem value="pessoa">Pessoa física</SelectItem><SelectItem value="freelancer">Freelancer</SelectItem><SelectItem value="admin">Administrador</SelectItem></SelectContent></Select><Select value={status} onValueChange={setStatus}><SelectTrigger className="md:w-40"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Todos</SelectItem><SelectItem value="active">Ativos</SelectItem><SelectItem value="blocked">Bloqueados</SelectItem></SelectContent></Select></div>{loading ? <p className="py-10 text-center text-sm text-muted-foreground">Carregando clientes...</p> : <div className="overflow-x-auto"><Table><TableHeader><TableRow><TableHead>Nome</TableHead><TableHead>E-mail</TableHead><TableHead>Tipo</TableHead><TableHead>Status</TableHead><TableHead>Cadastro</TableHead><TableHead>Ação</TableHead></TableRow></TableHeader><TableBody>{!clients.length ? <TableRow><TableCell colSpan={6} className="py-10 text-center text-sm text-muted-foreground">Nenhum cliente encontrado.</TableCell></TableRow> : clients.map((u) => <TableRow key={u.id}><TableCell className="font-semibold">{u.name}</TableCell><TableCell>{u.email}</TableCell><TableCell><Badge variant="outline">{typeLabel(u)}</Badge></TableCell><TableCell><Badge variant={u.blocked ? "destructive" : "secondary"}>{u.blocked ? "Bloqueado" : "Ativo"}</Badge></TableCell><TableCell>{date(u.created_at)}</TableCell><TableCell className="space-x-1"><Button size="sm" variant="outline" onClick={() => openDetail(u)}>Detalhes</Button><Button size="sm" variant={u.blocked ? "outline" : "destructive"} onClick={() => toggle(u)}>{u.blocked ? "Desbloquear" : "Bloquear"}</Button></TableCell></TableRow>)}</TableBody></Table></div>}</CardContent></Card></main><Dialog open={!!selected} onOpenChange={(open) => !open && setSelected(null)}><DialogContent className="max-h-[90vh] max-w-4xl overflow-y-auto"><DialogHeader><DialogTitle>{selected?.name}</DialogTitle></DialogHeader>{detailLoading ? <p className="py-8 text-center text-sm text-muted-foreground">Carregando detalhes...</p> : selected && <div className="space-y-4"><div className="grid gap-2 text-sm sm:grid-cols-3"><p><b>E-mail:</b> {selected.email}</p><p><b>Tipo:</b> {typeLabel(selected)}</p><p><b>Status:</b> {selected.blocked ? "Bloqueado" : "Ativo"}</p><p><b>Cadastro:</b> {date(selected.created_at)}</p><p><b>Saldo:</b> {money(selected.balance)}</p><p><b>ID:</b> {selected.id}</p></div><Tabs defaultValue="operacoes"><TabsList className="grid w-full grid-cols-3"><TabsTrigger value="perfil">Perfil</TabsTrigger><TabsTrigger value="operacoes">Operações</TabsTrigger><TabsTrigger value="financeiro">Financeiro</TabsTrigger></TabsList><TabsContent value="perfil" className="pt-4"><pre className="whitespace-pre-wrap rounded-md bg-muted p-3 text-xs">{JSON.stringify(detail.companies?.[0] || detail.individual_contractors?.[0] || detail.freelancers?.[0] || {}, null, 2)}</pre></TabsContent><TabsContent value="operacoes" className="grid grid-cols-2 gap-3 pt-4 sm:grid-cols-4">{["jobs", "applications", "conversations", "messages", "proposals", "contracts", "reviews", "checkins"].map((n) => <Card key={n}><CardContent className="p-3"><p className="text-xs text-muted-foreground">{n}</p><p className="text-xl font-bold">{count(n)}</p></CardContent></Card>)}</TabsContent><TabsContent value="financeiro" className="grid grid-cols-2 gap-3 pt-4 sm:grid-cols-4">{["payments", "escrow"].map((n) => <Card key={n}><CardContent className="p-3"><p className="text-xs text-muted-foreground">{n}</p><p className="text-xl font-bold">{count(n)}</p></CardContent></Card>)}{(detail.payments || []).map((p) => <p key={p.id} className="col-span-full text-sm">{money(p.amount)} · {p.status} · {date(p.created_at)}</p>)}</TabsContent></Tabs><Button variant={selected.blocked ? "outline" : "destructive"} onClick={() => toggle(selected)}>{selected.blocked ? "Desbloquear conta" : "Bloquear conta"}</Button></div>}</DialogContent></Dialog></div>;
+  const timeline = normalizeCrmTimeline(detail);
+  const clientIndicators = deriveCrmClientIndicators(detail);
+  const cards: [string, any, any][] = [
+    ["Usuários", users.length, Users],
+    ["Empresas", companies.length, Briefcase],
+    ["Freelancers", freelancers.length, Users],
+    ["Ativos", users.filter((u) => !u.blocked).length, CheckCircle],
+    ["Bloqueados", users.filter((u) => u.blocked).length, Ban],
+    ["Vagas abertas", jobs.filter((j) => j.status === "open").length, Activity],
+    ["Contratos ativos", activeContracts, CreditCard],
+    ["Volume registrado", money(volume), DollarSign],
+    ["Em custódia", money(held), DollarSign],
+  ];
+  return (
+    <div className="min-h-screen bg-background pb-12">
+      <header className="sticky top-0 z-40 border-b bg-secondary/95">
+        <div className="container mx-auto flex h-14 max-w-6xl items-center justify-between px-4">
+          <div className="flex items-center gap-2 text-secondary-foreground">
+            <img src={logo} alt="Trampô" className="h-7 w-7" />
+            <Shield className="h-4 w-4 text-primary" />
+            <span className="font-bold">CRM Central</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="hidden text-xs text-secondary-foreground/70 sm:inline">
+              {profile?.name || profile?.email}
+            </span>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                signOut();
+                navigate("/");
+              }}
+              className="text-secondary-foreground/80"
+            >
+              <LogOut className="mr-1 h-4 w-4" /> Sair
+            </Button>
+          </div>
+        </div>
+      </header>
+      <main className="container mx-auto max-w-6xl space-y-6 px-4 py-7">
+        <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+          <div>
+            <h1 className="text-2xl font-bold">CRM Central</h1>
+            <p className="text-sm text-muted-foreground">
+              Gestão centralizada de clientes e operações.
+            </p>
+          </div>
+          <Button variant="outline" onClick={load} disabled={loading}>
+            <RefreshCw className="mr-2 h-4 w-4" /> Atualizar
+          </Button>
+        </div>
+        {error && (
+          <Card>
+            <CardContent className="flex items-center justify-between p-4 text-sm text-destructive">
+              <span>{error}</span>
+              <Button size="sm" variant="outline" onClick={load}>
+                Tentar novamente
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-4 lg:grid-cols-5">
+          {cards.map(([label, value, Icon]) => (
+            <Card key={label}>
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between text-xs text-muted-foreground">
+                  <span>{label}</span>
+                  <Icon className="h-4 w-4 text-primary" />
+                </div>
+                <p className="mt-2 text-xl font-bold">{value}</p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+        <Card>
+          <CardContent className="space-y-4 p-4">
+            <div className="flex flex-col gap-2 md:flex-row">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Buscar nome, e-mail, CPF, CNPJ ou ID"
+                  className="pl-9"
+                />
+              </div>
+              <Select value={type} onValueChange={setType}>
+                <SelectTrigger className="md:w-48">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos os tipos</SelectItem>
+                  <SelectItem value="empresa">Empresa</SelectItem>
+                  <SelectItem value="pessoa">Pessoa física</SelectItem>
+                  <SelectItem value="freelancer">Freelancer</SelectItem>
+                  <SelectItem value="admin">Administrador</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={status} onValueChange={setStatus}>
+                <SelectTrigger className="md:w-40">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos</SelectItem>
+                  <SelectItem value="active">Ativos</SelectItem>
+                  <SelectItem value="blocked">Bloqueados</SelectItem>
+                </SelectContent>
+              </Select>
+              <Input
+                type="date"
+                aria-label="Cadastro desde"
+                value={fromDate}
+                onChange={(event) => setFromDate(event.target.value)}
+                className="md:w-40"
+              />
+              <Input
+                type="date"
+                aria-label="Cadastro até"
+                value={toDate}
+                onChange={(event) => setToDate(event.target.value)}
+                className="md:w-40"
+              />
+            </div>
+            {loading ? (
+              <p className="py-10 text-center text-sm text-muted-foreground">
+                Carregando clientes...
+              </p>
+            ) : (
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Nome</TableHead>
+                      <TableHead>E-mail</TableHead>
+                      <TableHead>Tipo</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Cadastro</TableHead>
+                      <TableHead>Ação</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {!clients.length ? (
+                      <TableRow>
+                        <TableCell
+                          colSpan={6}
+                          className="py-10 text-center text-sm text-muted-foreground"
+                        >
+                          Nenhum cliente encontrado.
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      clients.map((u) => (
+                        <TableRow key={u.id}>
+                          <TableCell className="font-semibold">
+                            {u.name}
+                          </TableCell>
+                          <TableCell>{u.email}</TableCell>
+                          <TableCell>
+                            <Badge variant="outline">{typeLabel(u)}</Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Badge
+                              variant={u.blocked ? "destructive" : "secondary"}
+                            >
+                              {u.blocked ? "Bloqueado" : "Ativo"}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>{date(u.created_at)}</TableCell>
+                          <TableCell className="space-x-1">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => openDetail(u)}
+                            >
+                              Detalhes
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant={u.blocked ? "outline" : "destructive"}
+                              onClick={() => toggle(u)}
+                            >
+                              {u.blocked ? "Desbloquear" : "Bloquear"}
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </main>
+      <Dialog
+        open={!!selected}
+        onOpenChange={(open) => !open && setSelected(null)}
+      >
+        <DialogContent className="max-h-[90vh] max-w-4xl overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{selected?.name}</DialogTitle>
+          </DialogHeader>
+          {detailLoading ? (
+            <p className="py-8 text-center text-sm text-muted-foreground">
+              Carregando detalhes...
+            </p>
+          ) : (
+            selected && (
+              <div className="space-y-4">
+                <div className="grid gap-2 text-sm sm:grid-cols-3">
+                  <p>
+                    <b>E-mail:</b> {selected.email}
+                  </p>
+                  <p>
+                    <b>Tipo:</b> {typeLabel(selected)}
+                  </p>
+                  <p>
+                    <b>Status:</b> {selected.blocked ? "Bloqueado" : "Ativo"}
+                  </p>
+                  <p>
+                    <b>Cadastro:</b> {date(selected.created_at)}
+                  </p>
+                  <p>
+                    <b>Saldo:</b> {money(selected.balance)}
+                  </p>
+                  <p>
+                    <b>ID:</b> {selected.id}
+                  </p>
+                  <p>
+                    <b>Registros operacionais:</b>{" "}
+                    {clientIndicators.operationalRecords}
+                  </p>
+                  <p>
+                    <b>Contratos:</b> {clientIndicators.contracts}
+                  </p>
+                  <p>
+                    <b>Volume de pagamentos:</b>{" "}
+                    {money(clientIndicators.paymentVolume)}
+                  </p>
+                </div>
+                <Tabs defaultValue="operacoes">
+                  <TabsList className="grid w-full grid-cols-3">
+                    <TabsTrigger value="perfil">Perfil</TabsTrigger>
+                    <TabsTrigger value="operacoes">Operações</TabsTrigger>
+                    <TabsTrigger value="financeiro">Financeiro</TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="perfil" className="pt-4">
+                    <pre className="whitespace-pre-wrap rounded-md bg-muted p-3 text-xs">
+                      {JSON.stringify(
+                        detail.companies?.[0] ||
+                          detail.individual_contractors?.[0] ||
+                          detail.freelancers?.[0] ||
+                          {},
+                        null,
+                        2,
+                      )}
+                    </pre>
+                  </TabsContent>
+                  <TabsContent
+                    value="operacoes"
+                    className="grid grid-cols-2 gap-3 pt-4 sm:grid-cols-4"
+                  >
+                    {[
+                      "jobs",
+                      "applications",
+                      "conversations",
+                      "messages",
+                      "proposals",
+                      "contracts",
+                      "reviews",
+                      "checkins",
+                    ].map((n) => (
+                      <Card key={n}>
+                        <CardContent className="p-3">
+                          <p className="text-xs text-muted-foreground">{n}</p>
+                          <p className="text-xl font-bold">{count(n)}</p>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </TabsContent>
+                  <TabsContent
+                    value="financeiro"
+                    className="grid grid-cols-2 gap-3 pt-4 sm:grid-cols-4"
+                  >
+                    {["payments", "escrow"].map((n) => (
+                      <Card key={n}>
+                        <CardContent className="p-3">
+                          <p className="text-xs text-muted-foreground">{n}</p>
+                          <p className="text-xl font-bold">{count(n)}</p>
+                        </CardContent>
+                      </Card>
+                    ))}
+                    {(detail.payments || []).map((p) => (
+                      <p key={p.id} className="col-span-full text-sm">
+                        {money(p.amount)} · {p.status} · {date(p.created_at)}
+                      </p>
+                    ))}
+                  </TabsContent>
+                </Tabs>
+                <section
+                  aria-label="Linha do tempo operacional"
+                  className="space-y-2 rounded-md border p-3"
+                >
+                  <h3 className="font-semibold">Linha do tempo operacional</h3>
+                  {timeline.length ? (
+                    timeline.slice(0, 8).map((event) => (
+                      <div
+                        key={event.id}
+                        className="flex items-center justify-between gap-3 text-sm"
+                      >
+                        <span>
+                          {event.source}
+                          {event.status ? ` · ${event.status}` : ""}
+                        </span>
+                        <time dateTime={event.occurredAt}>
+                          {date(event.occurredAt)}
+                        </time>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-sm text-muted-foreground">
+                      Nenhum evento operacional datado.
+                    </p>
+                  )}
+                </section>
+                <Button
+                  variant={selected.blocked ? "outline" : "destructive"}
+                  onClick={() => toggle(selected)}
+                >
+                  {selected.blocked ? "Desbloquear conta" : "Bloquear conta"}
+                </Button>
+              </div>
+            )
+          )}
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
 };
 export default DashboardAdmin;

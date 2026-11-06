@@ -20,8 +20,8 @@
 
 - [X] T001 Registrar tokens, tipografia, raios, superfícies, foco, movimento e padrões visuais proibidos em docs/DESIGN.md
 - [X] T002 [P] Criar a estrutura inicial dos testes E2E da feature em e2e/pilot-responsive.spec.ts
-- [ ] T003 [P] Criar utilitários de renderização com AuthProvider e BrowserRouter para testes em src/test/pilot-test-utils.tsx
-- [ ] T004 Atualizar a matriz de validação da feature e comandos executáveis em specs/002-pilot-product-update/quickstart.md
+- [X] T003 [P] Criar utilitários de renderização com AuthProvider e BrowserRouter para testes em src/test/pilot-test-utils.tsx
+- [X] T004 Atualizar a matriz de validação da feature e comandos executáveis em specs/002-pilot-product-update/quickstart.md
 
 ---
 
@@ -39,7 +39,7 @@
 - [X] T010 Implementar snapshot em memória e reset por recarga em src/lib/pilotMockService.ts
 - [X] T011 Implementar validação de transições, idempotência e limite de posições conforme contracts/mock-pilot-contract.md em src/lib/pilotMockService.ts
 - [X] T012 [P] Adicionar tokenização de contraste, foco, áreas de toque e movimento reduzido preservando os estilos existentes em src/index.css
-- [ ] T013 [P] Atualizar mocks compartilhados de autenticação e dados para refletir personas fictícias em src/test/setup.ts
+- [X] T013 [P] Atualizar mocks compartilhados de autenticação e dados para refletir personas fictícias em src/test/setup.ts
 - [X] T014 Executar npm test para pilot-pricing e corrigir somente a fundação até os testes de src/test/pilot-pricing.test.ts passarem
 
 **Checkpoint**: Cálculos, fixtures e transições mockadas estão disponíveis sem API, banco ou efeito externo.
@@ -54,19 +54,19 @@
 
 ### Tests for User Story 1
 
-- [ ] T015 [P] [US1] Escrever testes inicialmente falhos para localidade, sete categorias, fluxo financeiro e preços mockados em src/test/landing-pilot.test.tsx
-- [ ] T016 [P] [US1] Escrever cenário E2E inicialmente falho para CTAs de contratante/profissional e ausência de rolagem horizontal em e2e/pilot-responsive.spec.ts
+- [X] T015 [P] [US1] Escrever testes inicialmente falhos para localidade, sete categorias, fluxo financeiro e preços mockados em src/test/landing-pilot.test.tsx
+- [X] T016 [P] [US1] Escrever cenário E2E inicialmente falho para CTAs de contratante/profissional e ausência de rolagem horizontal em e2e/pilot-responsive.spec.ts
 
 ### Implementation for User Story 1
 
-- [ ] T017 [P] [US1] Refinar o componente existente Navbar com Início, Publicar, Painel, Diárias, Equipe, Piloto SJDR e estado autenticado em src/components/landing/Navbar.tsx
+- [X] T017 [P] [US1] Refinar o componente existente Navbar com Início, Publicar, Painel, Diárias, Equipe, Piloto SJDR e estado autenticado em src/components/landing/Navbar.tsx
 - [X] T018 [P] [US1] Refinar o Hero existente com proposta local, aviso demonstrativo e CTAs por papel em src/components/landing/Hero.tsx
 - [X] T019 [P] [US1] Adaptar HowItWorks existente para publicação, aceite, check-in e Pix direto com recibo demonstrativo em src/components/landing/HowItWorks.tsx
-- [ ] T020 [P] [US1] Renderizar as sete categorias do catálogo compartilhado sem painel aninhado decorativo em src/components/landing/Categories.tsx
+- [X] T020 [P] [US1] Renderizar as sete categorias do catálogo compartilhado sem painel aninhado decorativo em src/components/landing/Categories.tsx
 - [X] T021 [P] [US1] Substituir VIP/escrow pelos três modelos demonstrativos e taxa profissional pós-seleção em src/components/landing/Pricing.tsx
 - [X] T022 [P] [US1] Ajustar CTA e Footer existentes para piloto local, termos demonstrativos e rotas atuais em src/components/landing/CTA.tsx e src/components/landing/Footer.tsx
-- [ ] T023 [US1] Compor a landing atualizada preservando os componentes existentes e uma ação primária por seção em src/pages/Index.tsx
-- [ ] T024 [US1] Executar os testes de src/test/landing-pilot.test.tsx e validar manualmente o Cenário 1 de specs/002-pilot-product-update/quickstart.md
+- [X] T023 [US1] Compor a landing atualizada preservando os componentes existentes e uma ação primária por seção em src/pages/Index.tsx
+- [X] T024 [US1] Executar os testes de e2e/pilot-responsive.spec.ts e validar o Cenário 1 de specs/002-pilot-product-update/quickstart.md
 
 **Checkpoint**: A landing funciona como MVP independente e não contém promessas de escrow, VIP de 60 dias ou cobertura nacional ativa.
 
@@ -80,16 +80,16 @@
 
 ### Tests for User Story 2
 
-- [ ] T025 [P] [US2] Escrever testes inicialmente falhos para formulário individual/lote, preservação de campos e resumo Pro/Avulso em src/test/pilot-create-job.test.tsx
+- [X] T025 [P] [US2] Escrever testes inicialmente falhos para formulário individual/lote, preservação de campos e resumo Pro/Avulso em src/test/pilot-create-job.test.tsx
 - [ ] T026 [P] [US2] Acrescentar cenário E2E inicialmente falho para R$ 150 Pro e R$ 300 + R$ 36 Avulso em e2e/pilot-responsive.spec.ts
 
 ### Implementation for User Story 2
 
 - [X] T027 [US2] Adaptar campos e catálogo existentes para vaga individual/lote e sete categorias em src/pages/CreateJob.tsx
 - [X] T028 [US2] Integrar calculateJobPricing e separar diária, taxa do contratante e aviso mockado em src/pages/CreateJob.tsx
-- [ ] T029 [US2] Integrar publishJobMock e confirmação Avulso sem chamar API financeira em src/pages/CreateJob.tsx
-- [ ] T030 [US2] Implementar estados de validação, confirmação, sucesso e erro recuperável preservando dados digitados em src/pages/CreateJob.tsx
-- [ ] T031 [US2] Executar src/test/pilot-create-job.test.tsx e validar o Cenário 2 de specs/002-pilot-product-update/quickstart.md
+- [X] T029 [US2] Integrar publishJobMock e confirmação Avulso sem chamar API financeira em src/pages/CreateJob.tsx
+- [X] T030 [US2] Implementar estados de validação, confirmação, sucesso e erro recuperável preservando dados digitados em src/pages/CreateJob.tsx
+- [X] T031 [US2] Executar src/test/pilot-create-job.test.tsx e validar o Cenário 2 de specs/002-pilot-product-update/quickstart.md
 
 **Checkpoint**: A publicação mockada é demonstrável isoladamente e nenhum botão produz cobrança real.
 
@@ -103,16 +103,16 @@
 
 ### Tests for User Story 3
 
-- [ ] T032 [P] [US3] Escrever testes inicialmente falhos para plano, teste de 14 dias, conta e estados das vagas em src/test/pilot-company-flow.test.tsx
-- [ ] T033 [P] [US3] Escrever testes inicialmente falhos para confirmação idempotente da taxa Avulso e suspensão mockada em src/test/pilot-mock-service.test.ts
+- [x] T032 [P] [US3] Escrever testes inicialmente falhos para plano, teste de 14 dias, conta e estados das vagas em src/test/pilot-company-flow.test.tsx
+- [X] T033 [P] [US3] Escrever testes inicialmente falhos para confirmação idempotente da taxa Avulso e suspensão mockada em src/test/pilot-mock-service.test.ts
 
 ### Implementation for User Story 3
 
 - [X] T034 [US3] Substituir indicadores VIP, custódia e ROI conflitantes por plano, conta e resumo operacional em src/pages/DashboardCompany.tsx
 - [X] T035 [US3] Integrar getContractorDashboard com vagas, posições abertas, total de diárias e taxa separada em src/pages/DashboardCompany.tsx
-- [ ] T036 [US3] Integrar confirmContractorFeeMock e bloqueio demonstrativo de publicação para conta suspensa em src/pages/DashboardCompany.tsx
+- [X] T036 [US3] Integrar confirmContractorFeeMock e bloqueio demonstrativo de publicação para conta suspensa em src/pages/DashboardCompany.tsx
 - [X] T037 [US3] Preservar roteamento por papel e carregamento do painel atual em src/pages/Dashboard.tsx
-- [ ] T038 [US3] Executar src/test/pilot-company-flow.test.tsx e validar estados de contratante conforme contracts/ui-flow-contract.md
+- [x] T038 [US3] Executar src/test/pilot-company-flow.test.tsx e validar estados de contratante conforme contracts/ui-flow-contract.md
 
 **Checkpoint**: O contratante acompanha o cenário mockado sem confundir diária e taxa da plataforma.
 
@@ -126,19 +126,19 @@
 
 ### Tests for User Story 4
 
-- [ ] T039 [P] [US4] Escrever testes inicialmente falhos para interesse, seleção, taxa, reserva e limite concorrente em src/test/pilot-professional-service.test.ts
-- [ ] T040 [P] [US4] Escrever testes inicialmente falhos para estados abertos, chamados, check-in, no-show e recibo em src/test/pilot-professional-flow.test.tsx
+- [X] T039 [P] [US4] Escrever testes inicialmente falhos para interesse, seleção, taxa, reserva e limite concorrente em src/test/pilot-professional-service.test.ts
+- [X] T040 [P] [US4] Escrever testes inicialmente falhos para estados abertos, chamados, check-in, no-show e recibo em src/test/pilot-professional-flow.test.tsx
 - [ ] T041 [P] [US4] Acrescentar jornada E2E inicialmente falha de interesse até recibo demonstrativo em e2e/pilot-responsive.spec.ts
 
 ### Implementation for User Story 4
 
 - [X] T042 [US4] Evoluir a página existente de contratos/diárias para consumir getProfessionalDashboard em src/pages/Contracts.tsx
-- [ ] T043 [US4] Integrar expressInterestMock sem apresentar taxa antes da seleção em src/pages/Contracts.tsx
+- [X] T043 [US4] Integrar expressInterestMock sem apresentar taxa antes da seleção em src/pages/Contracts.tsx
 - [X] T044 [US4] Integrar seleção demonstrativa e confirmProfessionalFeeMock com aviso de R$ 7,90 em src/pages/Contracts.tsx
-- [ ] T045 [US4] Integrar checkInMock, completeShiftMock e markNoShowMock sem usar endpoints reais em src/pages/Contracts.tsx
-- [ ] T046 [US4] Exibir recibo “Demonstração — sem validade fiscal” reutilizando Dialog existente em src/pages/Contracts.tsx
+- [X] T045 [US4] Integrar checkInMock, completeShiftMock e markNoShowMock sem usar endpoints reais em src/pages/Contracts.tsx
+- [X] T046 [US4] Exibir recibo “Demonstração — sem validade fiscal” reutilizando Dialog existente em src/pages/Contracts.tsx
 - [X] T047 [US4] Remover mensagens de carteira, custódia e anti-calote conflitantes do painel profissional existente em src/pages/DashboardFreelancer.tsx
-- [ ] T048 [US4] Executar src/test/pilot-professional-service.test.ts e src/test/pilot-professional-flow.test.tsx e validar Cenários 3 e 4 do quickstart.md
+- [X] T048 [US4] Executar src/test/pilot-professional-service.test.ts e src/test/pilot-professional-flow.test.tsx e validar Cenários 3 e 4 do quickstart.md
 
 **Checkpoint**: A jornada profissional completa funciona somente no estado mockado da sessão.
 
@@ -152,7 +152,7 @@
 
 ### Tests for User Story 6
 
-- [ ] T049 [P] [US6] Escrever testes inicialmente falhos para títulos, rótulos persistentes, avisos mockados e nomes acessíveis em src/test/pilot-accessibility.test.tsx
+- [X] T049 [P] [US6] Escrever testes inicialmente falhos para títulos, rótulos persistentes, avisos mockados e nomes acessíveis em src/test/pilot-accessibility.test.tsx
 - [ ] T050 [P] [US6] Completar testes E2E de teclado, foco, movimento reduzido, texto longo e três breakpoints em e2e/pilot-responsive.spec.ts
 
 ### Implementation for User Story 6
@@ -162,7 +162,7 @@
 - [ ] T053 [US6] Corrigir ordem de títulos, rótulos de campos, mensagens de estado e associação de erros nas páginas alteradas em src/components/landing e src/pages
 - [X] T054 [US6] Aplicar limites de linha, quebra de conteúdo, alvos de toque e ausência de overflow horizontal nas páginas alteradas em src/index.css
 - [X] T055 [US6] Garantir que transições essenciais permaneçam visíveis sem animação e respeitem prefers-reduced-motion em src/index.css
-- [ ] T056 [US6] Executar src/test/pilot-accessibility.test.tsx e e2e/pilot-responsive.spec.ts e validar o Cenário 6 do quickstart.md
+- [X] T056 [US6] Executar src/test/pilot-accessibility.test.tsx e e2e/pilot-responsive.spec.ts e validar o Cenário 6 do quickstart.md
 
 **Checkpoint**: Todas as histórias P1 atendem aos critérios visuais e de acessibilidade.
 
@@ -176,15 +176,15 @@
 
 ### Tests for User Story 5
 
-- [ ] T057 [P] [US5] Escrever testes inicialmente falhos para isolamento de favoritos e convocação em src/test/pilot-favorite-team.test.tsx
+- [x] T057 [P] [US5] Escrever testes inicialmente falhos para isolamento de favoritos e convocação em src/test/pilot-favorite-team.test.tsx
 
 ### Implementation for User Story 5
 
 - [X] T058 [US5] Integrar toggleFavoriteMock à área de favoritos existente em src/pages/DashboardCompany.tsx
 - [X] T059 [US5] Adaptar a área existente para exibir função, região, avaliação e histórico da equipe em src/pages/DashboardCompany.tsx
-- [ ] T060 [US5] Iniciar convocação reaproveitando o formulário existente por estado de navegação em src/pages/DashboardCompany.tsx e src/pages/CreateJob.tsx
+- [x] T060 [US5] Iniciar convocação reaproveitando o formulário existente por estado de navegação em src/pages/DashboardCompany.tsx e src/pages/CreateJob.tsx
 - [X] T061 [US5] Mapear `/equipe` para a mesma experiência de equipe do painel sem criar novo componente equivalente em src/App.tsx
-- [ ] T062 [US5] Executar src/test/pilot-favorite-team.test.tsx e validar o Cenário 5 de specs/002-pilot-product-update/quickstart.md
+- [x] T062 [US5] Executar src/test/pilot-favorite-team.test.tsx e validar o Cenário 5 de specs/002-pilot-product-update/quickstart.md
 
 **Checkpoint**: A equipe favorita funciona por contratante e reutiliza o fluxo existente.
 
@@ -194,11 +194,11 @@
 
 **Purpose**: Termos, remoção de legado conflitante e validação final.
 
-- [ ] T063 [P] Atualizar testes antigos de preços, dashboards e termos para o piloto mockado em src/test/pricing.test.tsx, src/test/dashboards.test.tsx e src/test/terms.test.tsx
-- [ ] T064 Atualizar modelo sem custódia, valores mockados, recibo sem validade fiscal, no-show e suspensão simulada em src/pages/Terms.tsx
+- [x] T063 [P] Atualizar testes antigos de preços, dashboards e termos para o piloto mockado em src/test/pricing.test.tsx, src/test/dashboards.test.tsx e src/test/terms.test.tsx
+- [X] T064 Atualizar modelo sem custódia, valores mockados, recibo sem validade fiscal, no-show e suspensão simulada em src/pages/Terms.tsx
 - [ ] T065 Remover textos residuais de escrow, custódia, garantia anti-calote, VIP de 60 dias, R$ 39,90 e cobertura nacional ativa em src e src/test
 - [ ] T066 [P] Inspecionar somente as alterações produzidas por esta feature e confirmar que não adicionam dependências, fluxos duplicados ou efeitos financeiros em server e mobile, preservando alterações preexistentes nesses diretórios
-- [ ] T067 Executar npm test e corrigir regressões relacionadas à feature nos arquivos alterados
+- [X] T067 Executar npm test e corrigir regressões relacionadas à feature nos arquivos alterados
 - [X] T068 Executar npm run build e corrigir erros de compilação relacionados à feature nos arquivos alterados
 - [ ] T069 Executar npm run lint e corrigir violações relacionadas à feature nos arquivos alterados
 - [ ] T070 Executar npx playwright test e validar os seis cenários de specs/002-pilot-product-update/quickstart.md

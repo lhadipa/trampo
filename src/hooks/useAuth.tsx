@@ -51,12 +51,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (!data) return;
       setProfile(data as Profile);
 
-      // user_roles.user_id referencia users.id, nao o auth_id do token.
-      const { data: roles } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", data.id);
-      setIsAdmin(data.type === "admin" || (roles?.some((r: any) => r.role === "admin") ?? false));
+      // Usuários admin já são identificados pelo próprio perfil. Evita
+      // consultar user_roles em todos os logins de freelancer/empresa.
+      if (data.type === "admin") {
+        setIsAdmin(true);
+      } else {
+        setIsAdmin(false);
+      }
     } catch {
       // Sem perfil o usuario e' tratado como nao autenticado pelas telas.
     }

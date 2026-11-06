@@ -4,6 +4,7 @@ import pg from "pg";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import crypto from "node:crypto";
+import { crmAdminHiddenColumns, crmAdminPolicies } from "./crmAdminPolicy.js";
 
 const isProduction = process.env.NODE_ENV === "production";
 
@@ -57,7 +58,7 @@ app.use(
 );
 app.use(express.json({ limit: "1mb" }));
 
-const tables = new Set(["users", "user_roles", "companies", "individual_contractors", "freelancers", "jobs", "applications", "conversations", "messages", "payments", "escrow", "reviews", "public_profiles", "proposals", "contracts", "checkins"]);
+const tables = new Set(["users", "user_roles", "companies", "individual_contractors", "freelancers", "jobs", "applications", "conversations", "messages", "payments", "escrow", "reviews", "public_profiles", "preferences", "proposals", "contracts", "checkins"]);
 
 /**
  * Politica por tabela para o CRUD generico /api/data/:table.
@@ -68,14 +69,63 @@ const tables = new Set(["users", "user_roles", "companies", "individual_contract
 const policies = {
   users: { insert: false, update: { adminOnly: true, columns: ["blocked"] } },
   user_roles: { insert: false, update: false },
+  preferences: { insert: true, update: false },
+  applications: { insert: true, update: false },
+  conversations: { insert: true, update: false },
+  messages: { insert: true, update: false },
+  jobs: { insert: true, update: false },
+  payments: { insert: false, update: false },
+  escrow: { insert: false, update: false },
+  contracts: { insert: false, update: false },
+  proposals: { insert: false, update: false },
+  checkins: { insert: false, update: false },
+  reviews: { insert: true, update: false },
   public_profiles: { insert: false, update: false },
   freelancers: { update: { own: "user_id", columns: ["category", "service_types", "work_types", "experience_years", "bio"] } },
   individual_contractors: { update: { own: "user_id", columns: ["full_name", "cpf", "preferred_service_types", "bio", "updated_at"] } },
   companies: { update: { own: "user_id", columns: ["name", "corporate_name", "cnpj", "preferred_service_types", "bio"] } },
 };
+Object.assign(policies, crmAdminPolicies);
+
+const deny = (res, message = "Acesso não permitido") => res.status(403).json({ data: null, error: { message } });
+
+// Escopo mínimo de leitura aplicado antes de qualquer filtro enviado pelo cliente.
+// Tabelas públicas continuam legíveis por usuários autenticados; dados operacionais
+// ficam limitados às partes relacionadas ou ao administrador.
+const appendReadScope = async (table, user, privilegedRead, clauses, values) => {
+  if (privilegedRead || ["jobs", "freelancers", "companies", "public_profiles"].includes(table)) return;
+  const bind = (value) => { values.push(value); return `$${values.length}`; };
+  if (table === "users" || table === "user_roles" || table === "preferences" || table === "payments") {
+    const column = table === "user_roles" ? "user_id" : "user_id";
+    clauses.push(`${column} = ${bind(user.id)}`);
+  } else if (table === "individual_contractors") {
+    clauses.push(`user_id = ${bind(user.id)}`);
+  } else if (table === "applications") {
+    const p = bind(user.id);
+    clauses.push(`(freelancer_id IN (SELECT id FROM freelancers WHERE user_id = ${p}) OR job_id IN (SELECT id FROM jobs WHERE company_id IN (SELECT id FROM companies WHERE user_id = ${p})))`);
+  } else if (table === "conversations") {
+    const p = bind(user.id);
+    clauses.push(`(company_user_id = ${p} OR freelancer_user_id = ${p})`);
+  } else if (table === "messages") {
+    const p = bind(user.id);
+    clauses.push(`conversation_id IN (SELECT id FROM conversations WHERE company_user_id = ${p} OR freelancer_user_id = ${p})`);
+  } else if (["contracts", "proposals"].includes(table)) {
+    const p = bind(user.id);
+    clauses.push(`(company_id IN (SELECT id FROM companies WHERE user_id = ${p}) OR freelancer_id IN (SELECT id FROM freelancers WHERE user_id = ${p}))`);
+  } else if (table === "escrow") {
+    const p = bind(user.id);
+    clauses.push(`(company_user_id = ${p} OR freelancer_user_id = ${p} OR company_id IN (SELECT id FROM companies WHERE user_id = ${p}) OR freelancer_id IN (SELECT id FROM freelancers WHERE user_id = ${p}))`);
+  } else if (table === "checkins") {
+    clauses.push(`freelancer_id IN (SELECT id FROM freelancers WHERE user_id = ${bind(user.id)})`);
+  } else if (table === "reviews") {
+    const p = bind(user.id);
+    clauses.push(`(from_user = ${p} OR to_user = ${p})`);
+  }
+};
 
 // Colunas que nunca saem da API, independente do select.
 const hiddenColumns = { users: ["password_hash"] };
+Object.assign(hiddenColumns, crmAdminHiddenColumns);
 
 const IDENT = /^[a-z_][a-z0-9_]*$/;
 const id = () => crypto.randomUUID();
@@ -116,6 +166,54 @@ const isAdmin = async (user) => {
 };
 
 app.get("/api/health", (_req, res) => res.json({ ok: true, database: "postgresql" }));
+
+const preferenceInput = (body) => {
+  const locationId = typeof body?.location_id === "string" ? body.location_id.trim() : "";
+  const categoryId = typeof body?.category_id === "string" ? body.category_id.trim() : "";
+  return locationId && categoryId && locationId.length <= 120 && categoryId.length <= 120
+    ? { locationId, categoryId }
+    : null;
+};
+
+app.get("/api/preferences", async (req, res) => {
+  const user = await userFrom(req);
+  if (!user) return res.status(401).json({ error: "Não autenticado" });
+  if (user.blocked) return res.status(403).json({ error: "Conta bloqueada" });
+  const { rows } = await pool.query(
+    "SELECT id, location_id, category_id, created_at FROM preferences WHERE user_id = $1 AND active = true ORDER BY created_at DESC",
+    [user.id],
+  );
+  res.json({ data: rows });
+});
+
+app.post("/api/preferences", async (req, res) => {
+  const user = await userFrom(req);
+  if (!user) return res.status(401).json({ error: "Não autenticado" });
+  if (user.blocked) return res.status(403).json({ error: "Conta bloqueada" });
+  const input = preferenceInput(req.body);
+  if (!input) return res.status(400).json({ error: "Local e categoria são obrigatórios" });
+  const { rows } = await pool.query(
+    `INSERT INTO preferences (user_id, location_id, category_id)
+     VALUES ($1, $2, $3)
+     ON CONFLICT (user_id, location_id, category_id)
+     DO UPDATE SET active = true, removed_at = NULL
+     RETURNING id, location_id, category_id, created_at`,
+    [user.id, input.locationId, input.categoryId],
+  );
+  res.status(201).json({ data: rows[0] });
+});
+
+app.delete("/api/preferences/:preferenceId", async (req, res) => {
+  const user = await userFrom(req);
+  if (!user) return res.status(401).json({ error: "Não autenticado" });
+  if (user.blocked) return res.status(403).json({ error: "Conta bloqueada" });
+  const { rows } = await pool.query(
+    "UPDATE preferences SET active = false, removed_at = now() WHERE id = $1 AND user_id = $2 AND active = true RETURNING id",
+    [req.params.preferenceId, user.id],
+  );
+  if (!rows.length) return res.status(404).json({ error: "Preferência não encontrada" });
+  res.json({ data: rows[0] });
+});
 
 app.post("/api/auth/signup", async (req, res) => {
   try {
@@ -484,6 +582,28 @@ app.all("/api/data/:table", async (req, res) => {
     if (req.method === "POST") {
       if (policy.insert === false) return res.status(403).json({ data: null, error: { message: "Escrita não permitida nesta tabela" } });
       const payload = Array.isArray(req.body) ? req.body : [req.body];
+      if (payload.length > 50) return res.status(413).json({ data: null, error: { message: "Lote excede o limite permitido" } });
+      if (["jobs", "applications", "conversations", "messages", "reviews"].includes(table)) {
+        for (const row of payload) {
+          if (table === "jobs") {
+            const { rows } = await pool.query("SELECT 1 FROM companies WHERE id = $1 AND user_id = $2", [row.company_id, user.id]);
+            if (!rows.length) return deny(res, "A vaga deve pertencer ao contratante autenticado");
+          }
+          if (table === "applications") {
+            const { rows } = await pool.query("SELECT 1 FROM freelancers WHERE id = $1 AND user_id = $2", [row.freelancer_id, user.id]);
+            if (!rows.length) return deny(res, "A candidatura deve pertencer ao profissional autenticado");
+          }
+          if (table === "conversations") {
+            if (![row.company_user_id, row.freelancer_user_id].includes(user.id)) return deny(res, "A conversa deve incluir o usuário autenticado");
+          }
+          if (table === "messages") {
+            if (row.sender_id !== user.id) return deny(res, "A mensagem deve ser enviada pelo usuário autenticado");
+            const { rows } = await pool.query("SELECT 1 FROM conversations WHERE id = $1 AND (company_user_id = $2 OR freelancer_user_id = $2)", [row.conversation_id, user.id]);
+            if (!rows.length) return deny(res, "O usuário não participa desta conversa");
+          }
+          if (table === "reviews" && row.from_user !== user.id) return deny(res, "A avaliação deve ser criada pelo usuário autenticado");
+        }
+      }
       const cols = Object.keys(payload[0] || {}).filter((c) => IDENT.test(c));
       if (!cols.length) return res.status(400).json({ data: null, error: { message: "Nenhuma coluna válida" } });
       const values = []; const placeholders = payload.map((row, i) => `(${cols.map((c, j) => { values.push(row[c] ?? null); return `$${i * cols.length + j + 1}`; }).join(",")})`).join(",");
@@ -525,18 +645,7 @@ app.all("/api/data/:table", async (req, res) => {
     const filters = parseFilters(req.query);
     const values = filters.map(([, v]) => v);
     const clauses = filters.map(([column], i) => `${column}=$${i + 1}`);
-    if (table === "contracts" && !privilegedRead) {
-      clauses.push(`(company_id IN (SELECT id FROM companies WHERE user_id = $${values.length + 1}) OR freelancer_id IN (SELECT id FROM freelancers WHERE user_id = $${values.length + 1}))`);
-      values.push(user.id);
-    }
-    if (table === "proposals" && !privilegedRead) {
-      clauses.push(`(company_id IN (SELECT id FROM companies WHERE user_id = $${values.length + 1}) OR freelancer_id IN (SELECT id FROM freelancers WHERE user_id = $${values.length + 1}))`);
-      values.push(user.id);
-    }
-    if (table === "escrow" && !privilegedRead) {
-      clauses.push(`(company_id IN (SELECT id FROM companies WHERE user_id = $${values.length + 1}) OR freelancer_id IN (SELECT id FROM freelancers WHERE user_id = $${values.length + 1}) OR company_user_id = $${values.length + 1} OR freelancer_user_id = $${values.length + 1})`);
-      values.push(user.id);
-    }
+    await appendReadScope(table, user, privilegedRead, clauses, values);
     const where = clauses.length ? `WHERE ${clauses.join(" AND ")}` : "";
     const columns = await columnsOf(table);
     const orderColumn = String(req.query.order || "").split(".")[0];
@@ -561,6 +670,8 @@ await pool.query("ALTER TABLE freelancers ADD COLUMN IF NOT EXISTS service_types
 await pool.query("ALTER TABLE freelancers ADD COLUMN IF NOT EXISTS work_types text[] NOT NULL DEFAULT '{}'");
 await pool.query("ALTER TABLE freelancers ADD COLUMN IF NOT EXISTS experience_years integer NOT NULL DEFAULT 0");
 await pool.query("ALTER TABLE freelancers ADD COLUMN IF NOT EXISTS bio text NOT NULL DEFAULT ''");
+await pool.query("CREATE TABLE IF NOT EXISTS preferences (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE, location_id text NOT NULL, category_id text NOT NULL, active boolean NOT NULL DEFAULT true, created_at timestamptz NOT NULL DEFAULT now(), removed_at timestamptz, UNIQUE(user_id, location_id, category_id))");
+await pool.query("CREATE INDEX IF NOT EXISTS preferences_user_active_idx ON preferences(user_id) WHERE active");
 await pool.query("ALTER TABLE companies ADD COLUMN IF NOT EXISTS corporate_name text");
 await pool.query("ALTER TABLE companies ADD COLUMN IF NOT EXISTS cnpj text");
 await pool.query("ALTER TABLE companies ADD COLUMN IF NOT EXISTS preferred_service_types text[] NOT NULL DEFAULT '{}'");
