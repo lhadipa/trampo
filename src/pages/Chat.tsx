@@ -153,7 +153,7 @@ const Chat = () => {
           <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="text-secondary-foreground/70">
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <img src={logo} alt="Trampô" className="w-7 h-7" />
+          <img src={logo} alt="Trampô" className="h-7 w-auto object-contain" />
           <div className="flex-1">
             <p className="font-bold text-secondary-foreground text-sm">{otherUser?.name || "..."}</p>
             <p className="text-xs text-secondary-foreground/50">{otherUser?.type === "company" ? "Empresa" : "Freelancer"}</p>

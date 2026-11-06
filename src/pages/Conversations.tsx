@@ -64,7 +64,7 @@ const Conversations = () => {
           <Button variant="ghost" size="icon" onClick={() => navigate("/painel")} className="text-secondary-foreground/70">
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <img src={logo} alt="Trampô" className="w-7 h-7" />
+          <img src={logo} alt="Trampô" className="h-7 w-auto object-contain" />
           <span className="font-bold text-secondary-foreground">Conversas</span>
         </div>
       </header>

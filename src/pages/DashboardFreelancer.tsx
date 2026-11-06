@@ -396,7 +396,7 @@ const DashboardFreelancer = () => {
               <ArrowLeft className="mr-1 h-4 w-4" />
               Início
             </Button>
-            <img src={logo} alt="Trampô" className="h-7 w-7" />
+            <img src={logo} alt="Trampô" className="h-7 w-auto object-contain" />
             <span className="font-bold text-secondary-foreground">
               Painel profissional
             </span>
@@ -842,7 +842,7 @@ const DashboardFreelancer = () => {
             >
               <ArrowLeft className="mr-1 h-4 w-4" /> Início
             </Button>
-            <img src={logo} alt="Trampô" className="w-7 h-7" />
+            <img src={logo} alt="Trampô" className="h-7 w-auto object-contain" />
             <span className="font-bold text-secondary-foreground">
               Painel do Prestador Autônomo
             </span>

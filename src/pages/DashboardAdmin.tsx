@@ -308,7 +308,7 @@ const DashboardAdmin = () => {
       <header className="sticky top-0 z-40 border-b bg-secondary/95">
         <div className="container mx-auto flex h-14 max-w-6xl items-center justify-between px-4">
           <div className="flex items-center gap-2 text-secondary-foreground">
-            <img src={logo} alt="Trampô" className="h-7 w-7" />
+            <img src={logo} alt="Trampô" className="h-7 w-auto object-contain" />
             <Shield className="h-4 w-4 text-primary" />
             <span className="font-bold">CRM Central</span>
           </div>
